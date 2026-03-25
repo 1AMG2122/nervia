@@ -923,39 +923,8 @@
         <div class="card">
           <div class="step-heading">Elige tu servicio</div>
           <div class="step-sub">Selecciona el tipo de consulta que necesitas.</div>
-          <div class="services-grid">
-            <div class="service-card" data-service="Fisioterapia" data-duration="45 min" data-price="60€" data-emoji="🦴">
-              <div class="service-emoji">🦴</div>
-              <div class="service-name">Fisioterapia</div>
-              <div class="service-meta">
-                <span class="service-duration">45 min</span>
-                <span class="service-price">60€</span>
-              </div>
-            </div>
-            <div class="service-card" data-service="Psicología" data-duration="50 min" data-price="70€" data-emoji="🧠">
-              <div class="service-emoji">🧠</div>
-              <div class="service-name">Psicología</div>
-              <div class="service-meta">
-                <span class="service-duration">50 min</span>
-                <span class="service-price">70€</span>
-              </div>
-            </div>
-            <div class="service-card" data-service="Masaje Terapéutico" data-duration="60 min" data-price="55€" data-emoji="💆">
-              <div class="service-emoji">💆</div>
-              <div class="service-name">Masaje Terapéutico</div>
-              <div class="service-meta">
-                <span class="service-duration">60 min</span>
-                <span class="service-price">55€</span>
-              </div>
-            </div>
-            <div class="service-card" data-service="Consulta General" data-duration="30 min" data-price="45€" data-emoji="🩺">
-              <div class="service-emoji">🩺</div>
-              <div class="service-name">Consulta General</div>
-              <div class="service-meta">
-                <span class="service-duration">30 min</span>
-                <span class="service-price">45€</span>
-              </div>
-            </div>
+          <div class="services-grid" id="services-grid">
+            <!-- Renderizado dinámicamente con JS -->
           </div>
           <div class="btn-actions-right">
             <button class="btn-primary" id="btn-step1-next" disabled>
@@ -1165,6 +1134,14 @@
   <footer>© 2025 Nervia · Todos los derechos reservados</footer>
 
   <script>
+    // ─── CONFIG ───
+    const SERVICES_CONFIG = [
+      { id: "fisio", name: "Fisioterapia", duration: "45 min", price: "60€", emoji: "🦴" },
+      { id: "psico", name: "Psicología", duration: "50 min", price: "70€", emoji: "🧠" },
+      { id: "masaje", name: "Masaje Terapéutico", duration: "60 min", price: "55€", emoji: "💆" },
+      { id: "consulta", name: "Consulta General", duration: "30 min", price: "45€", emoji: "🩺" }
+    ];
+
     // ─── STATE ───
     const booking = {
       service: null,
@@ -1262,17 +1239,40 @@
     }
 
     // ─── STEP 1: SERVICE SELECTION ───
-    document.querySelectorAll('.service-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        booking.service = card.dataset.service;
-        booking.serviceEmoji = card.dataset.emoji;
-        booking.duration = card.dataset.duration;
-        booking.price = card.dataset.price;
-        document.getElementById('btn-step1-next').disabled = false;
+    function renderServices() {
+      const grid = document.getElementById('services-grid');
+      grid.innerHTML = '';
+
+      SERVICES_CONFIG.forEach(svc => {
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.dataset.service = svc.name;
+        card.dataset.duration = svc.duration;
+        card.dataset.price = svc.price;
+        card.dataset.emoji = svc.emoji;
+
+        card.innerHTML = `
+          <div class="service-emoji">${svc.emoji}</div>
+          <div class="service-name">${svc.name}</div>
+          <div class="service-meta">
+            <span class="service-duration">${svc.duration}</span>
+            <span class="service-price">${svc.price}</span>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          booking.service = svc.name;
+          booking.serviceEmoji = svc.emoji;
+          booking.duration = svc.duration;
+          booking.price = svc.price;
+          document.getElementById('btn-step1-next').disabled = false;
+        });
+
+        grid.appendChild(card);
       });
-    });
+    }
 
     document.getElementById('btn-step1-next').addEventListener('click', () => {
       if (booking.service) goToStep(2);
@@ -1557,6 +1557,7 @@
     }
 
     // ─── INIT ───
+    renderServices();
     renderCalendar();
   </script>
 
