@@ -439,10 +439,10 @@ const CLIENT_CONFIG = {
   emoji: "🦴",
   color: "#0D2240",
   services: [
-    "Primera visita (60 min)",
-    "Revisión de seguimiento (30 min)",
-    "Masaje terapéutico (45 min)",
-    "Electroterapia (30 min)"
+    { name: "Primera visita", duration: "60 min", price: "70€" },
+    { name: "Revisión de seguimiento", duration: "30 min", price: "40€" },
+    { name: "Masaje terapéutico", duration: "45 min", price: "55€" },
+    { name: "Electroterapia", duration: "30 min", price: "35€" }
   ],
   // Horario: días laborables (1=Lun...5=Vie), horas disponibles
   schedule: {
@@ -473,7 +473,9 @@ function initClient() {
   const select = document.getElementById('serviceType');
   CLIENT_CONFIG.services.forEach(s => {
     const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
+    const label = `${s.name} (${s.duration}) — ${s.price}`;
+    opt.value = label;
+    opt.textContent = label;
     select.appendChild(opt);
   });
 
