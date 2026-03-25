@@ -270,6 +270,21 @@
       padding: 24px 28px 32px;
     }
 
+    .view-container {
+      display: none;
+    }
+    .view-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
     /* ── STATS ROW ── */
     .stats-row {
       display: grid;
@@ -859,57 +874,79 @@
     <!-- SCROLL AREA -->
     <div class="scroll-area">
 
-      <!-- STATS ROW -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-number">3</div>
-          <div class="stat-label">Hoy</div>
+      <!-- VISTA: CALENDARIO -->
+      <div id="view-calendario" class="view-container active fade-in">
+        <!-- STATS ROW -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">3</div>
+            <div class="stat-label">Hoy</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-number">11</div>
+            <div class="stat-label">Esta semana</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-number">2</div>
+            <div class="stat-label">Pendientes confirmación</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-number">38</div>
+            <div class="stat-label">Este mes</div>
+          </div>
         </div>
-        <div class="stat-card blue">
-          <div class="stat-number">11</div>
-          <div class="stat-label">Esta semana</div>
-        </div>
-        <div class="stat-card orange">
-          <div class="stat-number">2</div>
-          <div class="stat-label">Pendientes confirmación</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-number">38</div>
-          <div class="stat-label">Este mes</div>
-        </div>
-      </div>
 
-      <!-- TWO COLUMN -->
-      <div class="two-col">
-        <!-- CALENDAR -->
-        <div class="calendar-card">
-          <div class="calendar-header">
-            <div class="calendar-title" id="calTitle">marzo 2026</div>
-            <div class="cal-nav-group">
-              <button class="cal-nav-btn" onclick="prevMonth()" title="Mes anterior">‹</button>
-              <button class="cal-nav-btn" onclick="nextMonth()" title="Mes siguiente">›</button>
+        <!-- TWO COLUMN -->
+        <div class="two-col">
+          <!-- CALENDAR -->
+          <div class="calendar-card">
+            <div class="calendar-header">
+              <div class="calendar-title" id="calTitle">marzo 2026</div>
+              <div class="cal-nav-group">
+                <button class="cal-nav-btn" onclick="prevMonth()" title="Mes anterior">‹</button>
+                <button class="cal-nav-btn" onclick="nextMonth()" title="Mes siguiente">›</button>
+              </div>
             </div>
+            <div class="calendar-grid" id="calGrid"></div>
           </div>
-          <div class="calendar-grid" id="calGrid"></div>
+
+          <!-- DAY PANEL -->
+          <div class="day-panel">
+            <div class="day-panel-header">
+              <div class="day-panel-title" id="dayPanelTitle">Martes 25 de marzo</div>
+              <div class="day-panel-count" id="dayPanelCount">3 citas</div>
+            </div>
+            <div class="day-panel-body" id="dayPanelBody"></div>
+            <button class="new-appt-btn" onclick="showToast('Nueva cita — función próximamente', 'success')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Nueva cita
+            </button>
+          </div>
         </div>
 
-        <!-- DAY PANEL -->
-        <div class="day-panel">
-          <div class="day-panel-header">
-            <div class="day-panel-title" id="dayPanelTitle">Martes 25 de marzo</div>
-            <div class="day-panel-count" id="dayPanelCount">3 citas</div>
+        <!-- UPCOMING MINI (opcional, lo dejamos para que el calendario tenga info rápida) -->
+        <div>
+          <div class="section-title">Resumen de hoy</div>
+          <div class="upcoming-card">
+            <table class="upcoming-table">
+              <thead>
+                <tr>
+                  <th>Paciente</th>
+                  <th>Hora</th>
+                  <th>Servicio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="upcomingMiniBody"></tbody>
+            </table>
           </div>
-          <div class="day-panel-body" id="dayPanelBody"></div>
-          <button class="new-appt-btn" onclick="showToast('Nueva cita — función próximamente', 'success')">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            Nueva cita
-          </button>
         </div>
       </div>
 
-      <!-- UPCOMING -->
-      <div>
-        <div class="section-title">Próximas citas</div>
+      <!-- VISTA: PRÓXIMAS CITAS -->
+      <div id="view-proximas" class="view-container fade-in">
+        <div class="section-title">Todas las próximas citas</div>
         <div class="upcoming-card">
           <table class="upcoming-table">
             <thead>
@@ -921,8 +958,156 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody id="upcomingBody"></tbody>
+            <tbody id="upcomingFullBody"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- VISTA: ESTADÍSTICAS -->
+      <div id="view-estadisticas" class="view-container fade-in">
+        <div class="section-title">Estadísticas de rendimiento</div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">92%</div>
+            <div class="stat-label">Tasa de conversión</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-number">14h</div>
+            <div class="stat-label">Tiempo ahorrado/mes</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-number">24</div>
+            <div class="stat-label">Nuevos pacientes (IA)</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-number">4.8</div>
+            <div class="stat-label">Valoración media</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="calendar-card">
+            <div class="section-title" style="font-size:14px;">Citas por canal</div>
+            <div style="margin-top:20px; display:grid; gap:16px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                  <span>WhatsApp Business</span>
+                  <span>75%</span>
+                </div>
+                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; width:75%; background:var(--green);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                  <span>Telegram Bot</span>
+                  <span>15%</span>
+                </div>
+                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; width:15%; background:var(--blue);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                  <span>Enlace Directo / Web</span>
+                  <span>10%</span>
+                </div>
+                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; width:10%; background:var(--orange);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calendar-card">
+            <div class="section-title" style="font-size:14px;">Distribución de servicios</div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+               <div style="display:flex; align-items:center; gap:10px;">
+                 <div style="width:12px; height:12px; border-radius:3px; background:var(--green);"></div>
+                 <span style="font-size:13px; flex:1;">Fisioterapia</span>
+                 <span style="font-size:13px; font-weight:600;">45%</span>
+               </div>
+               <div style="display:flex; align-items:center; gap:10px;">
+                 <div style="width:12px; height:12px; border-radius:3px; background:var(--blue);"></div>
+                 <span style="font-size:13px; flex:1;">Psicología</span>
+                 <span style="font-size:13px; font-weight:600;">25%</span>
+               </div>
+               <div style="display:flex; align-items:center; gap:10px;">
+                 <div style="width:12px; height:12px; border-radius:3px; background:var(--orange);"></div>
+                 <span style="font-size:13px; flex:1;">Masaje</span>
+                 <span style="font-size:13px; font-weight:600;">20%</span>
+               </div>
+               <div style="display:flex; align-items:center; gap:10px;">
+                 <div style="width:12px; height:12px; border-radius:3px; background:var(--purple);"></div>
+                 <span style="font-size:13px; flex:1;">Otros</span>
+                 <span style="font-size:13px; font-weight:600;">10%</span>
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA: CONFIGURACIÓN -->
+      <div id="view-configuracion" class="view-container fade-in">
+        <div class="section-title">Configuración de la cuenta</div>
+        <div class="two-col">
+          <div class="calendar-card">
+            <div class="section-title" style="font-size:14px;">Información de la Clínica</div>
+            <div style="display: grid; gap: 16px; margin-top:15px;">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Nombre Comercial</label>
+                <input type="text" value="Clínica Dr. García" style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Dirección</label>
+                <input type="text" value="Calle de Colón, 12, 46004 Valencia" style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Teléfono de contacto</label>
+                <input type="tel" value="+34 960 000 000" style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="calendar-card">
+            <div class="section-title" style="font-size:14px;">Parámetros del Agente IA</div>
+            <div style="display: grid; gap: 16px; margin-top:15px;">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Tono de voz</label>
+                <select style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px;">
+                  <option selected>Cercano y profesional</option>
+                  <option>Formal y clínico</option>
+                  <option>Relajado y casual</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Mensaje de bienvenida IA</label>
+                <textarea style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; height:80px; resize:none;">¡Hola! Soy el asistente de la clínica Dr. García 👋 ¿En qué puedo ayudarte hoy?</textarea>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" checked id="conf-triaje" style="accent-color:var(--green);">
+                <label for="conf-triaje" style="font-size:13px;">Activar triaje automático</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calendar-card" style="margin-top:20px;">
+           <div class="section-title" style="font-size:14px;">Notificaciones</div>
+           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:15px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" checked id="notif-wa" style="accent-color:var(--green);">
+                <label for="notif-wa" style="font-size:13px;">WhatsApp (Nuevas citas)</label>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="notif-email" style="accent-color:var(--green);">
+                <label for="notif-email" style="font-size:13px;">Email (Resumen diario)</label>
+              </div>
+           </div>
+        </div>
+
+        <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+          <button class="new-appt-btn" style="width: auto; padding: 12px 32px; margin: 0;" onclick="showToast('Cambios guardados correctamente', 'success')">Guardar configuración</button>
         </div>
       </div>
 
@@ -1174,33 +1359,73 @@ function renderUpcoming() {
     return a.time.localeCompare(b.time);
   });
 
-  const next5 = allAppts.slice(0, 5);
-  const tbody = document.getElementById('upcomingBody');
-  let html = '';
+  // Render Mini Table (Today)
+  const todayKey = dateKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+  const todayAppts = APPOINTMENTS[todayKey] || [];
+  const miniTbody = document.getElementById('upcomingMiniBody');
+  let miniHtml = '';
 
-  next5.forEach(a => {
-    const sc = serviceClass(a.service);
-    const statusCls = a.status === 'confirmed' ? 'confirmed' : 'pending';
-    const statusTxt = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
-    const dateStr = `${a.day} ${MONTHS_ES[a.month].slice(0,3)}. · ${a.time}`;
-    html += `<tr>
-      <td class="td-patient">${a.name}</td>
-      <td class="td-datetime">${dateStr}</td>
-      <td><span class="badge ${sc}">${a.service}</span></td>
-      <td><span class="status-badge ${statusCls}">${statusTxt}</span></td>
-      <td class="td-actions">
-        <button onclick="showToast('Ver detalle — próximamente', 'success')">Ver</button>
-      </td>
-    </tr>`;
-  });
+  if (todayAppts.length === 0) {
+    miniHtml = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No hay citas para hoy</td></tr>';
+  } else {
+    todayAppts.forEach(a => {
+      const sc = serviceClass(a.service);
+      const statusCls = a.status === 'confirmed' ? 'confirmed' : 'pending';
+      const statusTxt = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
+      miniHtml += `<tr>
+        <td class="td-patient">${a.name}</td>
+        <td class="td-datetime">${a.time}</td>
+        <td><span class="badge ${sc}">${a.service}</span></td>
+        <td><span class="status-badge ${statusCls}">${statusTxt}</span></td>
+        <td class="td-actions">
+          <button onclick="showToast('Ver detalle — próximamente', 'success')">Ver</button>
+        </td>
+      </tr>`;
+    });
+  }
+  miniTbody.innerHTML = miniHtml;
 
-  tbody.innerHTML = html;
+  // Render Full Table (Upcoming)
+  const fullTbody = document.getElementById('upcomingFullBody');
+  let fullHtml = '';
+
+  if (allAppts.length === 0) {
+    fullHtml = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No hay próximas citas</td></tr>';
+  } else {
+    allAppts.forEach(a => {
+      const sc = serviceClass(a.service);
+      const statusCls = a.status === 'confirmed' ? 'confirmed' : 'pending';
+      const statusTxt = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
+      const dateStr = `${a.day} ${MONTHS_ES[a.month].slice(0,3)}. · ${a.time}`;
+      fullHtml += `<tr>
+        <td class="td-patient">${a.name}</td>
+        <td class="td-datetime">${dateStr}</td>
+        <td><span class="badge ${sc}">${a.service}</span></td>
+        <td><span class="status-badge ${statusCls}">${statusTxt}</span></td>
+        <td class="td-actions">
+          <button onclick="showToast('Ver detalle — próximamente', 'success')">Ver</button>
+        </td>
+      </tr>`;
+    });
+  }
+  fullTbody.innerHTML = fullHtml;
 }
 
 // ── NAV ───────────────────────────────────────────────────────────────────────
 function setActive(el) {
+  const viewId = el.getAttribute('data-view');
+
+  // Update sidebar
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   el.classList.add('active');
+
+  // Update views
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+  const targetView = document.getElementById('view-' + viewId);
+  if (targetView) {
+    targetView.classList.add('active');
+  }
+
   if (window.innerWidth <= 768) closeSidebar();
 }
 
