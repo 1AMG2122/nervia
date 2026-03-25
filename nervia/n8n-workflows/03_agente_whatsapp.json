@@ -1,0 +1,214 @@
+{
+  "name": "Nervia — Agente WhatsApp Business",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "notes": "Configura esta URL en Meta Business Manager → WhatsApp → Webhooks"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK"
+      },
+      "name": "Respuesta Inmediata 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [460, 160],
+      "notes": "WhatsApp requiere respuesta 200 inmediata"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nif (body?.hub?.challenge) {\n  return [{ json: { isVerification: true, challenge: body.hub.challenge } }];\n}\n\nconst entry   = body?.entry?.[0];\nconst change  = entry?.changes?.[0];\nconst message = change?.value?.messages?.[0];\nconst contact = change?.value?.contacts?.[0];\n\nif (!message) return [{ json: { skip: true } }];\n\nconst phoneFrom   = message.from;\nconst messageText = message?.text?.body || message?.button?.text || '';\nconst displayName = contact?.profile?.name || 'Paciente';\n\n// ─── CONFIGURA ESTE VALOR POR CLIENTE ───────────────────────────────────────\nconst CLIENTE_ID = 1;  // ID del cliente en la tabla `clientes` de la DB\n// ─────────────────────────────────────────────────────────────────────────────\n\nconst esc = s => String(s || '').replace(/'/g, \"''\").substring(0, 1000);\n\nreturn [{\n  json: {\n    phoneFrom,\n    messageText,\n    messageType: message.type,\n    displayName,\n    timestamp: message.timestamp,\n    skip: false,\n    clienteId: CLIENTE_ID,\n    canalId: phoneFrom.replace(/[^0-9]/g, ''),\n    textEsc: esc(messageText),\n    nameEsc: esc(displayName)\n  }\n}];"
+      },
+      "name": "Parsear Mensaje WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "¿Mensaje válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO conversaciones (cliente_id, canal, canal_id, iniciada_en, ultima_actividad)\nSELECT {{ $json.clienteId }}, 'whatsapp', '{{ $json.canalId }}', NOW(), NOW()\nWHERE NOT EXISTS (\n  SELECT 1 FROM conversaciones\n  WHERE cliente_id = {{ $json.clienteId }}\n    AND canal = 'whatsapp'\n    AND canal_id = '{{ $json.canalId }}'\n    AND estado = 'activa'\n    AND ultima_actividad > DATE_SUB(NOW(), INTERVAL 1 HOUR)\n)",
+        "options": {}
+      },
+      "name": "DB — Crear Conv si no existe",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [900, 400],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT id AS conv_id\nFROM conversaciones\nWHERE cliente_id = {{ $('Parsear Mensaje WhatsApp').item.json.clienteId }}\n  AND canal = 'whatsapp'\n  AND canal_id = '{{ $('Parsear Mensaje WhatsApp').item.json.canalId }}'\n  AND estado = 'activa'\nORDER BY ultima_actividad DESC\nLIMIT 1",
+        "options": {}
+      },
+      "name": "DB — Obtener Conv ID",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1100, 400],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Eres el asistente virtual de [NOMBRE_PROFESIONAL], [ESPECIALIDAD] con consulta en [CIUDAD].\n\nEstás respondiendo en WhatsApp. Sé conciso (máx 100 palabras por mensaje).\n\nTu misión:\n1. Dar la bienvenida y entender qué necesita el paciente\n2. Hacer triaje básico si quiere cita (máx 2-3 preguntas)\n3. Para reservar cita SIEMPRE enviar: [URL_BOOKING]\n4. Responder preguntas sobre horarios, ubicación, servicios\n\nINFO CONSULTA:\n- Profesional: [NOMBRE_PROFESIONAL]\n- Especialidad: [ESPECIALIDAD]\n- Dirección: [DIRECCIÓN]\n- Horario: [HORARIO]\n- Servicios principales: [SERVICIOS]\n- Link citas: [URL_BOOKING]\n\nREGLAS:\n- WhatsApp: respuestas cortas y amables\n- Usa emojis ocasionalmente\n- NUNCA diagnósticos médicos\n- Urgencias → 112\n- Idioma del paciente"
+            },
+            {
+              "role": "user",
+              "content": "={{ $('Parsear Mensaje WhatsApp').item.json.messageText }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 300
+        }
+      },
+      "name": "Claude IA — Agente WhatsApp",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1,
+      "position": [1320, 400],
+      "credentials": {
+        "anthropicApi": {
+          "id": "2",
+          "name": "Anthropic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $env.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WHATSAPP_ACCESS_TOKEN }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "messaging_product", "value": "whatsapp" },
+            { "name": "to",   "value": "={{ $('Parsear Mensaje WhatsApp').item.json.phoneFrom }}" },
+            { "name": "type", "value": "text" },
+            { "name": "text", "value": "={ \"body\": \"{{ $json.content[0].text }}\" }" }
+          ]
+        }
+      },
+      "name": "Enviar Respuesta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1540, 400],
+      "notes": "Requiere: WHATSAPP_PHONE_NUMBER_ID y WHATSAPP_ACCESS_TOKEN en env vars de n8n"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO mensajes (conversacion_id, rol, contenido, enviado_en)\nVALUES (\n  {{ $('DB — Obtener Conv ID').item.json.conv_id }},\n  'user',\n  '{{ $('Parsear Mensaje WhatsApp').item.json.textEsc }}',\n  NOW()\n)",
+        "options": {}
+      },
+      "name": "DB — Guardar Msg Usuario",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1760, 400],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO mensajes (conversacion_id, rol, contenido, enviado_en)\nVALUES (\n  {{ $('DB — Obtener Conv ID').item.json.conv_id }},\n  'assistant',\n  '{{ $('Claude IA — Agente WhatsApp').item.json.content[0].text.replace(/'/g, \"''\").substring(0, 2000) }}',\n  NOW()\n)",
+        "options": {}
+      },
+      "name": "DB — Guardar Respuesta IA",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1980, 400],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [[
+        { "node": "Respuesta Inmediata 200",   "type": "main", "index": 0 },
+        { "node": "Parsear Mensaje WhatsApp",  "type": "main", "index": 0 }
+      ]]
+    },
+    "Parsear Mensaje WhatsApp": {
+      "main": [[{ "node": "¿Mensaje válido?", "type": "main", "index": 0 }]]
+    },
+    "¿Mensaje válido?": {
+      "main": [
+        [],
+        [{ "node": "DB — Crear Conv si no existe", "type": "main", "index": 0 }]
+      ]
+    },
+    "DB — Crear Conv si no existe": {
+      "main": [[{ "node": "DB — Obtener Conv ID", "type": "main", "index": 0 }]]
+    },
+    "DB — Obtener Conv ID": {
+      "main": [[{ "node": "Claude IA — Agente WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Claude IA — Agente WhatsApp": {
+      "main": [[{ "node": "Enviar Respuesta WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Enviar Respuesta WhatsApp": {
+      "main": [[{ "node": "DB — Guardar Msg Usuario", "type": "main", "index": 0 }]]
+    },
+    "DB — Guardar Msg Usuario": {
+      "main": [[{ "node": "DB — Guardar Respuesta IA", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

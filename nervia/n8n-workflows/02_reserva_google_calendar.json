@@ -1,0 +1,215 @@
+{
+  "name": "Nervia — Procesar Reserva + Google Calendar + DB",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nervia-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook — Recibir Reserva",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "nervia-booking-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nif (!body.patient?.name || !body.date || !body.time) {\n  throw new Error('Datos de reserva incompletos');\n}\n\nconst [year, month, day] = body.date.split('-').map(Number);\nconst [hour, minute] = body.time.split(':').map(Number);\nconst durationMin = 60;\nconst startDate = new Date(year, month - 1, day, hour, minute);\nconst endDate = new Date(startDate.getTime() + durationMin * 60000);\nconst pad = n => String(n).padStart(2, '0');\nconst formatGCal = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;\nconst esc = s => String(s || '').replace(/'/g, \"''\").substring(0, 200);\n\nconst description = [\n  `Paciente: ${body.patient.name}`,\n  `Teléfono: ${body.patient.phone}`,\n  `Email: ${body.patient.email || 'No proporcionado'}`,\n  `Servicio: ${body.service}`,\n  `Motivo: ${body.reason || 'No especificado'}`,\n  `Paciente nuevo: ${body.patient.newPatient ? 'Sí' : 'No'}`,\n  `---`,\n  `Reservado via Nervia · ${body.timestamp}`\n].join('\\n');\n\nreturn [{\n  json: {\n    ...body,\n    gcal: {\n      summary: `${body.service} — ${body.patient.name}`,\n      description,\n      startDateTime: formatGCal(startDate),\n      endDateTime: formatGCal(endDate),\n      timeZone: 'Europe/Madrid',\n      attendeeEmail: body.patient.email,\n      calendarId: body.calendarId || 'primary'\n    },\n    db: {\n      nombreEsc:    esc(body.patient.name),\n      emailEsc:     esc(body.patient.email),\n      telefonoEsc:  esc(body.patient.phone),\n      servicioEsc:  esc(body.service),\n      razonEsc:     esc(body.reason),\n      clienteId:    body.clienteId || 1,\n      fecha:        body.date,\n      horaInicio:   body.time,\n      horaFin:      `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}:00`,\n      origen:       body.origen || 'web',\n      esNuevo:      body.patient.newPatient ? 1 : 0\n    },\n    isValid: true\n  }\n}];"
+      },
+      "name": "Validar y Preparar Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "calendarId": "={{ $json.gcal.calendarId }}",
+        "start": "={{ $json.gcal.startDateTime }}",
+        "end": "={{ $json.gcal.endDateTime }}",
+        "additionalFields": {
+          "summary": "={{ $json.gcal.summary }}",
+          "description": "={{ $json.gcal.description }}",
+          "attendees": "={{ $json.patient.email ? [{ email: $json.patient.email }] : [] }}",
+          "reminders": {
+            "useDefault": false,
+            "overrides": [
+              { "method": "email", "minutes": 1440 },
+              { "method": "popup", "minutes": 60 }
+            ]
+          },
+          "colorId": "2",
+          "timeZone": "Europe/Madrid"
+        }
+      },
+      "name": "Crear Evento Google Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "3",
+          "name": "Google Calendar — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO pacientes\n  (cliente_id, nombre, email, telefono, canal_contacto, consentimiento_rgpd, fecha_consentimiento, fecha_creacion)\nVALUES\n  ({{ $('Validar y Preparar Datos').item.json.db.clienteId }},\n   '{{ $('Validar y Preparar Datos').item.json.db.nombreEsc }}',\n   NULLIF('{{ $('Validar y Preparar Datos').item.json.db.emailEsc }}', ''),\n   NULLIF('{{ $('Validar y Preparar Datos').item.json.db.telefonoEsc }}', ''),\n   '{{ $('Validar y Preparar Datos').item.json.db.origen }}',\n   1, NOW(), NOW())\nON DUPLICATE KEY UPDATE\n  nombre        = VALUES(nombre),\n  email         = COALESCE(VALUES(email), email),\n  canal_contacto = VALUES(canal_contacto)",
+        "options": {}
+      },
+      "name": "DB — Upsert Paciente",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      },
+      "notes": "Requiere UNIQUE KEY en pacientes(cliente_id, telefono) — ver schema"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT id AS paciente_id\nFROM pacientes\nWHERE cliente_id = {{ $('Validar y Preparar Datos').item.json.db.clienteId }}\n  AND telefono = '{{ $('Validar y Preparar Datos').item.json.db.telefonoEsc }}'\nORDER BY fecha_creacion DESC\nLIMIT 1",
+        "options": {}
+      },
+      "name": "DB — Obtener Paciente ID",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1100, 300],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO citas\n  (cliente_id, paciente_id, fecha, hora_inicio, hora_fin,\n   estado, origen, gcal_event_id, notas, creado_en)\nVALUES\n  ({{ $('Validar y Preparar Datos').item.json.db.clienteId }},\n   {{ $json.paciente_id }},\n   '{{ $('Validar y Preparar Datos').item.json.db.fecha }}',\n   '{{ $('Validar y Preparar Datos').item.json.db.horaInicio }}',\n   '{{ $('Validar y Preparar Datos').item.json.db.horaFin }}',\n   'confirmada',\n   '{{ $('Validar y Preparar Datos').item.json.db.origen }}',\n   '{{ $('Crear Evento Google Calendar').item.json.id }}',\n   '{{ $('Validar y Preparar Datos').item.json.db.razonEsc }}',\n   NOW())",
+        "options": {}
+      },
+      "name": "DB — Insertar Cita",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1300, 300],
+      "credentials": {
+        "mySql": {
+          "id": "10",
+          "name": "MariaDB — Nervia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const booking = $('Validar y Preparar Datos').item.json;\nconst event = $('Crear Evento Google Calendar').item.json;\n\nconst fechaFormateada = new Date(booking.date + 'T00:00:00').toLocaleDateString('es-ES', {\n  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'\n});\n\nconst msgProfesional = `✅ *Nueva cita confirmada*\\n\\n👤 *Paciente:* ${booking.patient.name}\\n📱 *Teléfono:* ${booking.patient.phone}\\n📧 *Email:* ${booking.patient.email || '—'}\\n\\n📅 *Fecha:* ${fechaFormateada}\\n🕐 *Hora:* ${booking.time}\\n📋 *Servicio:* ${booking.service}\\n📝 *Motivo:* ${booking.reason || 'No especificado'}\\n\\n${booking.patient.newPatient ? '🆕 Paciente nuevo' : '🔄 Paciente habitual'}\\n\\n_Evento añadido a Google Calendar y guardado en base de datos._`;\n\nconst msgPaciente = `✅ *¡Tu cita está confirmada!*\\n\\n📅 ${fechaFormateada}\\n🕐 ${booking.time}\\n📋 ${booking.service}\\n\\n_Recibirás un recordatorio 24h antes. Si necesitas cancelar, responde a este mensaje._`;\n\nreturn [{\n  json: { ...booking, msgProfesional, msgPaciente, eventId: event.id, eventLink: event.htmlLink }\n}];"
+      },
+      "name": "Preparar Notificaciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1520, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Validar y Preparar Datos').item.json.professionalTelegramId || 'TU_CHAT_ID_PROFESIONAL' }}",
+        "text": "={{ $json.msgProfesional }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "name": "Notificar al Profesional",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1740, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot — Nervia Cliente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.patient.phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "¿Tiene teléfono?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1740, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.patient.phone }}",
+        "text": "={{ $json.msgPaciente }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "name": "Confirmar al Paciente (Telegram)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1960, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot — Nervia Cliente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"eventId\": \"{{ $('Crear Evento Google Calendar').item.json.id }}\", \"message\": \"Cita confirmada, guardada en DB y añadida al calendario\" }"
+      },
+      "name": "Respuesta HTTP 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2180, 300]
+    }
+  ],
+  "connections": {
+    "Webhook — Recibir Reserva": {
+      "main": [[{ "node": "Validar y Preparar Datos", "type": "main", "index": 0 }]]
+    },
+    "Validar y Preparar Datos": {
+      "main": [[{ "node": "Crear Evento Google Calendar", "type": "main", "index": 0 }]]
+    },
+    "Crear Evento Google Calendar": {
+      "main": [[{ "node": "DB — Upsert Paciente", "type": "main", "index": 0 }]]
+    },
+    "DB — Upsert Paciente": {
+      "main": [[{ "node": "DB — Obtener Paciente ID", "type": "main", "index": 0 }]]
+    },
+    "DB — Obtener Paciente ID": {
+      "main": [[{ "node": "DB — Insertar Cita", "type": "main", "index": 0 }]]
+    },
+    "DB — Insertar Cita": {
+      "main": [[{ "node": "Preparar Notificaciones", "type": "main", "index": 0 }]]
+    },
+    "Preparar Notificaciones": {
+      "main": [[
+        { "node": "Notificar al Profesional", "type": "main", "index": 0 },
+        { "node": "¿Tiene teléfono?", "type": "main", "index": 0 }
+      ]]
+    },
+    "¿Tiene teléfono?": {
+      "main": [
+        [{ "node": "Confirmar al Paciente (Telegram)", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Confirmar al Paciente (Telegram)": {
+      "main": [[{ "node": "Respuesta HTTP 200", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

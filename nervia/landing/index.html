@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nervia — Agente IA para tu consulta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #04080f;
+      --bg2:    #080d1a;
+      --bg3:    #0c1220;
+      --y:      #25d366;
+      --y-dim:  rgba(37,211,102,0.10);
+      --y-glow: rgba(37,211,102,0.32);
+      --y-soft: rgba(37,211,102,0.06);
+      --text:   #e2e8f0;
+      --muted:  #64748b;
+      --border: rgba(255,255,255,0.06);
+      --glass:  rgba(255,255,255,0.025);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--y); border-radius: 3px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 3rem;
+      background: rgba(4,8,15,0.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.3s;
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; }
+    .nav-logo img { height: 38px; width: auto; display: block; mix-blend-mode: screen; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.86rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--y); }
+    .nav-cta {
+      background: transparent; border: 1px solid var(--y); color: var(--y);
+      padding: 0.5rem 1.3rem; border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.86rem;
+      cursor: pointer; text-decoration: none; transition: all 0.25s;
+      box-shadow: 0 0 10px rgba(37,211,102,0.08);
+    }
+    .nav-cta:hover { background: var(--y); color: var(--bg); box-shadow: 0 0 22px var(--y-glow); }
+    .nav-cliente {
+      background: rgba(37,211,102,0.08);
+      border-color: rgba(37,211,102,0.35);
+      color: rgba(37,211,102,0.75);
+      display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .nav-cliente:hover { background: rgba(37,211,102,0.18); border-color: var(--y); color: var(--y); box-shadow: none; }
+    .nav-cliente svg { opacity: 0.8; }
+
+    /* ── CANVAS ── */
+    #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.45; pointer-events: none; }
+
+    /* ── ORB ── */
+    .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(90px); }
+    .orb-1 { width: 380px; height: 380px; background: rgba(37,211,102,0.04); top: 8%; left: -80px; }
+    .orb-2 { width: 460px; height: 460px; background: rgba(37,211,102,0.03); bottom: 5%; right: -120px; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 3rem;
+      padding: 8rem 3rem 4rem; max-width: 1280px; margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+    .hero-left { display: flex; flex-direction: column; gap: 1.5rem; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.6rem; width: fit-content;
+      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.25);
+      padding: 0.4rem 1rem; border-radius: 4px;
+      font-family: 'Space Mono', monospace; font-size: 0.7rem;
+      color: var(--y); letter-spacing: 0.1em;
+      animation: fadeUp 0.6s ease both;
+    }
+    .badge-pulse {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--y); box-shadow: 0 0 8px var(--y);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.75)} }
+    .hero h1 {
+      font-weight: 700; font-size: clamp(2.2rem, 4vw, 3.4rem);
+      line-height: 1.1; letter-spacing: -0.02em;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .hero h1 .y {
+      color: var(--y); text-shadow: 0 0 24px rgba(245,197,24,0.4);
+    }
+    .hero-sub {
+      font-size: 1rem; color: var(--muted); max-width: 470px;
+      line-height: 1.75; animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.3s ease both; }
+    .btn-primary {
+      background: var(--y); color: var(--bg); border: none; cursor: pointer;
+      padding: 0.82rem 1.8rem; border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem;
+      text-decoration: none; transition: all 0.25s;
+      box-shadow: 0 0 20px rgba(245,197,24,0.25);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 38px var(--y-glow); }
+    .btn-secondary {
+      background: var(--glass); border: 1px solid var(--border); color: var(--text);
+      cursor: pointer; padding: 0.82rem 1.8rem; border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 500; font-size: 0.95rem;
+      text-decoration: none; transition: all 0.25s; backdrop-filter: blur(8px);
+    }
+    .btn-secondary:hover { border-color: var(--y); color: var(--y); }
+    .hero-trust { display: flex; gap: 1.5rem; align-items: center; animation: fadeUp 0.6s 0.4s ease both; flex-wrap: wrap; }
+    .trust-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--muted); }
+    .trust-dot { color: var(--y); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── WHATSAPP PHONE MOCKUP ── */
+    .hero-right { animation: fadeUp 0.7s 0.2s ease both; display: flex; justify-content: center; }
+    .phone-frame {
+      width: 320px;
+      background: #1a1a2e;
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 0 60px rgba(245,197,24,0.06),
+        0 40px 80px rgba(0,0,0,0.7);
+      position: relative;
+    }
+    .phone-notch {
+      width: 90px; height: 22px;
+      background: #1a1a2e;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto 0;
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .notch-cam {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #111; border: 1.5px solid #333;
+    }
+    .notch-speaker {
+      width: 40px; height: 5px; border-radius: 3px; background: #222;
+    }
+    .phone-screen {
+      background: #0b141a;
+      border-radius: 34px;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Status bar */
+    .wa-statusbar {
+      background: #1f2c34;
+      padding: 6px 16px 4px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .wa-statusbar-time { font-size: 11px; font-weight: 600; color: #fff; font-family: -apple-system, sans-serif; }
+    .wa-statusbar-icons { display: flex; gap: 4px; align-items: center; }
+    .wa-statusbar-icons svg { width: 13px; height: 13px; fill: #fff; }
+    /* WA Header */
+    .wa-header {
+      background: #1f2c34;
+      padding: 8px 12px 10px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .wa-back { color: #25d366; font-size: 18px; font-weight: 300; line-height: 1; }
+    .wa-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .wa-contact { flex: 1; }
+    .wa-name { font-size: 13px; font-weight: 600; color: #e9edef; line-height: 1.2; font-family: -apple-system, sans-serif; }
+    .wa-online { font-size: 10px; color: #8696a0; font-family: -apple-system, sans-serif; }
+    .wa-header-icons { display: flex; gap: 14px; }
+    .wa-header-icons span { color: #8696a0; font-size: 15px; cursor: pointer; }
+    /* WA Background */
+    .wa-body {
+      background-color: #0b141a;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.02)'/%3E%3C/svg%3E");
+      padding: 10px 10px 4px;
+      min-height: 340px; max-height: 340px;
+      overflow-y: auto;
+      display: flex; flex-direction: column; gap: 2px;
+      scroll-behavior: smooth;
+    }
+    .wa-body::-webkit-scrollbar { width: 3px; }
+    .wa-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+    .wa-date-badge {
+      text-align: center; margin: 6px 0;
+    }
+    .wa-date-badge span {
+      background: rgba(17,27,33,0.9); color: #8696a0;
+      font-size: 10px; padding: 3px 9px; border-radius: 7px;
+      font-family: -apple-system, sans-serif;
+    }
+    /* Messages */
+    .wa-msg { display: flex; margin-bottom: 2px; }
+    .wa-msg.recv { justify-content: flex-start; }
+    .wa-msg.sent { justify-content: flex-end; }
+    .wa-bubble {
+      max-width: 82%;
+      padding: 6px 8px 18px;
+      border-radius: 8px;
+      font-size: 12.5px; line-height: 1.4;
+      position: relative;
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+    }
+    .wa-msg.recv .wa-bubble {
+      background: #1f2c34; color: #e9edef;
+      border-top-left-radius: 2px;
+    }
+    .wa-msg.sent .wa-bubble {
+      background: #005c4b; color: #e9edef;
+      border-top-right-radius: 2px;
+    }
+    .wa-time {
+      position: absolute; bottom: 4px; right: 8px;
+      font-size: 9.5px; color: rgba(255,255,255,0.45);
+      font-family: -apple-system, sans-serif;
+      display: flex; align-items: center; gap: 2px;
+    }
+    .wa-msg.sent .wa-time { color: rgba(255,255,255,0.5); }
+    .wa-ticks { color: #53bdeb; font-size: 10px; }
+    /* Tail */
+    .wa-msg.recv .wa-bubble::before {
+      content: '';
+      position: absolute; top: 0; left: -7px;
+      border: 7px solid transparent;
+      border-top-color: #1f2c34; border-right-color: #1f2c34;
+      border-top-right-radius: 2px;
+    }
+    .wa-msg.sent .wa-bubble::before {
+      content: '';
+      position: absolute; top: 0; right: -7px;
+      border: 7px solid transparent;
+      border-top-color: #005c4b; border-left-color: #005c4b;
+      border-top-left-radius: 2px;
+    }
+    /* Typing */
+    .wa-typing-bubble {
+      background: #1f2c34; border-radius: 8px; border-top-left-radius: 2px;
+      padding: 10px 14px;
+      display: flex; gap: 4px; align-items: center;
+    }
+    .wa-typing-bubble span {
+      width: 6px; height: 6px; border-radius: 50%; background: #8696a0;
+      animation: waDot 1.2s ease infinite;
+    }
+    .wa-typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .wa-typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes waDot { 0%,60%,100%{transform:scale(0.7);opacity:0.4} 30%{transform:scale(1.1);opacity:1} }
+    /* WA Input */
+    .wa-input-bar {
+      background: #1f2c34;
+      padding: 8px 10px;
+      display: flex; align-items: center; gap: 8px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .wa-input {
+      flex: 1; background: #2a3942; border: none; outline: none;
+      border-radius: 22px; padding: 8px 12px;
+      color: #e9edef; font-size: 12px; font-family: -apple-system, sans-serif;
+    }
+    .wa-input::placeholder { color: #8696a0; }
+    .wa-send-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #25d366; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .wa-send-btn svg { width: 16px; height: 16px; fill: #fff; }
+    /* Preset questions */
+    .wa-presets {
+      padding: 8px 10px 10px;
+      background: #0b141a;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .wa-preset-label { font-size: 9px; color: #8696a0; margin-bottom: 5px; letter-spacing: 0.05em; font-family: -apple-system, sans-serif; text-align: center; }
+    .wa-preset-btns { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .wa-preset-btn {
+      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.25);
+      color: #25d366; font-size: 10px; padding: 4px 9px;
+      border-radius: 14px; cursor: pointer; transition: all 0.2s;
+      font-family: -apple-system, sans-serif;
+    }
+    .wa-preset-btn:hover { background: rgba(37,211,102,0.2); }
+    .wa-preset-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    /* Phone side buttons */
+    .phone-btn-right {
+      position: absolute; right: -3px; top: 100px;
+      width: 3px; height: 50px; background: #2a2a3e; border-radius: 0 3px 3px 0;
+    }
+    .phone-btn-left1 {
+      position: absolute; left: -3px; top: 80px;
+      width: 3px; height: 30px; background: #2a2a3e; border-radius: 3px 0 0 3px;
+    }
+    .phone-btn-left2 {
+      position: absolute; left: -3px; top: 125px;
+      width: 3px; height: 50px; background: #2a2a3e; border-radius: 3px 0 0 3px;
+    }
+
+    /* ── STATS ── */
+    .stats-bar {
+      position: relative; z-index: 1;
+      background: var(--bg2);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 2.5rem 3rem;
+      display: flex; justify-content: center; gap: 5rem; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Space Mono', monospace; font-weight: 700; font-size: 2rem;
+      color: var(--y); text-shadow: 0 0 20px rgba(245,197,24,0.3);
+    }
+    .stat-label { font-size: 0.76rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 6rem 3rem; max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'Space Mono', monospace; font-size: 0.68rem;
+      color: var(--y); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.2rem;
+    }
+    .section-tag::before { content: ''; display: inline-block; width: 18px; height: 1px; background: var(--y); }
+    h2 { font-weight: 700; font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1.15; letter-spacing: -0.02em; max-width: 680px; }
+
+    /* ── CARDS ── */
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
+    .problem-card {
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .problem-card::after {
+      content: ''; position: absolute; inset: 0; border-radius: 12px;
+      background: linear-gradient(135deg, var(--y-soft), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .problem-card:hover { border-color: rgba(245,197,24,0.22); transform: translateY(-4px); }
+    .problem-card:hover::after { opacity: 1; }
+    .card-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 0.8rem; }
+    .card-points { list-style: none; }
+    .card-points li { font-size: 0.82rem; color: var(--muted); padding: 0.28rem 0 0.28rem 1rem; position: relative; }
+    .card-points li::before { content: '›'; position: absolute; left: 0; color: var(--y); font-size: 1rem; top: 0.18rem; }
+    .problem-full {
+      grid-column: 1/-1;
+      background: var(--y-soft); border: 1px solid rgba(245,197,24,0.1);
+      border-radius: 12px; padding: 2rem; text-align: center;
+    }
+    .problem-full p { color: var(--muted); font-size: 0.93rem; line-height: 1.8; }
+    .problem-full strong { color: var(--y); }
+
+    .solution-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 3rem; }
+    .sol-card {
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem; text-align: center; transition: all 0.3s;
+    }
+    .sol-card:hover { border-color: rgba(245,197,24,0.28); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 28px rgba(245,197,24,0.05); }
+    .sol-icon {
+      width: 56px; height: 56px; border-radius: 12px;
+      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin: 0 auto 1.1rem;
+    }
+    .sol-title { font-weight: 600; font-size: 0.93rem; margin-bottom: 0.5rem; }
+    .sol-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── STEPS ── */
+    .steps-track { position: relative; margin-top: 3.5rem; }
+    .steps-line {
+      position: absolute; top: 26px; left: 5%; right: 5%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--y) 30%, var(--y) 70%, transparent);
+      opacity: 0.25;
+    }
+    .steps-row { display: flex; align-items: flex-start; position: relative; z-index: 1; }
+    .step-item { flex: 1; text-align: center; padding: 0 0.4rem; }
+    .step-num {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--bg2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-family: 'Space Mono', monospace; font-weight: 700; font-size: 0.85rem; color: var(--muted);
+      transition: all 0.3s;
+    }
+    .step-item:hover .step-num { border-color: var(--y); color: var(--y); box-shadow: 0 0 14px var(--y-glow); }
+    .step-item.active .step-num { border-color: var(--y); color: var(--bg); background: var(--y); box-shadow: 0 0 22px var(--y-glow); }
+    .step-title { font-weight: 600; font-size: 0.8rem; margin-bottom: 0.25rem; }
+    .step-desc { font-size: 0.73rem; color: var(--muted); line-height: 1.5; }
+    .step-tag { font-size: 0.64rem; color: var(--y); margin-top: 0.3rem; font-family: 'Space Mono', monospace; }
+
+    /* ── COMPARE ── */
+    .compare-table {
+      width: 100%; border-collapse: collapse; margin-top: 3rem;
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .compare-table th {
+      padding: 1.1rem 1.3rem; font-weight: 600; font-size: 0.8rem;
+      letter-spacing: 0.05em; background: var(--bg2); border-bottom: 1px solid var(--border);
+    }
+    .compare-table th:first-child { text-align: left; }
+    .compare-table th:last-child { color: var(--y); }
+    .compare-table td { padding: 0.85rem 1.3rem; font-size: 0.82rem; border-top: 1px solid var(--border); text-align: center; }
+    .compare-table td:first-child { text-align: left; font-weight: 500; background: var(--glass); }
+    .compare-table td:nth-child(2), .compare-table td:nth-child(3) { color: var(--muted); }
+    .compare-table td:last-child { color: var(--y); font-weight: 600; }
+    .compare-table tr:hover td { background: var(--y-soft); }
+
+    /* ── PRICING ── */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; max-width: 860px; margin-left: auto; margin-right: auto; }
+    .pricing-card {
+      border-radius: 16px; padding: 2.5rem; position: relative; overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .pricing-card:hover { transform: translateY(-6px); }
+    .pricing-card.base { background: var(--glass); border: 1px solid rgba(245,197,24,0.18); backdrop-filter: blur(12px); }
+    .pricing-card.pro { background: var(--y-soft); border: 1px solid rgba(245,197,24,0.32); box-shadow: 0 0 40px rgba(245,197,24,0.06); }
+    .pricing-card.pro:hover { box-shadow: 0 0 60px rgba(245,197,24,0.14), 0 24px 48px rgba(0,0,0,0.4); }
+    .plan-badge {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      background: var(--y); color: var(--bg);
+      font-size: 0.58rem; font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      padding: 0.2rem 0.6rem; border-radius: 4px; letter-spacing: 0.08em;
+    }
+    .plan-icon { font-size: 2rem; margin-bottom: 0.9rem; }
+    .plan-name { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1rem; color: var(--y); margin-bottom: 0.25rem; }
+    .plan-channel { font-size: 0.76rem; color: var(--muted); margin-bottom: 1.4rem; }
+    .plan-price { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 2.8rem; line-height: 1; color: var(--text); }
+    .plan-period { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+    .plan-setup {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.74rem; color: var(--muted);
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      padding: 0.28rem 0.7rem; border-radius: 4px; margin-top: 0.6rem;
+    }
+    .plan-setup span { color: var(--y); font-weight: 600; }
+    .plan-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+    .plan-features li { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.6rem; }
+    .feat-check {
+      width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0;
+      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; color: var(--y);
+    }
+    .plan-cta {
+      display: block; text-align: center; margin-top: 1.8rem;
+      padding: 0.85rem; border-radius: 8px;
+      font-weight: 700; font-size: 0.9rem; text-decoration: none;
+      transition: all 0.25s; font-family: 'Space Grotesk', sans-serif;
+    }
+    .pricing-card.base .plan-cta { border: 1px solid var(--y); color: var(--y); background: var(--y-dim); }
+    .pricing-card.base .plan-cta:hover { background: var(--y); color: var(--bg); box-shadow: 0 0 22px var(--y-glow); }
+    .pricing-card.pro .plan-cta { background: var(--y); color: var(--bg); border: none; }
+    .pricing-card.pro .plan-cta:hover { box-shadow: 0 0 30px var(--y-glow); transform: translateY(-2px); }
+
+    /* ── FAQ ── */
+    .faq-grid { margin-top: 3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+    .faq-item { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+    .faq-item.open { border-color: rgba(245,197,24,0.25); }
+    .faq-q { padding: 1.1rem 1.4rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
+    .faq-q:hover { color: var(--y); }
+    .faq-arrow { font-size: 0.85rem; color: var(--muted); transition: transform 0.3s; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--y); }
+    .faq-a { padding: 0 1.4rem; max-height: 0; overflow: hidden; font-size: 0.82rem; color: var(--muted); line-height: 1.75; transition: max-height 0.35s ease, padding 0.35s ease; }
+    .faq-item.open .faq-a { max-height: 200px; padding: 0 1.4rem 1.1rem; }
+
+    /* ── CTA ── */
+    .cta-wrap { position: relative; z-index: 1; background: var(--y-soft); border-top: 1px solid rgba(245,197,24,0.1); border-bottom: 1px solid rgba(245,197,24,0.1); }
+    .cta-section { max-width: 1280px; margin: 0 auto; padding: 6rem 3rem; text-align: center; }
+    .cta-section h2 { margin: 0 auto; }
+    .cta-sub { color: var(--muted); margin-top: 1rem; font-size: 1rem; }
+    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1; background: var(--bg2);
+      border-top: 1px solid var(--border); padding: 2.5rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .footer-brand img { height: 30px; width: auto; mix-blend-mode: screen; opacity: 0.85; }
+    .footer-tagline { font-size: 0.73rem; color: var(--muted); margin-top: 0.3rem; }
+    .footer-links { display: flex; gap: 2rem; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--y); }
+    .footer-copy { font-size: 0.7rem; color: rgba(255,255,255,0.18); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; }
+      .hero-right { display: none; }
+      .stats-bar { padding: 2rem 1.5rem; gap: 2rem; }
+      .section { padding: 4rem 1.5rem; }
+      .problem-grid, .solution-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .steps-row { flex-direction: column; align-items: center; gap: 2rem; }
+      .steps-line { display: none; }
+      footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══ NAV ═══ -->
+<nav id="mainNav">
+  <a class="nav-logo" href="#">
+    <img src="../imagenes/logo.png" alt="Nervia">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#problema">Problema</a></li>
+    <li><a href="#solucion">Solución</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#planes">Planes</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="login.html" class="nav-cta nav-cliente" style="margin-right:0.5rem;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Área cliente
+  </a>
+  <a href="booking.html" class="nav-cta">Pruébame ahora →</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span class="badge-pulse"></span>
+      IA PARA CLÍNICAS · FISIOS · PSICÓLOGOS
+    </div>
+    <h1>Tus pacientes siempre<br>atendidos, <span class="y">aunque tengas las manos ocupadas.</span></h1>
+    <p class="hero-sub">Nervia es el agente IA que actúa como tu recepcionista digital: responde en segundos, filtra por tipo de consulta y agenda citas directamente en tu calendario — mientras tú estás en sesión.</p>
+    <div class="hero-actions">
+      <a href="booking.html" class="btn-primary">Pruébame de inmediato →</a>
+      <a href="#proceso" class="btn-secondary">Ver cómo funciona</a>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-item"><span class="trust-dot">◆</span> Activo en 24h</div>
+      <div class="trust-item"><span class="trust-dot">◆</span> Sin contratos</div>
+      <div class="trust-item"><span class="trust-dot">◆</span> RGPD sanitario</div>
+      <div class="trust-item"><span class="trust-dot">◆</span> Funciona mientras tratas</div>
+    </div>
+  </div>
+
+  <!-- ═══ WHATSAPP MOCKUP ═══ -->
+  <div class="hero-right">
+    <div class="phone-frame">
+      <div class="phone-btn-right"></div>
+      <div class="phone-btn-left1"></div>
+      <div class="phone-btn-left2"></div>
+      <div class="phone-notch">
+        <div class="notch-speaker"></div>
+        <div class="notch-cam"></div>
+      </div>
+      <div class="phone-screen">
+        <!-- Status bar -->
+        <div class="wa-statusbar">
+          <span class="wa-statusbar-time">9:41</span>
+          <div class="wa-statusbar-icons">
+            <!-- signal -->
+            <svg viewBox="0 0 24 24"><rect x="1" y="14" width="4" height="6" rx="1"/><rect x="7" y="10" width="4" height="10" rx="1"/><rect x="13" y="6" width="4" height="14" rx="1"/><rect x="19" y="2" width="4" height="18" rx="1"/></svg>
+            <!-- wifi -->
+            <svg viewBox="0 0 24 24"><path d="M5 12.5C8.5 9 15.5 9 19 12.5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M8 16c2.2-2.2 5.8-2.2 8 0" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.5"/></svg>
+            <!-- battery -->
+            <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2" stroke="white" stroke-width="1.5" fill="none"/><rect x="19" y="10" width="3" height="4" rx="1" fill="white" opacity="0.6"/><rect x="2.5" y="8.5" width="14" height="7" rx="1" fill="white"/></svg>
+          </div>
+        </div>
+        <!-- WA header -->
+        <div class="wa-header">
+          <span class="wa-back">‹</span>
+          <div class="wa-avatar">🏥</div>
+          <div class="wa-contact">
+            <div class="wa-name">Clínica Dr. García</div>
+            <div class="wa-online">en línea</div>
+          </div>
+          <div class="wa-header-icons">
+            <span>📹</span>
+            <span>📞</span>
+            <span>⋮</span>
+          </div>
+        </div>
+        <!-- Messages area -->
+        <div class="wa-body" id="waMessages">
+          <div class="wa-date-badge"><span>HOY</span></div>
+          <div class="wa-msg recv">
+            <div class="wa-bubble">
+              ¡Hola! Soy el asistente de la clínica 👋 ¿En qué puedo ayudarte?
+              <div class="wa-time">9:41</div>
+            </div>
+          </div>
+        </div>
+        <!-- Input bar -->
+        <div class="wa-input-bar">
+          <input class="wa-input" id="waInput" placeholder="Escribe un mensaje..." readonly>
+          <button class="wa-send-btn">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+        <!-- Preset buttons -->
+        <div class="wa-presets">
+          <div class="wa-preset-label">TOCA PARA PROBAR EL AGENTE</div>
+          <div class="wa-preset-btns">
+            <button class="wa-preset-btn" onclick="waChat(0)">Tengo dolor de espalda</button>
+            <button class="wa-preset-btn" onclick="waChat(1)">¿Aceptáis Sanitas?</button>
+            <button class="wa-preset-btn" onclick="waChat(2)">¿Cuántas sesiones necesito?</button>
+            <button class="wa-preset-btn" onclick="waChat(3)">Cancelar mi sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" data-target="73" data-suffix="%">0</div><div class="stat-label">De pacientes no reintenta si no hay respuesta en 2h</div></div>
+  <div class="stat"><div class="stat-num">&lt;30s</div><div class="stat-label">Tiempo de respuesta del agente</div></div>
+  <div class="stat"><div class="stat-num" data-target="24" data-suffix="/7">0</div><div class="stat-label">Disponible — también en festivos</div></div>
+  <div class="stat"><div class="stat-num" data-target="0">0</div><div class="stat-label">Interrupciones en tus sesiones</div></div>
+</div>
+
+<!-- ═══ PROBLEMA ═══ -->
+<section class="section" id="problema">
+  <div class="section-tag">El problema</div>
+  <h2>En salud, una respuesta tardía no es solo un fallo de gestión — es un paciente que sufre más tiempo.</h2>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="card-icon">🦴</div>
+      <div class="card-title">Fisioterapeuta</div>
+      <ul class="card-points">
+        <li>Tienes las manos literalmente ocupadas durante horas</li>
+        <li>No puedes interrumpir un tratamiento para coger el teléfono</li>
+        <li>El paciente nuevo llama, no le coges y va a otra clínica</li>
+      </ul>
+    </div>
+    <div class="problem-card">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">Psicólogo / Terapeuta</div>
+      <ul class="card-points">
+        <li>Una sesión interrumpida puede romper la confianza del paciente</li>
+        <li>Revisas los mensajes al acabar el día — demasiado tarde</li>
+        <li>Cada no-respuesta es tiempo y dinero perdidos</li>
+      </ul>
+    </div>
+    <div class="problem-card">
+      <div class="card-icon">🩺</div>
+      <div class="card-title">Médico / Clínica privada</div>
+      <ul class="card-points">
+        <li>La recepción colapsa con llamadas mientras hay pacientes esperando</li>
+        <li>Las consultas fuera de horario quedan sin respuesta hasta el día siguiente</li>
+        <li>Pacientes con urgencias leves que se van a urgencias hospitalarias</li>
+      </ul>
+    </div>
+    <div class="problem-card">
+      <div class="card-icon">💆</div>
+      <div class="card-title">Terapeuta / Centro de bienestar</div>
+      <ul class="card-points">
+        <li>Varios terapeutas, varias agendas — el caos está garantizado</li>
+        <li>Las mutuas preguntan constantemente por disponibilidad y cobertura</li>
+        <li>Clientes que llevan semanas intentando pedir cita y al final desisten</li>
+      </ul>
+    </div>
+    <div class="problem-full">
+      <p>En el sector salud, <strong>cada minuto de espera importa</strong>. El 73% de los pacientes que no reciben respuesta en menos de 2 horas no vuelven a intentarlo. <strong>Nervia es la respuesta inmediata que tu consulta necesitaba.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUCIÓN ═══ -->
+<section class="section" id="solucion">
+  <div class="section-tag">La solución</div>
+  <h2>Tu recepcionista digital, especializado en salud y disponible siempre.</h2>
+  <div class="solution-grid">
+    <div class="sol-card">
+      <div class="sol-icon">⚡</div>
+      <div class="sol-title">Respuesta en segundos</div>
+      <div class="sol-desc">Mientras tú tratas a un paciente, el agente ya ha respondido al siguiente. Sin esperas, sin pérdidas, sin interrupciones.</div>
+    </div>
+    <div class="sol-card">
+      <div class="sol-icon">🩺</div>
+      <div class="sol-title">Triaje clínico inteligente</div>
+      <div class="sol-desc">Pregunta por síntomas, motivo de consulta y urgencia antes de agendar. Solo acceden los pacientes adecuados para tu especialidad.</div>
+    </div>
+    <div class="sol-card">
+      <div class="sol-icon">📅</div>
+      <div class="sol-title">Agenda sin fricción</div>
+      <div class="sol-desc">Cierra la cita directamente en tu Google Calendar. El paciente elige su hueco — tú ves el evento aparecer sin tocar nada.</div>
+    </div>
+    <div class="sol-card">
+      <div class="sol-icon">💊</div>
+      <div class="sol-title">Conoce tu especialidad</div>
+      <div class="sol-desc">Entrenamos el agente con tu terminología clínica, servicios, mutuas aceptadas y protocolos. Habla como tú hablarías.</div>
+    </div>
+    <div class="sol-card">
+      <div class="sol-icon">🔔</div>
+      <div class="sol-title">Recordatorios que reducen no-shows</div>
+      <div class="sol-desc">Avisa al paciente 24h antes por WhatsApp. Menos ausencias, menos huecos vacíos y más ingresos por semana.</div>
+    </div>
+    <div class="sol-card">
+      <div class="sol-icon">🔒</div>
+      <div class="sol-title">Datos sanitarios protegidos</div>
+      <div class="sol-desc">Cumplimiento RGPD y normativa sanitaria. Firmamos acuerdo de encargado de tratamiento. Tus pacientes, siempre seguros.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROCESO ═══ -->
+<section class="section" id="proceso">
+  <div class="section-tag">Proceso</div>
+  <h2>De un mensaje en el móvil a una cita confirmada en minutos.</h2>
+  <div class="steps-track">
+    <div class="steps-line"></div>
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-num">01</div>
+        <div class="step-title">Paciente escribe</div>
+        <div class="step-desc">Envía un mensaje desde su móvil al canal de tu consulta</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">02</div>
+        <div class="step-title">Canal de entrada</div>
+        <div class="step-desc">Llega por Telegram, WhatsApp o tu enlace/QR directo</div>
+        <div class="step-tag">TG · WA · URL/QR</div>
+      </div>
+      <div class="step-item active">
+        <div class="step-num">03</div>
+        <div class="step-title">Nervia IA actúa</div>
+        <div class="step-desc">Filtra, hace triaje y ofrece los horarios disponibles</div>
+        <div class="step-tag">IA · NLP · LLM</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">04</div>
+        <div class="step-title">Paciente elige</div>
+        <div class="step-desc">Selecciona el hueco que más le conviene y confirma</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">05</div>
+        <div class="step-title">Sincronización</div>
+        <div class="step-desc">La cita aparece en Google Calendar al instante</div>
+        <div class="step-tag">Google Calendar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPARATIVA ═══ -->
+<section class="section">
+  <div class="section-tag">Comparativa</div>
+  <h2>No es un chatbot genérico. Es tu asistente especializado.</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Característica</th>
+        <th>Gestión Manual</th>
+        <th>Chatbots Genéricos</th>
+        <th>✦ Nervia IA</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Triaje de pacientes</td><td>❌ Sin triaje</td><td>❌ Sin triaje médico</td><td>✅ Triaje inteligente</td></tr>
+      <tr><td>Disponibilidad</td><td>❌ Horario laboral</td><td>⚠️ Parcial</td><td>✅ 24/7 sin límite</td></tr>
+      <tr><td>Sync Google Calendar</td><td>❌ Manual y lenta</td><td>⚠️ Compleja</td><td>✅ Instantánea</td></tr>
+      <tr><td>Personalización</td><td>✅ Total</td><td>❌ Muy limitada</td><td>✅ Agente a medida</td></tr>
+      <tr><td>Recordatorios automáticos</td><td>❌ Manual</td><td>⚠️ Básico</td><td>✅ Automáticos</td></tr>
+      <tr><td>Coste mensual</td><td>💸 Muy alto</td><td>💰 Medio</td><td>✅ Desde 29€/mes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══ PLANES ═══ -->
+<section class="section" id="planes">
+  <div class="section-tag">Planes</div>
+  <h2>Elige el canal que usan tus pacientes.</h2>
+  <div class="pricing-grid">
+
+    <div class="pricing-card base">
+      <div class="plan-icon">🩺</div>
+      <div class="plan-name">PLAN BASE</div>
+      <div class="plan-channel">Agente IA en Telegram</div>
+      <div class="plan-price">29€</div>
+      <div class="plan-period">por mes · sin permanencia</div>
+      <div class="plan-setup">Puesta en marcha: <span>180€ único pago</span></div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="feat-check">✓</span> Agente IA conversacional personalizado</li>
+        <li><span class="feat-check">✓</span> Canal Telegram oficial de tu consulta</li>
+        <li><span class="feat-check">✓</span> Sincronización Google Calendar</li>
+        <li><span class="feat-check">✓</span> Triaje inteligente de pacientes</li>
+        <li><span class="feat-check">✓</span> Recordatorios automáticos</li>
+        <li><span class="feat-check">✓</span> Enlace y código QR directo</li>
+        <li><span class="feat-check">✓</span> Soporte por email</li>
+      </ul>
+      <a href="#contacto" class="plan-cta">Empezar con Base</a>
+    </div>
+
+    <div class="pricing-card pro">
+      <div class="plan-badge">RECOMENDADO</div>
+      <div class="plan-icon">💬</div>
+      <div class="plan-name">PLAN PRO</div>
+      <div class="plan-channel">Agente IA en WhatsApp</div>
+      <div class="plan-price">49€</div>
+      <div class="plan-period">por mes · sin permanencia</div>
+      <div class="plan-setup">Puesta en marcha: <span>180€ único pago</span></div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="feat-check">✓</span> Todo lo del Plan Base incluido</li>
+        <li><span class="feat-check">✓</span> WhatsApp Business API oficial</li>
+        <li><span class="feat-check">✓</span> El canal más usado por tus pacientes</li>
+        <li><span class="feat-check">✓</span> Mayor tasa de apertura y respuesta</li>
+        <li><span class="feat-check">✓</span> Número de WhatsApp dedicado</li>
+        <li><span class="feat-check">✓</span> Plantillas aprobadas por Meta</li>
+        <li><span class="feat-check">✓</span> Soporte prioritario 24h</li>
+      </ul>
+      <a href="#contacto" class="plan-cta">Empezar con Pro</a>
+    </div>
+
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:0.76rem;margin-top:1.4rem;">
+    * El pago de puesta en marcha (180€) incluye configuración completa del agente, personalización a tu especialidad e integración con tu calendario. Se abona una sola vez.
+  </p>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="section" id="faq">
+  <div class="section-tag">FAQ</div>
+  <h2>Preguntas frecuentes.</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto tiempo tarda la puesta en marcha?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Normalmente entre 24 y 48 horas desde que nos das los datos de tu consulta. Nosotros nos encargamos de todo: configurar el agente, integrarlo con tu calendario y hacer las pruebas necesarias.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿El agente suena a robot? ¿Lo notarán mis pacientes?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">No. Entrenamos al agente con el tono y estilo de tu consulta. Habla de forma natural, conoce tus servicios y responde como lo haría tu recepcionista. La mayoría de pacientes no perciben que es IA.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si el agente no puede responder algo?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Si el agente detecta una consulta fuera de su alcance, te avisa para que puedas intervenir. Puedes configurar qué tipo de consultas deben escalar y cuáles gestiona de forma autónoma.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Puedo cambiar de plan o cancelar cuando quiera?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Sí. No hay permanencia mínima ni contratos anuales. Puedes cambiar de plan Base a Pro en cualquier momento, o cancelar con un preaviso de 30 días.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Cumple con el RGPD y protección de datos sanitarios?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Sí. Los datos de tus pacientes no se almacenan más allá de lo necesario para la gestión de la cita. Firmamos un acuerdo de tratamiento de datos y cumplimos con el RGPD europeo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<div class="cta-wrap">
+  <section class="cta-section" id="contacto">
+    <div class="section-tag" style="justify-content:center;">Contáctanos</div>
+    <h2 style="max-width:600px;margin:0 auto;">Cada día que pasa sin Nervia, pacientes reales se van a otra clínica.</h2>
+    <p class="cta-sub">Tu agente IA personalizado para fisioterapia, psicología o tu especialidad — operativo en menos de 48h.</p>
+    <div class="cta-actions">
+      <a href="booking.html" class="btn-primary">Pruébame de inmediato →</a>
+      <a href="login.html" class="btn-secondary">Área cliente</a>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-brand">
+    <img src="../imagenes/logo.png" alt="Nervia">
+    <div class="footer-tagline">Tu recepcionista IA para clínicas de salud.</div>
+  </div>
+  <div class="footer-links">
+    <a href="#proceso">Cómo funciona</a>
+    <a href="#planes">Planes</a>
+    <a href="mailto:hola@nervia.es">Contacto</a>
+    <a href="#">Privacidad</a>
+  </div>
+  <div class="footer-copy">© 2025 Nervia · Todos los derechos reservados</div>
+</footer>
+
+<!-- ═══ JS ═══ -->
+<script>
+/* ── NEURAL CANVAS ── */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let nodes = [], W, H;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', () => { resize(); createNodes(); });
+
+function createNodes() {
+  nodes = [];
+  const count = Math.floor((W * H) / 22000);
+  for (let i = 0; i < count; i++) {
+    nodes.push({ x: Math.random()*W, y: Math.random()*H, vx:(Math.random()-.5)*.28, vy:(Math.random()-.5)*.28, r:Math.random()*1.4+.5 });
+  }
+}
+createNodes();
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x<0||n.x>W) n.vx*=-1;
+    if (n.y<0||n.y>H) n.vy*=-1;
+  });
+  for (let i=0;i<nodes.length;i++) {
+    for (let j=i+1;j<nodes.length;j++) {
+      const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if (d<130) {
+        ctx.strokeStyle=`rgba(37,211,102,${(1-d/130)*0.22})`;
+        ctx.lineWidth=0.6;
+        ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
+      }
+    }
+    ctx.fillStyle='rgba(37,211,102,0.45)';
+    ctx.beginPath(); ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2); ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+document.addEventListener('mousemove', e => {
+  nodes.forEach(n => {
+    const dx=e.clientX-n.x, dy=e.clientY-n.y;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if (d<110) {
+      n.vx-=(dx/d)*0.07; n.vy-=(dy/d)*0.07;
+      const mv=1.4; n.vx=Math.max(-mv,Math.min(mv,n.vx)); n.vy=Math.max(-mv,Math.min(mv,n.vy));
+    }
+  });
+});
+
+/* ── WHATSAPP CHAT ── */
+const waChatData = [
+  { sent:"Hola, tengo dolor de espalda lumbar desde hace unos días 😟", recv:"¡Hola! Entiendo, el dolor lumbar puede ser muy molesto. Para una primera valoración con el fisioterapeuta tenemos hueco:\n• Mañana a las 10:00h\n• Jueves a las 17:00h\n¿Te viene bien alguno? 📅" },
+  { sent:"¿Aceptáis la mutua Sanitas?", recv:"Sí, trabajamos con Sanitas, Adeslas y Mapfre Salud ✅\nSolo necesitarás traer tu tarjeta de mutua el día de la cita. ¿Te reservo un hueco?" },
+  { sent:"¿Cuántas sesiones necesito para una contractura cervical?", recv:"Depende de cada caso, pero lo habitual para contracturas cervicales son entre 3 y 6 sesiones 💆\nEl fisio lo valorará en la primera visita y te dará un plan personalizado. ¿Quieres pedir la primera cita?" },
+  { sent:"Necesito cancelar mi sesión de mañana jueves", recv:"Entendido, he cancelado tu sesión del jueves 27 a las 17:00h ✅\nRecuerda que puedes cancelar sin coste hasta 24h antes. ¿Quieres que te busque otro hueco esta semana?" }
+];
+
+let waBusy = false;
+function getTime() {
+  const d=new Date(); return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
+function waChat(idx) {
+  if (waBusy) return;
+  waBusy = true;
+  const btns = document.querySelectorAll('.wa-preset-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const area = document.getElementById('waMessages');
+  const { sent, recv } = waChatData[idx];
+  const t = getTime();
+
+  // Sent bubble
+  const sDiv = document.createElement('div');
+  sDiv.className = 'wa-msg sent';
+  sDiv.innerHTML = `<div class="wa-bubble">${sent.replace(/\n/g,'<br>')}<div class="wa-time">${t} <span class="wa-ticks">✓✓</span></div></div>`;
+  area.appendChild(sDiv);
+  area.scrollTop = area.scrollHeight;
+
+  // Typing
+  setTimeout(() => {
+    const tDiv = document.createElement('div');
+    tDiv.className = 'wa-msg recv'; tDiv.id = 'waTyping';
+    tDiv.innerHTML = `<div class="wa-typing-bubble"><span></span><span></span><span></span></div>`;
+    area.appendChild(tDiv);
+    area.scrollTop = area.scrollHeight;
+
+    setTimeout(() => {
+      document.getElementById('waTyping')?.remove();
+      const rDiv = document.createElement('div');
+      rDiv.className = 'wa-msg recv';
+      rDiv.innerHTML = `<div class="wa-bubble">${recv.replace(/\n/g,'<br>')}<div class="wa-time">${t}</div></div>`;
+      area.appendChild(rDiv);
+      area.scrollTop = area.scrollHeight;
+      waBusy = false;
+      btns.forEach(b => b.disabled = false);
+    }, 1700);
+  }, 700);
+}
+
+/* ── STAT COUNTERS ── */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = parseInt(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    if (isNaN(target)) return;
+    let cur = 0; const step = target/50;
+    const t = setInterval(() => {
+      cur += step;
+      if (cur >= target) { el.textContent = target+suffix; clearInterval(t); }
+      else el.textContent = Math.floor(cur)+suffix;
+    }, 28);
+    obs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-num[data-target]').forEach(el => obs.observe(el));
+
+/* ── FAQ ── */
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const open = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!open) item.classList.add('open');
+}
+
+/* ── NAV GLOW ON SCROLL ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').style.borderBottomColor =
+    window.scrollY > 40 ? 'rgba(245,197,24,0.12)' : 'rgba(255,255,255,0.06)';
+});
+</script>
+</body>
+</html>

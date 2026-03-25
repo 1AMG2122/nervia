@@ -1,0 +1,111 @@
+{
+  "name": "Nervia - Agente WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nervia-whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "whatsapp-webhook",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "notes": "Configurar esta URL en tu proveedor WhatsApp (Meta, Twilio, 360dialog)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parsear mensaje de WhatsApp (compatible con Meta/360dialog/Twilio)\nconst body = $input.first().json;\n\nlet from = '', text = '', profileName = '';\n\n// Meta (WhatsApp Cloud API)\nif (body.entry) {\n  const entry = body.entry?.[0];\n  const change = entry?.changes?.[0];\n  const msg = change?.value?.messages?.[0];\n  from = msg?.from || '';\n  text = msg?.text?.body || msg?.button?.text || msg?.interactive?.button_reply?.title || '';\n  profileName = change?.value?.contacts?.[0]?.profile?.name || 'Paciente';\n}\n// Twilio\nelse if (body.From) {\n  from = body.From.replace('whatsapp:', '');\n  text = body.Body || '';\n  profileName = body.ProfileName || 'Paciente';\n}\n// 360dialog / genérico\nelse if (body.messages) {\n  const msg = body.messages[0];\n  from = msg.from || '';\n  text = msg.text?.body || '';\n  profileName = body.contacts?.[0]?.profile?.name || 'Paciente';\n}\n\n// Configuración del cliente (igual que Telegram, editar por profesional)\nconst CLIENTE_CONFIG = {\n  id: 'fisio-garcia',\n  nombre: 'Dr. Juan García',\n  especialidad: 'Fisioterapeuta',\n  horario: 'Lunes a Viernes 9:00-13:00 y 16:00-20:00',\n  telefono: '+34 600 000 000',\n  direccion: 'Calle Mayor 12, Valencia',\n  form_url: 'https://TU_DOMINIO/form.html?cliente=fisio-garcia',\n  servicios: [\n    { nombre: 'Primera consulta', duracion: 60, precio: 50 },\n    { nombre: 'Sesión de fisioterapia', duracion: 45, precio: 40 }\n  ],\n  // Para enviar respuestas: número de WhatsApp Business\n  wa_phone_id: 'TU_PHONE_NUMBER_ID',\n  wa_token: 'TU_ACCESS_TOKEN'\n};\n\nreturn [{ json: { from, text, profileName, clienteConfig: CLIENTE_CONFIG, rawBody: body } }];"
+      },
+      "id": "parse-whatsapp",
+      "name": "Parsear Mensaje WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK"
+      },
+      "id": "ack-webhook",
+      "name": "ACK Webhook (200 OK)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [460, 480],
+      "notes": "WhatsApp requiere respuesta 200 inmediata"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{ "value1": "={{ $json.text }}", "operation": "isNotEmpty" }]
+        }
+      },
+      "id": "check-has-message",
+      "name": "¿Hay mensaje?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Eres el asistente virtual de {{ $json.clienteConfig.nombre }}, {{ $json.clienteConfig.especialidad }}. Tu nombre es Nervia.\n\nEstás respondiendo por WhatsApp. Los mensajes deben ser MUY concisos (máximo 3 frases).\n\nINFORMACIÓN:\n- Profesional: {{ $json.clienteConfig.nombre }}\n- Especialidad: {{ $json.clienteConfig.especialidad }}\n- Horario: {{ $json.clienteConfig.horario }}\n- Dirección: {{ $json.clienteConfig.direccion }}\n- Enlace para citas: {{ $json.clienteConfig.form_url }}\n\nSERVICIOS:\n{{ $json.clienteConfig.servicios.map(s => `• ${s.nombre}: ${s.duracion}min, ${s.precio}€`).join('\\n') }}\n\nREGLAS ESTRICTAS:\n1. Respuestas CORTAS (2-3 frases máximo en WhatsApp)\n2. Si quiere cita: envía SOLO el enlace con texto mínimo\n3. Sin markdown complejo (WhatsApp no lo soporta bien)\n4. Usa *negrita* con asteriscos cuando sea necesario\n5. Sé directo y cálido\n6. Si es urgencia médica grave: indica urgencias\n7. NUNCA inventes diagnósticos ni información médica"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.profileName }} pregunta: {{ $json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 300,
+          "temperature": 0.6
+        }
+      },
+      "id": "openai-whatsapp",
+      "name": "Agente IA WhatsApp",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [900, 240],
+      "credentials": {
+        "openAiApi": { "id": "OPENAI_CREDENTIAL_ID", "name": "OpenAI" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enviar respuesta por WhatsApp Cloud API (Meta)\nconst aiResponse = $('Agente IA WhatsApp').item.json.choices[0].message.content;\nconst to = $('Parsear Mensaje WhatsApp').item.json.from;\nconst config = $('Parsear Mensaje WhatsApp').item.json.clienteConfig;\n\nconst payload = {\n  messaging_product: 'whatsapp',\n  to: to,\n  type: 'text',\n  text: { body: aiResponse }\n};\n\n// Llamada a Meta WhatsApp API\nconst response = await fetch(`https://graph.facebook.com/v19.0/${config.wa_phone_id}/messages`, {\n  method: 'POST',\n  headers: {\n    'Authorization': `Bearer ${config.wa_token}`,\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify(payload)\n});\n\nconst result = await response.json();\nreturn [{ json: { sent: true, to, message: aiResponse, result } }];"
+      },
+      "id": "send-whatsapp",
+      "name": "Enviar Respuesta WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 240]
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": { "main": [[
+      { "node": "Parsear Mensaje WhatsApp", "type": "main", "index": 0 },
+      { "node": "ACK Webhook (200 OK)", "type": "main", "index": 0 }
+    ]]},
+    "Parsear Mensaje WhatsApp": { "main": [[{ "node": "¿Hay mensaje?", "type": "main", "index": 0 }]] },
+    "¿Hay mensaje?": {
+      "main": [
+        [{ "node": "Agente IA WhatsApp", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Agente IA WhatsApp": { "main": [[{ "node": "Enviar Respuesta WhatsApp", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Agente Nervia para WhatsApp. Compatible con Meta Cloud API, Twilio y 360dialog. Un workflow por profesional.",
+    "notes": "CONFIGURAR: 1) wa_phone_id y wa_token en nodo 'Parsear Mensaje WhatsApp', 2) Credencial OpenAI, 3) Configurar webhook URL en Meta Business"
+  }
+}

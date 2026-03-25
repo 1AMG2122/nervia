@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservar Cita — Clínica Dr. García</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7fdf9;
+      --surface: #ffffff;
+      --primary: #25d366;
+      --primary-dark: #1aab52;
+      --primary-dim: rgba(37, 211, 102, 0.10);
+      --primary-dim2: rgba(37, 211, 102, 0.18);
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --shadow-md: 0 4px 24px rgba(0,0,0,0.10);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .header-logo img {
+      height: 36px;
+      width: auto;
+      mix-blend-mode: multiply;
+    }
+
+    .header-logo-fallback {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
+
+    .logo-wordmark {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .header-center {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: center;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-badge {
+      flex-shrink: 0;
+      background: var(--primary-dim);
+      color: var(--primary-dark);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(37,211,102,0.25);
+      white-space: nowrap;
+      letter-spacing: 0.1px;
+    }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+
+    /* ─── STEPPER ─── */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 36px;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: calc(50% + 20px);
+      right: calc(-50% + 20px);
+      height: 2px;
+      background: var(--border);
+      transition: background 0.4s;
+      z-index: 0;
+    }
+
+    .step-item.completed:not(:last-child)::after {
+      background: var(--primary);
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .step-item.completed .step-circle {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .step-item.active .step-circle {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      box-shadow: 0 0 0 4px var(--primary-dim);
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-align: center;
+      white-space: nowrap;
+      transition: color 0.3s;
+    }
+
+    .step-item.active .step-label,
+    .step-item.completed .step-label {
+      color: var(--primary-dark);
+    }
+
+    /* ─── STEP PANELS ─── */
+    .steps-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-panel {
+      display: none;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .step-panel.active {
+      display: block;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .step-panel.slide-out-left {
+      display: block;
+      opacity: 0;
+      transform: translateX(-40px);
+    }
+
+    .step-panel.slide-in-right {
+      display: block;
+      opacity: 0;
+      transform: translateX(40px);
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .step-heading {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .step-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    /* ─── SERVICE CARDS ─── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .service-card:hover {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .service-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      box-shadow: 0 0 0 3px rgba(37,211,102,0.15);
+    }
+
+    .service-emoji {
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .service-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .service-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .service-duration {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .service-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ─── CALENDAR ─── */
+    .datetime-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .calendar-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--primary-dim);
+    }
+
+    .cal-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: capitalize;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .cal-nav-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 15px;
+      background: var(--surface);
+      transition: all 0.2s;
+    }
+
+    .cal-nav-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: var(--primary-dim);
+    }
+
+    .cal-grid {
+      padding: 10px 12px 14px;
+    }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 4px;
+    }
+
+    .cal-weekday {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 4px 0;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .cal-day {
+      text-align: center;
+      font-size: 13px;
+      padding: 6px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-weight: 500;
+      position: relative;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .cal-day:hover:not(.past):not(.empty) {
+      background: var(--primary-dim2);
+      color: var(--primary-dark);
+    }
+
+    .cal-day.empty { cursor: default; }
+
+    .cal-day.past {
+      color: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .cal-day.weekend {
+      color: var(--muted);
+    }
+
+    .cal-day.selected {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .cal-day.today:not(.selected)::after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* ─── TIME SLOTS ─── */
+    .slots-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .slots-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--primary-dim);
+    }
+
+    .slots-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .slots-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .slots-placeholder {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .slots-grid {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .slot-btn {
+      padding: 9px 6px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .slot-btn:hover:not(.occupied) {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      color: var(--primary-dark);
+    }
+
+    .slot-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .slot-btn.occupied {
+      background: #f9fafb;
+      color: #d1d5db;
+      cursor: not-allowed;
+      font-size: 11px;
+      border-color: #f0f0f0;
+    }
+
+    /* ─── FORM ─── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .form-group label span.req {
+      color: var(--primary-dark);
+      margin-left: 2px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-dim);
+    }
+
+    .form-group input.error,
+    .form-group textarea.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.10);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .privacy-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      padding: 10px 14px;
+      background: var(--primary-dim);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--primary);
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 28px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+    }
+
+    .btn-primary:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-primary.full-width { width: 100%; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: var(--primary-dim);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: transparent;
+      color: var(--primary-dark);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border: 1.5px solid var(--primary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-ghost:hover {
+      background: var(--primary-dim);
+    }
+
+    .btn-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      gap: 12px;
+    }
+
+    .btn-actions-right {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* ─── BOOKING SUMMARY STRIP ─── */
+    .summary-strip {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--primary-dim);
+      border-radius: var(--radius-sm);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .summary-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    .summary-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* ─── CONFIRMATION ─── */
+    .confirm-center {
+      text-align: center;
+      padding: 12px 0 28px;
+    }
+
+    /* SVG checkmark animation */
+    .check-circle {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+    }
+
+    .check-circle-bg {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 4;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      animation: draw-circle 0.6s ease forwards;
+      transform-origin: center;
+      transform: rotate(-90deg);
+    }
+
+    .check-path {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 50;
+      stroke-dashoffset: 50;
+      animation: draw-check 0.4s ease 0.55s forwards;
+    }
+
+    @keyframes draw-circle {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes draw-check {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .confirm-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .confirm-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .confirm-summary-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .confirm-summary-card h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .confirm-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .confirm-row:last-child { margin-bottom: 0; }
+
+    .confirm-row-label {
+      width: 90px;
+      color: var(--muted);
+      font-weight: 500;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+
+    .confirm-row-value {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .whatsapp-note {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px;
+      background: var(--primary-dim);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 20px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      header { padding: 0 14px; }
+      .header-center { display: none; }
+      main { padding: 20px 12px 40px; }
+      .card { padding: 20px 16px; }
+      .services-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .service-card { padding: 14px; }
+      .service-emoji { font-size: 26px; }
+      .datetime-layout { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .step-label { display: none; }
+      .stepper { gap: 0; }
+      .step-circle { width: 30px; height: 30px; font-size: 11px; }
+      .step-item:not(:last-child)::after { top: 15px; }
+      .confirm-actions { flex-direction: column; }
+      .confirm-actions .btn-ghost,
+      .confirm-actions .btn-secondary { width: 100%; }
+      .slots-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 380px) {
+      .services-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── UTILITY ─── */
+    .hidden { display: none !important; }
+    .mt-4 { margin-top: 4px; }
+    .mt-8 { margin-top: 8px; }
+    .error-msg {
+      font-size: 12px;
+      color: #ef4444;
+      margin-top: 5px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <header>
+    <div class="header-logo">
+      <img src="../imagenes/logo.png" alt="Nervia Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <div class="header-logo-fallback" style="display:none;">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <span class="logo-wordmark">Nervia</span>
+      </div>
+    </div>
+    <div class="header-center">Reservar cita — Clínica Dr. García</div>
+    <div class="header-badge">Powered by Nervia IA</div>
+  </header>
+
+  <!-- ─── MAIN ─── -->
+  <main>
+
+    <!-- STEPPER -->
+    <div class="stepper" id="stepper">
+      <div class="step-item active" data-step="1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Servicio</div>
+      </div>
+      <div class="step-item" data-step="2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Fecha</div>
+      </div>
+      <div class="step-item" data-step="3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Datos</div>
+      </div>
+      <div class="step-item" data-step="4">
+        <div class="step-circle">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-label">Confirmación</div>
+      </div>
+    </div>
+
+    <!-- STEPS WRAPPER -->
+    <div class="steps-wrapper">
+
+      <!-- STEP 1: Servicio -->
+      <div class="step-panel active" id="panel-1">
+        <div class="card">
+          <div class="step-heading">Elige tu servicio</div>
+          <div class="step-sub">Selecciona el tipo de consulta que necesitas.</div>
+          <div class="services-grid">
+            <div class="service-card" data-service="Fisioterapia" data-duration="45 min" data-price="60€" data-emoji="🦴">
+              <div class="service-emoji">🦴</div>
+              <div class="service-name">Fisioterapia</div>
+              <div class="service-meta">
+                <span class="service-duration">45 min</span>
+                <span class="service-price">60€</span>
+              </div>
+            </div>
+            <div class="service-card" data-service="Psicología" data-duration="50 min" data-price="70€" data-emoji="🧠">
+              <div class="service-emoji">🧠</div>
+              <div class="service-name">Psicología</div>
+              <div class="service-meta">
+                <span class="service-duration">50 min</span>
+                <span class="service-price">70€</span>
+              </div>
+            </div>
+            <div class="service-card" data-service="Masaje Terapéutico" data-duration="60 min" data-price="55€" data-emoji="💆">
+              <div class="service-emoji">💆</div>
+              <div class="service-name">Masaje Terapéutico</div>
+              <div class="service-meta">
+                <span class="service-duration">60 min</span>
+                <span class="service-price">55€</span>
+              </div>
+            </div>
+            <div class="service-card" data-service="Consulta General" data-duration="30 min" data-price="45€" data-emoji="🩺">
+              <div class="service-emoji">🩺</div>
+              <div class="service-name">Consulta General</div>
+              <div class="service-meta">
+                <span class="service-duration">30 min</span>
+                <span class="service-price">45€</span>
+              </div>
+            </div>
+          </div>
+          <div class="btn-actions-right">
+            <button class="btn-primary" id="btn-step1-next" disabled>
+              Siguiente
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Fecha y hora -->
+      <div class="step-panel" id="panel-2">
+        <div class="card">
+          <div class="step-heading">Elige fecha y hora</div>
+          <div class="step-sub">Selecciona el día y el horario que mejor te convenga.</div>
+
+          <!-- Summary strip -->
+          <div class="summary-strip" id="strip-2">
+            <div class="summary-pill">
+              <span id="strip-emoji-2"></span>
+              <span id="strip-service-2"></span>
+            </div>
+            <div class="summary-pill">
+              <span class="summary-pill-dot"></span>
+              <span id="strip-duration-2"></span>
+            </div>
+            <div class="summary-pill">
+              <span class="summary-pill-dot"></span>
+              <span id="strip-price-2"></span>
+            </div>
+          </div>
+
+          <div class="datetime-layout">
+            <!-- Calendar -->
+            <div class="calendar-wrap">
+              <div class="cal-header">
+                <button class="cal-nav-btn" id="cal-prev" title="Mes anterior">&#8249;</button>
+                <h3 id="cal-month-label"></h3>
+                <button class="cal-nav-btn" id="cal-next" title="Mes siguiente">&#8250;</button>
+              </div>
+              <div class="cal-grid">
+                <div class="cal-weekdays">
+                  <div class="cal-weekday">Lu</div>
+                  <div class="cal-weekday">Ma</div>
+                  <div class="cal-weekday">Mi</div>
+                  <div class="cal-weekday">Ju</div>
+                  <div class="cal-weekday">Vi</div>
+                  <div class="cal-weekday">Sá</div>
+                  <div class="cal-weekday">Do</div>
+                </div>
+                <div class="cal-days" id="cal-days"></div>
+              </div>
+            </div>
+
+            <!-- Slots -->
+            <div class="slots-panel">
+              <div class="slots-header">
+                <h3>Hora disponible</h3>
+                <p id="slots-date-label">Selecciona un día primero</p>
+              </div>
+              <div id="slots-placeholder" class="slots-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:0.3"><path d="M12 8v4l3 3" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#6b7280" stroke-width="2"/></svg>
+                <div>Elige un día para ver los horarios disponibles</div>
+              </div>
+              <div id="slots-grid" class="slots-grid hidden"></div>
+            </div>
+          </div>
+
+          <div class="btn-actions">
+            <button class="btn-secondary" onclick="goToStep(1)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 12L3 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Atrás
+            </button>
+            <button class="btn-primary" id="btn-step2-next" disabled>
+              Siguiente
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Datos -->
+      <div class="step-panel" id="panel-3">
+        <div class="card">
+          <div class="step-heading">Tus datos</div>
+          <div class="step-sub">Necesitamos algunos datos para confirmar tu cita.</div>
+
+          <!-- Summary strip -->
+          <div class="summary-strip">
+            <div class="summary-pill">
+              <span id="strip-emoji-3"></span>
+              <span id="strip-service-3"></span>
+            </div>
+            <div class="summary-pill">
+              <span class="summary-pill-dot"></span>
+              <span id="strip-date-3"></span>
+            </div>
+            <div class="summary-pill">
+              <span class="summary-pill-dot"></span>
+              <span id="strip-time-3"></span>
+            </div>
+          </div>
+
+          <form id="booking-form" novalidate>
+            <div class="form-group">
+              <label for="f-name">Nombre completo <span class="req">*</span></label>
+              <input type="text" id="f-name" placeholder="Ej. Ana García López" autocomplete="name" />
+              <div class="error-msg hidden" id="err-name">Por favor, introduce tu nombre completo.</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-phone">Teléfono <span class="req">*</span></label>
+                <input type="tel" id="f-phone" placeholder="+34 600 000 000" autocomplete="tel" />
+                <div class="error-msg hidden" id="err-phone">Introduce un teléfono válido.</div>
+              </div>
+              <div class="form-group">
+                <label for="f-email">Email <span class="req">*</span></label>
+                <input type="email" id="f-email" placeholder="tu@email.com" autocomplete="email" />
+                <div class="error-msg hidden" id="err-email">Introduce un email válido.</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="f-notes">Notas adicionales</label>
+              <textarea id="f-notes" placeholder="Información relevante, motivo de la consulta… (opcional)"></textarea>
+            </div>
+            <div class="privacy-note">
+              🔒 Tus datos solo se usan para gestionar tu cita. Cumplimos con el RGPD — nunca los compartiremos con terceros.
+            </div>
+          </form>
+
+          <div class="btn-actions">
+            <button class="btn-secondary" onclick="goToStep(2)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 12L3 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Atrás
+            </button>
+            <button class="btn-primary" id="btn-confirm" onclick="handleConfirm()">
+              Confirmar reserva
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 4L6 11.5 2.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Confirmado -->
+      <div class="step-panel" id="panel-4">
+        <div class="card">
+          <div class="confirm-center">
+            <!-- Animated check -->
+            <svg class="check-circle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle class="check-circle-bg" cx="50" cy="50" r="45"/>
+              <path class="check-path" d="M30 50 L44 64 L70 37"/>
+            </svg>
+            <div class="confirm-title">¡Tu cita está confirmada!</div>
+            <div class="confirm-sub">Hemos registrado tu reserva. Te esperamos en la clínica.</div>
+          </div>
+
+          <div class="confirm-summary-card">
+            <h4>Resumen de tu cita</h4>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Servicio</div>
+              <div class="confirm-row-value" id="cs-service"></div>
+            </div>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Fecha</div>
+              <div class="confirm-row-value" id="cs-date"></div>
+            </div>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Hora</div>
+              <div class="confirm-row-value" id="cs-time"></div>
+            </div>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Duración</div>
+              <div class="confirm-row-value" id="cs-duration"></div>
+            </div>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Precio</div>
+              <div class="confirm-row-value" id="cs-price"></div>
+            </div>
+            <div class="confirm-row">
+              <div class="confirm-row-label">Paciente</div>
+              <div class="confirm-row-value" id="cs-name"></div>
+            </div>
+          </div>
+
+          <div class="confirm-actions">
+            <a id="gcal-link" href="#" target="_blank" rel="noopener" class="btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Añadir a Google Calendar
+            </a>
+            <button class="btn-secondary" onclick="resetBooking()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Volver al inicio
+            </button>
+          </div>
+
+          <div class="whatsapp-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.003 22l4.978-1.38A9.944 9.944 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 11.998 2z"/></svg>
+            Recibirás un recordatorio por WhatsApp 24h antes de tu cita
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps-wrapper -->
+  </main>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>© 2025 Nervia · Todos los derechos reservados</footer>
+
+  <script>
+    // ─── STATE ───
+    const booking = {
+      service: null,
+      serviceEmoji: null,
+      duration: null,
+      price: null,
+      date: null,
+      dateLabel: null,
+      time: null,
+      name: null,
+      phone: null,
+      email: null,
+      notes: null
+    };
+
+    let currentStep = 1;
+    let calYear = 2026;
+    let calMonth = 2; // 0-indexed: 2 = March
+
+    const ALL_SLOTS = ['9:00','9:30','10:00','10:30','11:00','11:30','12:00','16:00','16:30','17:00','17:30','18:00','18:30'];
+
+    // Pseudo-random occupied slots based on date seed
+    function getOccupiedSlots(dateStr) {
+      let seed = 0;
+      for (let i = 0; i < dateStr.length; i++) seed += dateStr.charCodeAt(i);
+      const occupied = [];
+      const count = 2 + (seed % 3); // 2-4 occupied
+      const indices = new Set();
+      let s = seed;
+      while (indices.size < count) {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        indices.add(Math.abs(s) % ALL_SLOTS.length);
+      }
+      indices.forEach(i => occupied.push(ALL_SLOTS[i]));
+      return occupied;
+    }
+
+    // ─── STEP NAVIGATION ───
+    function goToStep(target) {
+      const from = currentStep;
+      const direction = target > from ? 'forward' : 'backward';
+
+      const fromPanel = document.getElementById('panel-' + from);
+      const toPanel = document.getElementById('panel-' + target);
+
+      // Animate out
+      fromPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      fromPanel.style.opacity = '0';
+      fromPanel.style.transform = direction === 'forward' ? 'translateX(-40px)' : 'translateX(40px)';
+
+      setTimeout(() => {
+        fromPanel.classList.remove('active');
+        fromPanel.style.transition = '';
+        fromPanel.style.opacity = '';
+        fromPanel.style.transform = '';
+
+        // Prepare incoming
+        toPanel.style.opacity = '0';
+        toPanel.style.transform = direction === 'forward' ? 'translateX(40px)' : 'translateX(-40px)';
+        toPanel.classList.add('active');
+        toPanel.style.display = 'block';
+
+        // Trigger reflow
+        void toPanel.offsetWidth;
+
+        toPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        toPanel.style.opacity = '1';
+        toPanel.style.transform = 'translateX(0)';
+
+        setTimeout(() => {
+          toPanel.style.transition = '';
+          toPanel.style.opacity = '';
+          toPanel.style.transform = '';
+        }, 320);
+
+        currentStep = target;
+        updateStepper();
+
+        // Populate strips
+        if (target === 2) populateStrip2();
+        if (target === 3) populateStrip3();
+        if (target === 4) populateConfirmation();
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 240);
+    }
+
+    function updateStepper() {
+      document.querySelectorAll('.step-item').forEach(item => {
+        const s = parseInt(item.dataset.step);
+        item.classList.remove('active', 'completed');
+        if (s < currentStep) item.classList.add('completed');
+        else if (s === currentStep) item.classList.add('active');
+      });
+    }
+
+    // ─── STEP 1: SERVICE SELECTION ───
+    document.querySelectorAll('.service-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        booking.service = card.dataset.service;
+        booking.serviceEmoji = card.dataset.emoji;
+        booking.duration = card.dataset.duration;
+        booking.price = card.dataset.price;
+        document.getElementById('btn-step1-next').disabled = false;
+      });
+    });
+
+    document.getElementById('btn-step1-next').addEventListener('click', () => {
+      if (booking.service) goToStep(2);
+    });
+
+    // ─── CALENDAR ───
+    const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const today = new Date(2026, 2, 25); // current date context
+
+    function renderCalendar() {
+      const label = document.getElementById('cal-month-label');
+      label.textContent = MONTHS_ES[calMonth] + ' ' + calYear;
+
+      const container = document.getElementById('cal-days');
+      container.innerHTML = '';
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+      // Convert Sunday=0 to Monday-first: (firstDay + 6) % 7
+      const startOffset = (firstDay + 6) % 7;
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      // Empty cells
+      for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day empty';
+        container.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.textContent = d;
+
+        const thisDate = new Date(calYear, calMonth, d);
+        const isToday = (thisDate.toDateString() === today.toDateString());
+        const isPast = thisDate < today && !isToday;
+        const isWeekend = thisDate.getDay() === 0 || thisDate.getDay() === 6;
+
+        if (isPast) {
+          cell.classList.add('past');
+        } else {
+          if (isWeekend) cell.classList.add('weekend');
+          if (isToday) cell.classList.add('today');
+
+          const dateStr = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+          if (booking.date === dateStr) cell.classList.add('selected');
+
+          cell.addEventListener('click', () => {
+            document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+            booking.date = dateStr;
+
+            // Build readable label
+            const dayNames = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+            booking.dateLabel = dayNames[thisDate.getDay()] + ', ' + d + ' de ' + MONTHS_ES[calMonth] + ' de ' + calYear;
+
+            booking.time = null;
+            renderSlots(dateStr, booking.dateLabel);
+            checkStep2();
+          });
+        }
+
+        container.appendChild(cell);
+      }
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById('cal-next').addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // ─── TIME SLOTS ───
+    function renderSlots(dateStr, dateLabel) {
+      const placeholder = document.getElementById('slots-placeholder');
+      const grid = document.getElementById('slots-grid');
+      const lbl = document.getElementById('slots-date-label');
+
+      const shortLabel = dateStr.split('-').reverse().join('/');
+      lbl.textContent = shortLabel;
+      placeholder.classList.add('hidden');
+      grid.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      const occupied = getOccupiedSlots(dateStr);
+
+      ALL_SLOTS.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.className = 'slot-btn';
+        btn.textContent = slot;
+
+        if (occupied.includes(slot)) {
+          btn.classList.add('occupied');
+          btn.textContent = slot + '\nOcupado';
+          btn.style.whiteSpace = 'pre';
+          btn.style.lineHeight = '1.3';
+          btn.disabled = true;
+        } else {
+          if (booking.time === slot) btn.classList.add('selected');
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            booking.time = slot;
+            checkStep2();
+          });
+        }
+
+        grid.appendChild(btn);
+      });
+    }
+
+    function checkStep2() {
+      document.getElementById('btn-step2-next').disabled = !(booking.date && booking.time);
+    }
+
+    document.getElementById('btn-step2-next').addEventListener('click', () => {
+      if (booking.date && booking.time) goToStep(3);
+    });
+
+    // ─── STRIPS ───
+    function populateStrip2() {
+      document.getElementById('strip-emoji-2').textContent = booking.serviceEmoji + ' ';
+      document.getElementById('strip-service-2').textContent = booking.service;
+      document.getElementById('strip-duration-2').textContent = booking.duration;
+      document.getElementById('strip-price-2').textContent = booking.price;
+    }
+
+    function populateStrip3() {
+      document.getElementById('strip-emoji-3').textContent = booking.serviceEmoji + ' ';
+      document.getElementById('strip-service-3').textContent = booking.service;
+      document.getElementById('strip-date-3').textContent = booking.dateLabel;
+      document.getElementById('strip-time-3').textContent = booking.time + 'h';
+    }
+
+    // ─── STEP 3: FORM + VALIDATION ───
+    function handleConfirm() {
+      const name = document.getElementById('f-name');
+      const phone = document.getElementById('f-phone');
+      const email = document.getElementById('f-email');
+      let valid = true;
+
+      // Reset
+      [name, phone, email].forEach(f => {
+        f.classList.remove('error');
+      });
+      document.getElementById('err-name').classList.add('hidden');
+      document.getElementById('err-phone').classList.add('hidden');
+      document.getElementById('err-email').classList.add('hidden');
+
+      if (!name.value.trim() || name.value.trim().length < 3) {
+        name.classList.add('error');
+        document.getElementById('err-name').classList.remove('hidden');
+        valid = false;
+      }
+
+      const phoneVal = phone.value.trim().replace(/\s/g,'');
+      if (!phoneVal || phoneVal.length < 9) {
+        phone.classList.add('error');
+        document.getElementById('err-phone').classList.remove('hidden');
+        valid = false;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email.value.trim() || !emailRegex.test(email.value.trim())) {
+        email.classList.add('error');
+        document.getElementById('err-email').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      booking.name = name.value.trim();
+      booking.phone = phone.value.trim();
+      booking.email = email.value.trim();
+      booking.notes = document.getElementById('f-notes').value.trim();
+
+      goToStep(4);
+    }
+
+    // Live clear errors
+    ['f-name','f-phone','f-email'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => {
+        el.classList.remove('error');
+        document.getElementById('err-' + id.replace('f-','')).classList.add('hidden');
+      });
+    });
+
+    // ─── STEP 4: CONFIRMATION ───
+    function populateConfirmation() {
+      document.getElementById('cs-service').textContent = booking.serviceEmoji + ' ' + booking.service;
+      document.getElementById('cs-date').textContent = booking.dateLabel;
+      document.getElementById('cs-time').textContent = booking.time + 'h';
+      document.getElementById('cs-duration').textContent = booking.duration;
+      document.getElementById('cs-price').textContent = booking.price;
+      document.getElementById('cs-name').textContent = booking.name;
+
+      // Build Google Calendar link
+      const gcalLink = buildGCalLink();
+      document.getElementById('gcal-link').href = gcalLink;
+
+      // Re-trigger animation by cloning the SVG paths
+      restartCheckAnimation();
+    }
+
+    function restartCheckAnimation() {
+      const circle = document.querySelector('.check-circle-bg');
+      const check = document.querySelector('.check-path');
+      // Reset
+      circle.style.animation = 'none';
+      check.style.animation = 'none';
+      void circle.offsetWidth;
+      circle.style.animation = '';
+      check.style.animation = '';
+    }
+
+    function buildGCalLink() {
+      if (!booking.date || !booking.time) return '#';
+
+      // Parse date and time
+      const [year, month, day] = booking.date.split('-').map(Number);
+      const [h, m] = booking.time.split(':').map(Number);
+
+      const pad = n => String(n).padStart(2, '0');
+
+      // Duration in minutes
+      const durationMins = parseInt(booking.duration) || 30;
+      const endH = h + Math.floor((m + durationMins) / 60);
+      const endM = (m + durationMins) % 60;
+
+      const startStr = `${year}${pad(month)}${pad(day)}T${pad(h)}${pad(m)}00`;
+      const endStr   = `${year}${pad(month)}${pad(day)}T${pad(endH)}${pad(endM)}00`;
+
+      const title = encodeURIComponent(`Cita ${booking.service} — Clínica Dr. García`);
+      const details = encodeURIComponent(`Paciente: ${booking.name}\nServicio: ${booking.service} (${booking.duration})\nPrecio: ${booking.price}`);
+      const location = encodeURIComponent('Clínica Dr. García, Madrid');
+
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+    }
+
+    // ─── RESET ───
+    function resetBooking() {
+      Object.keys(booking).forEach(k => booking[k] = null);
+
+      // Deselect service cards
+      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('btn-step1-next').disabled = true;
+
+      // Reset form
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-phone').value = '';
+      document.getElementById('f-email').value = '';
+      document.getElementById('f-notes').value = '';
+      ['f-name','f-phone','f-email'].forEach(id => {
+        document.getElementById(id).classList.remove('error');
+      });
+      document.getElementById('err-name').classList.add('hidden');
+      document.getElementById('err-phone').classList.add('hidden');
+      document.getElementById('err-email').classList.add('hidden');
+
+      // Reset calendar
+      calYear = 2026;
+      calMonth = 2;
+      renderCalendar();
+
+      // Reset slots
+      document.getElementById('slots-placeholder').classList.remove('hidden');
+      document.getElementById('slots-grid').classList.add('hidden');
+      document.getElementById('slots-grid').innerHTML = '';
+      document.getElementById('slots-date-label').textContent = 'Selecciona un día primero';
+
+      // Deactivate step2 next
+      document.getElementById('btn-step2-next').disabled = true;
+
+      goToStep(1);
+    }
+
+    // ─── INIT ───
+    renderCalendar();
+  </script>
+
+</body>
+</html>

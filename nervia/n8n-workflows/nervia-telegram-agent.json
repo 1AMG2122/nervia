@@ -1,0 +1,148 @@
+{
+  "name": "Nervia - Agente Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "trigger-telegram",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "credentials": {
+        "telegramApi": { "id": "CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.first().json.message || $input.first().json.callback_query?.message;\nconst text = message?.text || $input.first().json.callback_query?.data || '';\nconst chatId = message?.chat?.id || $input.first().json.callback_query?.message?.chat?.id;\nconst userId = message?.from?.id || $input.first().json.callback_query?.from?.id;\nconst firstName = message?.from?.first_name || $input.first().json.callback_query?.from?.first_name || 'paciente';\n\n// ─── CONFIGURA POR CLIENTE ────────────────────────────────────────────────────\nconst CLIENTE_CONFIG = {\n  id: 'fisio-garcia',\n  dbId: 1,                    // ID en la tabla `clientes` de MariaDB\n  nombre: 'Dr. Juan García',\n  especialidad: 'Fisioterapeuta',\n  horario: 'Lunes a Viernes 9:00-13:00 y 16:00-20:00',\n  telefono: '+34 600 000 000',\n  direccion: 'Calle Mayor 12, Valencia',\n  form_url: 'https://TU_DOMINIO/form.html?cliente=fisio-garcia',\n  google_calendar_id: 'TU_CALENDAR_ID@group.calendar.google.com',\n  servicios: [\n    { nombre: 'Primera consulta', duracion: 60, precio: 50 },\n    { nombre: 'Sesión de fisioterapia', duracion: 45, precio: 40 },\n    { nombre: 'Rehabilitación deportiva', duracion: 60, precio: 55 }\n  ]\n};\n// ─────────────────────────────────────────────────────────────────────────────\n\nconst esc = s => String(s || '').replace(/'/g, \"''\").substring(0, 1000);\nconst canalId = String(userId || chatId || '').replace(/[^0-9]/g, '');\n\nreturn [{\n  json: {\n    text, chatId, userId, firstName,\n    clienteConfig: CLIENTE_CONFIG,\n    // Para DB\n    clienteId: CLIENTE_CONFIG.dbId,\n    canalId,\n    textEsc: esc(text),\n    nameEsc: esc(firstName)\n  }\n}];"
+      },
+      "id": "extract-data",
+      "name": "Extraer Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO conversaciones (cliente_id, canal, canal_id, iniciada_en, ultima_actividad)\nSELECT {{ $json.clienteId }}, 'telegram', '{{ $json.canalId }}', NOW(), NOW()\nWHERE NOT EXISTS (\n  SELECT 1 FROM conversaciones\n  WHERE cliente_id = {{ $json.clienteId }}\n    AND canal = 'telegram'\n    AND canal_id = '{{ $json.canalId }}'\n    AND estado = 'activa'\n    AND ultima_actividad > DATE_SUB(NOW(), INTERVAL 1 HOUR)\n)",
+        "options": {}
+      },
+      "id": "db-create-conv",
+      "name": "DB — Crear Conv si no existe",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "credentials": {
+        "mySql": { "id": "10", "name": "MariaDB — Nervia" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT id AS conv_id\nFROM conversaciones\nWHERE cliente_id = {{ $('Extraer Datos').item.json.clienteId }}\n  AND canal = 'telegram'\n  AND canal_id = '{{ $('Extraer Datos').item.json.canalId }}'\n  AND estado = 'activa'\nORDER BY ultima_actividad DESC\nLIMIT 1",
+        "options": {}
+      },
+      "id": "db-get-conv",
+      "name": "DB — Obtener Conv ID",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "credentials": {
+        "mySql": { "id": "10", "name": "MariaDB — Nervia" }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=Eres el asistente virtual de {{ $('Extraer Datos').item.json.clienteConfig.nombre }}, {{ $('Extraer Datos').item.json.clienteConfig.especialidad }}. Tu nombre es Nervia.\n\nTu único objetivo es ayudar a los pacientes a agendar citas de forma rápida y amigable.\n\nINFORMACIÓN DEL PROFESIONAL:\n- Nombre: {{ $('Extraer Datos').item.json.clienteConfig.nombre }}\n- Especialidad: {{ $('Extraer Datos').item.json.clienteConfig.especialidad }}\n- Horario: {{ $('Extraer Datos').item.json.clienteConfig.horario }}\n- Dirección: {{ $('Extraer Datos').item.json.clienteConfig.direccion }}\n- Teléfono: {{ $('Extraer Datos').item.json.clienteConfig.telefono }}\n- URL para citas: {{ $('Extraer Datos').item.json.clienteConfig.form_url }}\n\nINSTRUCCIONES:\n1. Saluda con calidez y brevedad\n2. Identifica qué necesita el paciente (cita, información, urgencia)\n3. Si quiere cita: envíale el enlace URL para agendar online\n4. Si es urgencia real: proporciona el teléfono directo\n5. Responde preguntas básicas sobre horarios y precios\n6. Sé conciso, amigable y profesional (máximo 3 párrafos)\n7. Usa emojis con moderación (máximo 1-2 por mensaje)\n8. NUNCA inventes información médica\n9. Si hay urgencia grave (dolor severo, síntomas agudos): recomienda urgencias o llamar al 112"
+            },
+            {
+              "role": "user",
+              "content": "={{ $('Extraer Datos').item.json.firstName }} dice: {{ $('Extraer Datos').item.json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 500
+        }
+      },
+      "id": "claude-agent",
+      "name": "Agente IA (Claude)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "anthropicApi": { "id": "2", "name": "Anthropic API" }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Extraer Datos').item.json.chatId }}",
+        "text": "={{ $json.content[0].text }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "send-telegram",
+      "name": "Responder por Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1340, 300],
+      "credentials": {
+        "telegramApi": { "id": "CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO mensajes (conversacion_id, rol, contenido, enviado_en)\nVALUES (\n  {{ $('DB — Obtener Conv ID').item.json.conv_id }},\n  'user',\n  '{{ $('Extraer Datos').item.json.textEsc }}',\n  NOW()\n)",
+        "options": {}
+      },
+      "id": "db-msg-user",
+      "name": "DB — Guardar Msg Usuario",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "credentials": {
+        "mySql": { "id": "10", "name": "MariaDB — Nervia" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO mensajes (conversacion_id, rol, contenido, enviado_en)\nVALUES (\n  {{ $('DB — Obtener Conv ID').item.json.conv_id }},\n  'assistant',\n  '{{ $('Agente IA (Claude)').item.json.content[0].text.replace(/'/g, \"''\").substring(0, 2000) }}',\n  NOW()\n)",
+        "options": {}
+      },
+      "id": "db-msg-ia",
+      "name": "DB — Guardar Respuesta IA",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [1780, 300],
+      "credentials": {
+        "mySql": { "id": "10", "name": "MariaDB — Nervia" }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger":          { "main": [[{ "node": "Extraer Datos",               "type": "main", "index": 0 }]] },
+    "Extraer Datos":             { "main": [[{ "node": "DB — Crear Conv si no existe", "type": "main", "index": 0 }]] },
+    "DB — Crear Conv si no existe": { "main": [[{ "node": "DB — Obtener Conv ID",     "type": "main", "index": 0 }]] },
+    "DB — Obtener Conv ID":      { "main": [[{ "node": "Agente IA (Claude)",           "type": "main", "index": 0 }]] },
+    "Agente IA (Claude)":        { "main": [[{ "node": "Responder por Telegram",       "type": "main", "index": 0 }]] },
+    "Responder por Telegram":    { "main": [[{ "node": "DB — Guardar Msg Usuario",     "type": "main", "index": 0 }]] },
+    "DB — Guardar Msg Usuario":  { "main": [[{ "node": "DB — Guardar Respuesta IA",    "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Agente Nervia para Telegram con historial en MariaDB. Un workflow por cada profesional/cliente.",
+    "notes": "CONFIGURAR: 1) Credencial Telegram Bot, 2) Credencial Anthropic API, 3) Credencial MariaDB — Nervia, 4) Editar CLIENTE_CONFIG en nodo 'Extraer Datos'"
+  }
+}

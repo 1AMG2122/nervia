@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nervia — Acceso Área Cliente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:      #25d366;
+      --green-dark: #1aab52;
+      --green-dim:  rgba(37,211,102,0.12);
+      --green-glow: rgba(37,211,102,0.30);
+      --bg-dark:    #04080f;
+      --bg-card:    #080d1a;
+      --text-dark:  #e2e8f0;
+      --muted-dark: #64748b;
+      --bg-light:   #f7fdf9;
+      --text:       #111827;
+      --muted:      #6b7280;
+      --border:     #e5e7eb;
+      --error:      #ef4444;
+    }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; }
+
+    /* ── LAYOUT ── */
+    .page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+
+    /* ── LEFT PANEL (dark) ── */
+    .left {
+      background: var(--bg-dark);
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      justify-content: center; padding: 4rem;
+    }
+    #bg-canvas { position: absolute; inset: 0; opacity: 0.5; pointer-events: none; }
+    .left-content { position: relative; z-index: 1; }
+    .left-logo { margin-bottom: 3rem; }
+    .left-logo img { height: 42px; mix-blend-mode: screen; }
+    .left h1 {
+      font-weight: 700; font-size: 2.2rem; line-height: 1.15;
+      letter-spacing: -0.02em; color: var(--text-dark); margin-bottom: 1rem;
+    }
+    .left h1 span { color: var(--green); }
+    .left-sub { color: var(--muted-dark); font-size: 0.95rem; line-height: 1.7; margin-bottom: 2.5rem; max-width: 380px; }
+    .features { display: flex; flex-direction: column; gap: 0.9rem; }
+    .feat {
+      display: flex; align-items: center; gap: 0.8rem;
+      font-size: 0.84rem; color: var(--muted-dark);
+    }
+    .feat-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+    }
+
+    /* ── RIGHT PANEL (light) ── */
+    .right {
+      background: var(--bg-light);
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .login-box {
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .login-title {
+      font-weight: 700; font-size: 1.6rem; color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    .login-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+
+    /* ── FORM ── */
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .form-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .form-input {
+      width: 100%; padding: 0.75rem 1rem;
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 8px; font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.92rem; color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(37,211,102,0.12); }
+    .form-input.error { border-color: var(--error); }
+    .form-input.error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    .input-wrap { position: relative; }
+    .toggle-pw {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      font-size: 1rem; padding: 0; line-height: 1;
+    }
+    .form-error {
+      font-size: 0.75rem; color: var(--error);
+      display: none; margin-top: 0.2rem;
+    }
+    .form-group.has-error .form-error { display: block; }
+
+    .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .remember { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
+    .remember input[type="checkbox"] { accent-color: var(--green); width: 15px; height: 15px; cursor: pointer; }
+    .forgot { font-size: 0.82rem; color: var(--green); text-decoration: none; font-weight: 500; }
+    .forgot:hover { color: var(--green-dark); }
+
+    .btn-login {
+      width: 100%; padding: 0.85rem; border-radius: 8px;
+      background: var(--green); color: #fff; border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
+      transition: all 0.25s; box-shadow: 0 4px 14px rgba(37,211,102,0.25);
+    }
+    .btn-login:hover { background: var(--green-dark); box-shadow: 0 6px 20px rgba(37,211,102,0.4); transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login.loading { opacity: 0.75; pointer-events: none; }
+    .btn-login.shake { animation: shake 0.4s ease; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+    }
+
+    .global-error {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 8px; padding: 0.7rem 1rem;
+      color: var(--error); font-size: 0.83rem; margin-top: 0.8rem;
+      display: none; align-items: center; gap: 0.5rem;
+    }
+    .global-error.show { display: flex; }
+
+    /* ── DEMO CREDENTIALS BOX ── */
+    .demo-box {
+      margin-top: 2rem;
+      background: #fff;
+      border: 1.5px dashed rgba(37,211,102,0.4);
+      border-radius: 10px; padding: 1.1rem 1.2rem;
+    }
+    .demo-box-title {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 700; color: var(--green-dark);
+      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.8rem;
+    }
+    .demo-badge {
+      background: var(--green); color: #fff;
+      font-size: 0.6rem; font-weight: 700; padding: 0.1rem 0.45rem;
+      border-radius: 3px; letter-spacing: 0.06em;
+    }
+    .demo-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .demo-row:last-child { border-bottom: none; }
+    .demo-key { color: var(--muted); }
+    .demo-val {
+      font-family: 'Space Mono', monospace; font-size: 0.78rem;
+      color: var(--text); font-weight: 700;
+    }
+    .demo-fill-btn {
+      margin-top: 0.9rem; width: 100%;
+      padding: 0.55rem; border-radius: 6px;
+      background: var(--green-dim); border: 1px solid rgba(37,211,102,0.3);
+      color: var(--green-dark); font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600; font-size: 0.82rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .demo-fill-btn:hover { background: rgba(37,211,102,0.2); }
+
+    /* ── BACK LINK ── */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; color: var(--muted); text-decoration: none;
+      margin-bottom: 2rem; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--green); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .page { grid-template-columns: 1fr; }
+      .left { display: none; }
+      .right { padding: 2rem 1.5rem; align-items: flex-start; padding-top: 3rem; }
+      .login-box { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══ LEFT DARK PANEL ═══ -->
+  <div class="left">
+    <canvas id="bg-canvas"></canvas>
+    <div class="left-content">
+      <div class="left-logo">
+        <img src="../imagenes/logo.png" alt="Nervia">
+      </div>
+      <h1>Gestiona tu consulta<br>con <span>inteligencia.</span></h1>
+      <p class="left-sub">Accede a tu panel de control para ver todas tus citas, gestionar tu agenda y consultar el rendimiento de tu agente IA.</p>
+      <div class="features">
+        <div class="feat"><div class="feat-icon">📅</div> Calendario de citas en tiempo real</div>
+        <div class="feat"><div class="feat-icon">🤖</div> Estado de tu agente IA activo 24/7</div>
+        <div class="feat"><div class="feat-icon">📊</div> Estadísticas de conversiones y reservas</div>
+        <div class="feat"><div class="feat-icon">🔔</div> Notificaciones y confirmaciones pendientes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT LIGHT PANEL ═══ -->
+  <div class="right">
+    <div class="login-box">
+      <a href="index.html" class="back-link">← Volver a la web</a>
+      <div class="login-title">Acceso al área cliente</div>
+      <div class="login-sub">Introduce tus credenciales para entrar a tu panel.</div>
+
+      <form id="loginForm" novalidate>
+        <!-- Email -->
+        <div class="form-group" id="grp-email">
+          <label class="form-label" for="email">Correo electrónico</label>
+          <input class="form-input" type="email" id="email" placeholder="tu@email.com" autocomplete="email">
+          <span class="form-error">Introduce un email válido.</span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group" id="grp-pass">
+          <label class="form-label" for="password">Contraseña</label>
+          <div class="input-wrap">
+            <input class="form-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:2.5rem;">
+            <button type="button" class="toggle-pw" id="togglePw" title="Mostrar contraseña">👁</button>
+          </div>
+          <span class="form-error">La contraseña no puede estar vacía.</span>
+        </div>
+
+        <!-- Remember + forgot -->
+        <div class="form-row">
+          <label class="remember">
+            <input type="checkbox" id="remember"> Recordarme
+          </label>
+          <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-login" id="loginBtn">Entrar al panel →</button>
+
+        <!-- Error global -->
+        <div class="global-error" id="globalError">
+          <span>⚠</span> Email o contraseña incorrectos. Prueba con las credenciales demo.
+        </div>
+      </form>
+
+      <!-- ═══ DEMO CREDENTIALS ═══ -->
+      <div class="demo-box">
+        <div class="demo-box-title">
+          <span class="demo-badge">DEMO</span>
+          Credenciales de prueba
+        </div>
+        <div class="demo-row">
+          <span class="demo-key">Email</span>
+          <span class="demo-val">demo@nervia.es</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-key">Contraseña</span>
+          <span class="demo-val">nervia2025</span>
+        </div>
+        <button class="demo-fill-btn" id="demoFillBtn">
+          ⚡ Rellenar automáticamente y entrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── CREDENTIALS ── */
+const VALID_EMAIL = 'demo@nervia.es';
+const VALID_PASS  = 'nervia2025';
+
+/* ── NEURAL CANVAS ── */
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+let nodes = [], W, H;
+
+function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+resize();
+new ResizeObserver(resize).observe(canvas.parentElement);
+
+function initNodes() {
+  nodes = [];
+  const n = Math.floor((W * H) / 18000);
+  for (let i = 0; i < n; i++) nodes.push({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25, r:Math.random()*1.3+.4 });
+}
+initNodes();
+
+(function draw() {
+  ctx.clearRect(0,0,W,H);
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x<0||n.x>W) n.vx*=-1;
+    if (n.y<0||n.y>H) n.vy*=-1;
+  });
+  for (let i=0;i<nodes.length;i++) {
+    for (let j=i+1;j<nodes.length;j++) {
+      const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y, d=Math.sqrt(dx*dx+dy*dy);
+      if (d<120) { ctx.strokeStyle=`rgba(37,211,102,${(1-d/120)*0.2})`; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke(); }
+    }
+    ctx.fillStyle='rgba(37,211,102,0.5)'; ctx.beginPath(); ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2); ctx.fill();
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* ── TOGGLE PASSWORD ── */
+document.getElementById('togglePw').addEventListener('click', function() {
+  const inp = document.getElementById('password');
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  this.textContent = show ? '🙈' : '👁';
+});
+
+/* ── VALIDATION ── */
+function setError(groupId, show) {
+  const g = document.getElementById(groupId);
+  g.classList.toggle('has-error', show);
+  g.querySelector('.form-input').classList.toggle('error', show);
+}
+
+/* ── LOGIN LOGIC ── */
+function attemptLogin(email, pass) {
+  const btn = document.getElementById('loginBtn');
+  const errBox = document.getElementById('globalError');
+  btn.textContent = 'Verificando...'; btn.classList.add('loading');
+
+  setTimeout(() => {
+    btn.textContent = 'Entrar al panel →'; btn.classList.remove('loading');
+    if (email === VALID_EMAIL && pass === VALID_PASS) {
+      btn.textContent = '✓ Acceso correcto — redirigiendo...';
+      btn.style.background = '#1aab52';
+      sessionStorage.setItem('nervia_auth', '1');
+      setTimeout(() => { window.location.href = 'cliente-demo.html'; }, 800);
+    } else {
+      errBox.classList.add('show');
+      btn.classList.add('shake');
+      setTimeout(() => btn.classList.remove('shake'), 400);
+    }
+  }, 900);
+}
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  let valid = true;
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  setError('grp-email', !emailOk); if (!emailOk) valid = false;
+  setError('grp-pass', !pass);    if (!pass)  valid = false;
+
+  document.getElementById('globalError').classList.remove('show');
+  if (valid) attemptLogin(email, pass);
+});
+
+/* ── DEMO FILL & LOGIN ── */
+document.getElementById('demoFillBtn').addEventListener('click', function() {
+  const emailInp = document.getElementById('email');
+  const passInp  = document.getElementById('password');
+  emailInp.value = VALID_EMAIL;
+  passInp.value  = VALID_PASS;
+  passInp.type   = 'text';
+  document.getElementById('togglePw').textContent = '🙈';
+  setError('grp-email', false); setError('grp-pass', false);
+  document.getElementById('globalError').classList.remove('show');
+
+  // Brief highlight then auto-submit
+  emailInp.style.borderColor = '#25d366';
+  passInp.style.borderColor  = '#25d366';
+  setTimeout(() => attemptLogin(VALID_EMAIL, VALID_PASS), 400);
+});
+
+/* ── CLEAR ERROR ON TYPE ── */
+document.getElementById('email').addEventListener('input', () => {
+  setError('grp-email', false);
+  document.getElementById('globalError').classList.remove('show');
+});
+document.getElementById('password').addEventListener('input', () => {
+  setError('grp-pass', false);
+  document.getElementById('globalError').classList.remove('show');
+});
+</script>
+</body>
+</html>
