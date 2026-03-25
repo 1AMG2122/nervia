@@ -429,9 +429,9 @@
 
 <script>
 // ╔══════════════════════════════════════════════════╗
-// ║  CONFIGURACIÓN DEL CLIENTE - EDITAR AQUÍ        ║
+// ║  CONFIGURACIÓN DEL CLIENTE                      ║
 // ╚══════════════════════════════════════════════════╝
-const CLIENT_CONFIG = {
+let CLIENT_CONFIG = {
   id: "garcia-fisiio-01",
   name: "Dr. García Fernández",
   specialty: "Fisioterapeuta",
@@ -455,6 +455,32 @@ const CLIENT_CONFIG = {
   // Google Calendar API (configurar en n8n)
   calendarId: "garcia@consulta.com"
 };
+
+function loadDynamicConfig() {
+  const params = new URLSearchParams(window.location.search);
+  const clientSlug = params.get('client');
+
+  if (clientSlug) {
+    const allUsers = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+    const clientData = allUsers.find(u => u.slug === clientSlug);
+
+    if (clientData) {
+      CLIENT_CONFIG.id = clientData.slug;
+      CLIENT_CONFIG.name = clientData.clinicName || clientData.name;
+
+      // Si el cliente guardó servicios personalizados
+      if (clientData.services && clientData.services.length > 0) {
+        CLIENT_CONFIG.services = clientData.services;
+      }
+
+      // Otros campos personalizables
+      if (clientData.specialty) CLIENT_CONFIG.specialty = clientData.specialty;
+      if (clientData.location) CLIENT_CONFIG.location = clientData.location;
+    }
+  }
+}
+
+loadDynamicConfig();
 // ╔══════════════════════════════════════════════════╗
 // ║  FIN DE CONFIGURACIÓN                           ║
 // ╚══════════════════════════════════════════════════╝

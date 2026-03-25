@@ -243,22 +243,22 @@
         </div>
       </form>
 
-      <!-- ═══ DEMO CREDENTIALS ═══ -->
+      <!-- ═══ ADMIN CREDENTIALS ═══ -->
       <div class="demo-box">
         <div class="demo-box-title">
-          <span class="demo-badge">DEMO</span>
-          Credenciales de prueba
+          <span class="demo-badge">ADMIN</span>
+          Acceso Administrador
         </div>
         <div class="demo-row">
           <span class="demo-key">Email</span>
-          <span class="demo-val">demo@nervia.es</span>
+          <span class="demo-val">admin@nervia.es</span>
         </div>
         <div class="demo-row">
           <span class="demo-key">Contraseña</span>
-          <span class="demo-val">nervia2025</span>
+          <span class="demo-val">admin2025</span>
         </div>
         <button class="demo-fill-btn" id="demoFillBtn">
-          ⚡ Rellenar automáticamente y entrar
+          ⚡ Acceder como Administrador
         </button>
       </div>
 
@@ -268,8 +268,22 @@
 
 <script>
 /* ── CREDENTIALS ── */
-const VALID_EMAIL = 'demo@nervia.es';
-const VALID_PASS  = 'nervia2025';
+// Admin predefinido si no existe
+const DEFAULT_ADMIN = {
+  email: 'admin@nervia.es',
+  pass: 'admin2025',
+  name: 'Super Admin',
+  role: 'admin'
+};
+
+function ensureAdminExists() {
+  const users = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+  if (!users.some(u => u.role === 'admin')) {
+    users.push(DEFAULT_ADMIN);
+    localStorage.setItem('nervia_users', JSON.stringify(users));
+  }
+}
+ensureAdminExists();
 
 /* ── NEURAL CANVAS ── */
 const canvas = document.getElementById('bg-canvas');
@@ -327,11 +341,22 @@ function attemptLogin(email, pass) {
 
   setTimeout(() => {
     btn.textContent = 'Entrar al panel →'; btn.classList.remove('loading');
-    if (email === VALID_EMAIL && pass === VALID_PASS) {
+
+    const allUsers = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+    const user = allUsers.find(u => u.email === email && u.pass === pass);
+
+    if (user) {
       btn.textContent = '✓ Acceso correcto — redirigiendo...';
       btn.style.background = '#1aab52';
-      sessionStorage.setItem('nervia_auth', '1');
-      setTimeout(() => { window.location.href = 'cliente-demo.html'; }, 800);
+      sessionStorage.setItem('nervia_auth', JSON.stringify(user));
+
+      setTimeout(() => {
+        if (user.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'cliente.html';
+        }
+      }, 800);
     } else {
       errBox.classList.add('show');
       btn.classList.add('shake');
@@ -354,12 +379,12 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
   if (valid) attemptLogin(email, pass);
 });
 
-/* ── DEMO FILL & LOGIN ── */
+/* ── ADMIN FILL & LOGIN ── */
 document.getElementById('demoFillBtn').addEventListener('click', function() {
   const emailInp = document.getElementById('email');
   const passInp  = document.getElementById('password');
-  emailInp.value = VALID_EMAIL;
-  passInp.value  = VALID_PASS;
+  emailInp.value = DEFAULT_ADMIN.email;
+  passInp.value  = DEFAULT_ADMIN.pass;
   passInp.type   = 'text';
   document.getElementById('togglePw').textContent = '🙈';
   setError('grp-email', false); setError('grp-pass', false);
@@ -368,7 +393,7 @@ document.getElementById('demoFillBtn').addEventListener('click', function() {
   // Brief highlight then auto-submit
   emailInp.style.borderColor = '#25d366';
   passInp.style.borderColor  = '#25d366';
-  setTimeout(() => attemptLogin(VALID_EMAIL, VALID_PASS), 400);
+  setTimeout(() => attemptLogin(DEFAULT_ADMIN.email, DEFAULT_ADMIN.pass), 400);
 });
 
 /* ── CLEAR ERROR ON TYPE ── */
