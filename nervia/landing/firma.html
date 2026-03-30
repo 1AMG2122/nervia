@@ -45,8 +45,24 @@
   <div class="card-clinic" id="doc-clinic"></div>
   <div class="doc-body" id="doc-body"></div>
 
-  <div class="sign-label">Tu nombre completo (firma)</div>
+  <div class="sign-label" id="sign-label-1">Tu nombre completo (firma)</div>
   <input type="text" class="sign-input" id="sign-name" placeholder="Escribe tu nombre y apellidos" oninput="validateForm()">
+
+  <div id="minor-section" style="display:none;">
+    <div class="sign-label">Nombre del segundo progenitor / tutor (firma)</div>
+    <input type="text" class="sign-input" id="sign-name-2" placeholder="Nombre y apellidos del segundo firmante" oninput="validateForm()">
+  </div>
+
+  <div style="margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
+    <label class="sign-check" style="margin-bottom:0;">
+      <input type="checkbox" id="check-wa">
+      Acepto que el centro me contacte por WhatsApp para gestiones relacionadas con mi tratamiento.
+    </label>
+    <label class="sign-check" style="margin-bottom:0;">
+      <input type="checkbox" id="check-audio">
+      Acepto la grabación de audio de las sesiones para uso exclusivamente interno y de mejora de la calidad.
+    </label>
+  </div>
 
   <label class="sign-check">
     <input type="checkbox" id="sign-check" onchange="validateForm()">
@@ -75,6 +91,12 @@
   const patient = params.get('n')    ? decodeURIComponent(params.get('n')) : '';
   const clinic  = params.get('clinic')? decodeURIComponent(params.get('clinic')) : 'el centro';
   const clinicWa = params.get('wa')  ? decodeURIComponent(params.get('wa')).replace(/\s/g,'') : '';
+  const isMinor  = params.get('minor') === '1';
+
+  if (isMinor) {
+    document.getElementById('minor-section').style.display = 'block';
+    document.getElementById('sign-label-1').textContent = 'Nombre del primer progenitor / tutor (firma)';
+  }
 
   document.getElementById('doc-title').textContent  = title;
   document.getElementById('doc-clinic').textContent = `Enviado por: ${clinic}`;
@@ -89,28 +111,43 @@
   if (patient) document.getElementById('sign-name').value = patient;
 
   function validateForm() {
-    const ok = document.getElementById('sign-name').value.trim().length > 1
+    let ok = document.getElementById('sign-name').value.trim().length > 1
             && document.getElementById('sign-check').checked;
+
+    if (isMinor) {
+      ok = ok && document.getElementById('sign-name-2').value.trim().length > 1;
+    }
+
     document.getElementById('sign-btn').disabled = !ok;
   }
 
   function doSign() {
     const name = document.getElementById('sign-name').value.trim();
+    const name2 = isMinor ? document.getElementById('sign-name-2').value.trim() : '';
+    const waOk = document.getElementById('check-wa').checked;
+    const audioOk = document.getElementById('check-audio').checked;
     const now  = new Date().toLocaleString('es-ES');
 
     // Hide form, show success
     document.getElementById('sign-btn').style.display  = 'none';
     document.getElementById('sign-check').closest('label').style.display = 'none';
-    document.querySelector('.sign-label').style.display = 'none';
-    document.getElementById('sign-name').style.display  = 'none';
+    document.querySelectorAll('.sign-label').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sign-input').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sign-check').forEach(el => el.style.display = 'none');
 
     const successScreen = document.getElementById('success-screen');
     successScreen.style.display = 'flex';
+
+    let signers = name;
+    if (isMinor) signers += ` y ${name2}`;
+
+    let choices = `\n✅ WhatsApp: ${waOk?'SÍ':'NO'}\n✅ Grabación: ${audioOk?'SÍ':'NO'}`;
+
     document.getElementById('success-msg').textContent =
-      `${name} ha firmado "${title}" el ${now}.\nPuedes enviar la confirmación al centro con el botón de abajo.`;
+      `${signers} han firmado "${title}" el ${now}.${choices}\nPuedes enviar la confirmación al centro con el botón de abajo.`;
 
     // WhatsApp reply to clinic
-    const replyMsg = `Hola 👋 Soy *${name}*.\nHe firmado el consentimiento:\n📄 *${title}*\nFecha: ${now}`;
+    const replyMsg = `Hola 👋 Soy *${signers}*.\nHe firmado el consentimiento:\n📄 *${title}*\nFecha: ${now}${choices}`;
     const waLink = document.getElementById('wa-reply-link');
     if (clinicWa && clinicWa.length >= 9) {
       const phone = clinicWa.startsWith('+') ? clinicWa.slice(1) : clinicWa;
