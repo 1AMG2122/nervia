@@ -1078,6 +1078,7 @@
       </div>
 
     </div><!-- /steps-wrapper -->
+    <div id="bot-link-area" class="hidden"></div>
   </main>
 
   <footer>Powered by <strong>Nervia</strong> · Sistema inteligente de citas</footer>
@@ -1121,7 +1122,8 @@
       days: [1,2,3,4,5],
       slots: ['09:00','09:30','10:00','10:30','11:00','11:30','16:00','16:30','17:00','17:30','18:00','18:30']
     },
-    webhookUrl: null
+    webhookUrl: null,
+    botUrl: null
   };
 
   // ─── LOAD CLIENT FROM LOCALSTORAGE ───
@@ -1140,6 +1142,7 @@
     CLIENT.color     = data.brandColor || CLIENT.color;
     CLIENT.logoB64   = data.logoB64    || null;
     CLIENT.webhookUrl = data.webhookUrl || null;
+    CLIENT.botUrl     = data.botUrl     || null;
 
     if (data.services && data.services.length > 0) {
       CLIENT.services = data.services;
@@ -1176,6 +1179,21 @@
     document.getElementById('header-specialty').textContent =
       [CLIENT.specialty, CLIENT.location].filter(Boolean).join(' · ');
     document.title = `Reservar cita — ${CLIENT.name}`;
+
+    // Agente IA Link
+    if (CLIENT.botUrl) {
+      const botArea = document.getElementById('bot-link-area');
+      if (botArea) {
+        botArea.innerHTML = `
+          <div style="text-align:center; margin-top:24px;">
+            <a href="${CLIENT.botUrl}" target="_blank" rel="noopener" class="btn-ghost" style="width:100%; max-width:400px; display:inline-flex;">
+              🤖 Hablar con el Agente IA de ${CLIENT.name}
+            </a>
+          </div>
+        `;
+        botArea.classList.remove('hidden');
+      }
+    }
 
     const wrap = document.getElementById('logo-wrap');
     if (CLIENT.logoB64) {

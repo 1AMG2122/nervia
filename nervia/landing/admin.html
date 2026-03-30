@@ -493,6 +493,7 @@ function renderClients(){
       <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
         <button class="btn-sm" onclick="editClient('${esc(c.email)}')">Editar</button>
         ${passReset}
+        <button class="btn-sm" style="background:var(--green);color:#fff;border-color:var(--green);" onclick="sendWelcomeEmail('${esc(c.email)}')">Bienvenida</button>
         <button class="btn-sm" style="background:var(--blue);color:#fff;border-color:var(--blue);" onclick="goToClient('${esc(c.email)}')">▶ Panel</button>
         <button class="btn-danger" onclick="deleteClient('${esc(c.email)}')">Eliminar</button>
       </td>
@@ -710,6 +711,14 @@ window.resetPass = email=>{
   saveUsers(all);
   renderClients();
   toast('Contraseña reseteada a 0000','info');
+};
+
+window.sendWelcomeEmail = email => {
+  const u = getUsers().find(x => x.email === email);
+  if (!u) return;
+  const subject = encodeURIComponent(`Bienvenido a NERV-IA — ${u.clinicName || u.name}`);
+  const body = encodeURIComponent(`Hola ${u.name},\n\nBienvenido a NERV-IA. Aquí tienes tus credenciales de acceso:\n\nEmail: ${u.email}\nContraseña inicial: 0000\n\nPuedes acceder desde: ${window.location.origin}/landing/login.html\n\nPor seguridad, se te pedirá cambiar la contraseña en tu primer acceso.\n\nUn saludo,\nEl equipo de NERV-IA`);
+  window.location.href = `mailto:${u.contactEmail || u.email}?subject=${subject}&body=${body}`;
 };
 
 

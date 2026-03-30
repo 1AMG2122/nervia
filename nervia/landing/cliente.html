@@ -3046,7 +3046,10 @@ function updateBookingInfo() {
   const bookingUrl = `${baseUrl}/webhub/booking.html?client=${slug}`;
 
   document.getElementById('booking-url-input').value = bookingUrl;
-  generateQRCode(bookingUrl);
+
+  // Priorizar el bot de Telegram para el QR, si no hay, usar URL de reserva
+  const qrUrl = currentUser.botUrl || bookingUrl;
+  generateQRCode(qrUrl);
 }
 
 function copyBookingUrl() {
