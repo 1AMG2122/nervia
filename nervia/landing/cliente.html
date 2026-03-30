@@ -1665,19 +1665,14 @@
       <!-- ═══ VISTA: DOCUMENTOS ═══ -->
       <div id="view-documentos" class="view-container fade-in">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-          <div class="section-title" style="margin:0;">📁 Documentos y Consentimientos</div>
+          <div class="section-title" style="margin:0;">📁 Plantillas de Documentos</div>
           <button onclick="openDocEditorModal()" style="padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Nueva plantilla</button>
         </div>
-        <div class="doc-grid">
-          <div class="calendar-card">
-            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📄 Plantillas de consentimiento</div>
-            <div id="doc-templates-list"></div>
-          </div>
-          <div class="calendar-card">
-            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📤 Enviados para firma</div>
-            <div id="doc-sent-list"></div>
-          </div>
+        <div class="calendar-card">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📄 Mis Plantillas</div>
+          <div id="doc-templates-list"></div>
         </div>
+        <div id="doc-sent-list" style="display:none;"></div>
       </div>
 
     </div><!-- end scroll-area -->
@@ -1824,6 +1819,10 @@
       <div class="patmod-field">
         <label>Código postal</label>
         <input type="text" id="patmod-cp" placeholder="28001">
+      </div>
+      <div class="patmod-field full">
+        <label>Observaciones</label>
+        <textarea id="patmod-obs" class="docmod-textarea" style="min-height:80px;" placeholder="Notas y observaciones del paciente..."></textarea>
       </div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px;">
@@ -2447,6 +2446,21 @@ function saveNewAppt() {
     showToast(`La hora ${time} ya está ocupada ese día`, 'error'); return;
   }
 
+  // Automate patient creation
+  const manual = getManualPatients();
+  const patientExists = manual.some(p => p.name.trim().toLowerCase() === name.toLowerCase());
+  if (!patientExists) {
+    manual.push({
+      id: 'pat_' + Date.now(),
+      name: name,
+      phone: phone || '',
+      nif: '', dob: '', email: '', address: '', city: '', cp: '', obs: '',
+      createdAt: new Date().toISOString()
+    });
+    saveManualPatients(manual);
+    console.log('Automated patient creation for:', name);
+  }
+
   APPOINTMENTS[date].push({ name, service, time, status: 'pending', phone: phone || undefined });
   APPOINTMENTS[date].sort((a, b) => a.time.localeCompare(b.time));
   saveAppointments();
@@ -2852,6 +2866,7 @@ function initAuth() {
   renderServicesConfig();
   initScheduleEditor();
   renderAnalysisHistory();
+  ensureDefaultTemplates();
 
   // Primera vez: contraseña 0000 → forzar cambio
   if (currentUser.pass === '0000') {
@@ -2973,6 +2988,54 @@ function getScheduleFromEditor() {
   ];
 
   return { days, slots, interval, morningStart, morningEnd, afternoonStart, afternoonEnd };
+}
+
+function ensureDefaultTemplates() {
+  if (isDemo()) return;
+  const templates = getDocTemplates();
+  const majorExists = templates.some(t => t.title.includes('Mayores de Edad'));
+  const minorExists = templates.some(t => t.title.includes('Menores de Edad'));
+
+  const clinicName = currentUser.clinicName || currentUser.name || 'el centro';
+
+  if (!majorExists) {
+    templates.push({
+      id: 'doc_default_major',
+      title: 'Consentimiento Informado (Mayores de Edad)',
+      content: `<h1>Consentimiento Informado para Tratamiento</h1>
+<p>Por la presente, <strong>{{NOMBRE_PACIENTE}}</strong>, con DNI <strong>{{DNI_PACIENTE}}</strong>, declaro que he sido informado sobre el tratamiento que voy a recibir en <strong>${clinicName}</strong>.</p>
+<h2>Cláusulas Adicionales</h2>
+<p>Indique su consentimiento para los siguientes puntos marcando la casilla correspondiente en el momento de la firma:</p>
+<ul>
+<li>Contacto a través de WhatsApp para gestiones de citas y recordatorios.</li>
+<li>Grabación de audio de las sesiones para uso exclusivamente interno y mejora de la calidad asistencial.</li>
+</ul>
+<p>He comprendido la información facilitada y he podido resolver todas mis dudas.</p>`,
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  if (!minorExists) {
+    templates.push({
+      id: 'doc_default_minor',
+      title: 'Consentimiento Informado (Menores de Edad)',
+      content: `<h1>Consentimiento Informado para Menores de Edad</h1>
+<p>Como representantes legales de <strong>{{NOMBRE_PACIENTE}}</strong>, autorizamos el tratamiento en <strong>${clinicName}</strong>.</p>
+<p>Este documento debe ser firmado por ambos progenitores o tutores legales.</p>
+<h2>Cláusulas Adicionales</h2>
+<p>Indique su consentimiento para los siguientes puntos marcando la casilla correspondiente en el momento de la firma:</p>
+<ul>
+<li>Contacto a través de WhatsApp para gestiones de citas y recordatorios.</li>
+<li>Grabación de audio de las sesiones para uso exclusivamente interno y mejora de la calidad asistencial.</li>
+</ul>
+<p>Ambos firmantes declaramos haber sido informados y aceptar las condiciones del tratamiento.</p>`,
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  if (!majorExists || !minorExists) {
+    saveDocTemplates(templates);
+  }
 }
 
 function updateBookingInfo() {
@@ -3497,7 +3560,6 @@ function renderDocTemplates() {
       <div class="doc-title">${escHtml(t.title)}</div>
       <div class="doc-preview">${escHtml(t.content.slice(0,120))}…</div>
       <div class="doc-card-actions">
-        <button class="doc-btn primary" onclick="openSendModal('${escHtml(t.id)}')">📤 Enviar</button>
         <button class="doc-btn secondary" onclick="openDocEditorModal('${escHtml(t.id)}')">✏️ Editar</button>
         <button class="doc-btn danger" onclick="deleteDocTemplate('${escHtml(t.id)}')">🗑️</button>
       </div>
@@ -3596,11 +3658,12 @@ function closeSendModal() {
 
 function sendConsentViaWA() {
   const patientName  = document.getElementById('sendmod-patient-name').value.trim();
+  const t = getDocTemplates().find(x => x.id === _sendDocId);
+  if (!t) return;
+  const isMinor = t.title.toLowerCase().includes('menores de edad');
   const patientPhone = document.getElementById('sendmod-patient-phone').value.trim().replace(/\s/g,'');
   if (!patientName)  { showToast('Escribe el nombre del paciente', 'error'); return; }
   if (!patientPhone) { showToast('Escribe el teléfono del paciente', 'error'); return; }
-  const t = getDocTemplates().find(x => x.id === _sendDocId);
-  if (!t) return;
 
   // Replace variables in content
   const today = new Date().toLocaleDateString('es-ES');
@@ -3614,7 +3677,7 @@ function sendConsentViaWA() {
   const base = window.location.href.replace(/\/[^\/]*$/, '/firma.html');
   const tB64 = btoa(unescape(encodeURIComponent(t.title)));
   const cB64 = btoa(unescape(encodeURIComponent(resolvedContent)));
-  const signingUrl = `${base}?t=${encodeURIComponent(tB64)}&c=${encodeURIComponent(cB64)}&n=${encodeURIComponent(patientName)}&clinic=${encodeURIComponent(currentUser.clinicName || currentUser.name)}&wa=${encodeURIComponent((currentUser.phone||'').replace(/\s/g,''))}`;
+  const signingUrl = `${base}?t=${encodeURIComponent(tB64)}&c=${encodeURIComponent(cB64)}&n=${encodeURIComponent(patientName)}&clinic=${encodeURIComponent(currentUser.clinicName || currentUser.name)}&wa=${encodeURIComponent((currentUser.phone||'').replace(/\s/g,''))}${isMinor ? '&minor=1' : ''}`;
 
   const msg = `Hola ${patientName} 👋\n\nTe enviamos el consentimiento para firma digital:\n\n📄 *${t.title}*\n\nAccede al enlace, léelo y fírmalo con tu nombre:\n${signingUrl}\n\nGracias, ${currentUser.clinicName || currentUser.name}`;
 
@@ -3742,7 +3805,7 @@ function filterPatients(q) {
 // ── PATIENT MODAL (create/edit) ────────────────────────────────
 function openPatientModal(patIdx) {
   _editPatientId = null;
-  const fields = ['name','nif','dob','phone','email','address','city','cp'];
+  const fields = ['name','nif','dob','phone','email','address','city','cp','obs'];
   fields.forEach(f => document.getElementById('patmod-'+f).value = '');
   document.getElementById('patmod-title').textContent = '👤 Nuevo paciente';
   if (patIdx !== undefined) {
@@ -3758,6 +3821,7 @@ function openPatientModal(patIdx) {
       document.getElementById('patmod-address').value = p.address || '';
       document.getElementById('patmod-city').value    = p.city || '';
       document.getElementById('patmod-cp').value      = p.cp || '';
+      document.getElementById('patmod-obs').value     = p.obs || '';
     }
   }
   document.getElementById('patmod-overlay').classList.add('show');
@@ -3783,6 +3847,7 @@ function savePatient() {
     address: document.getElementById('patmod-address').value.trim(),
     city:    document.getElementById('patmod-city').value.trim(),
     cp:      document.getElementById('patmod-cp').value.trim(),
+    obs:     document.getElementById('patmod-obs').value.trim(),
   };
   if (_editPatientId) {
     const idx = manual.findIndex(p => p.id === _editPatientId);
@@ -3814,6 +3879,18 @@ function openPatientPanel(idx) {
     patient.email || null,
     `${patient.appts.length} cita${patient.appts.length!==1?'s':''}`
   ].filter(Boolean).join(' · ');
+
+  // Display observations if any
+  const obsElId = 'pp-obs-box';
+  let obsEl = document.getElementById(obsElId);
+  if (!obsEl) {
+    obsEl = document.createElement('div');
+    obsEl.id = obsElId;
+    obsEl.style.cssText = 'margin-top:10px; padding:10px; background:var(--bg); border-radius:8px; font-size:12px; color:var(--muted); border-left:3px solid var(--green);';
+    document.querySelector('.pp-info').appendChild(obsEl);
+  }
+  obsEl.textContent = patient.obs || 'Sin observaciones.';
+  obsEl.style.display = patient.obs ? 'block' : 'none';
 
   // Reset tabs to first
   document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
@@ -3886,21 +3963,49 @@ function renderPpNotas(patient) {
 }
 
 function renderPpDocs(patient) {
-  const panel    = document.getElementById('pp-panel-docs');
+  const panel = document.getElementById('pp-panel-docs');
+  const templates = getDocTemplates();
   const consents = getConsents().filter(c => c.patientName.toLowerCase() === patient.name.toLowerCase());
-  if (!consents.length) {
-    panel.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:16px 0;">Sin consentimientos enviados.</div>`;
-    return;
-  }
-  panel.innerHTML = [...consents].reverse().map(c => `
-    <div class="doc-sent-item">
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;">${escHtml(c.docTitle)}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(c.sentAt).toLocaleDateString('es-ES')}</div>
+
+  let html = `<div style="margin-bottom:20px;">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📄 Plantillas disponibles</div>
+    <div style="display:grid;gap:8px;">`;
+
+  if (!templates.length) {
+    html += `<div style="color:var(--muted);font-size:13px;padding:12px;background:var(--bg);border-radius:8px;border:1px dashed var(--border);">No tienes plantillas creadas. Ve a la sección 'Documentos' para añadir una.</div>`;
+  } else {
+    html += templates.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:600;">${escHtml(t.title)}</div>
+        <button class="doc-btn primary" onclick="openSendModalFromProfile('${escHtml(t.id)}')">Enviar</button>
       </div>
-      <span class="doc-status-badge ${c.status}">${c.status==='signed'?'✅ Firmado':'⏳ Pendiente'}</span>
-    </div>
-  `).join('');
+    `).join('');
+  }
+  html += `</div></div>`;
+
+  html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📤 Documentos enviados</div>`;
+  if (!consents.length) {
+    html += `<div style="color:var(--muted);font-size:13px;padding:16px 0;">Sin consentimientos enviados aún.</div>`;
+  } else {
+    html += [...consents].reverse().map(c => `
+      <div class="doc-sent-item">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">${escHtml(c.docTitle)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(c.sentAt).toLocaleDateString('es-ES')}</div>
+        </div>
+        <span class="doc-status-badge ${c.status}">${c.status==='signed'?'✅ Firmado':'⏳ Pendiente'}</span>
+      </div>
+    `).join('');
+  }
+
+  panel.innerHTML = html;
+}
+
+function openSendModalFromProfile(docId) {
+  if (!_currentPatient) return;
+  openSendModal(docId);
+  document.getElementById('sendmod-patient-name').value = _currentPatient.name;
+  document.getElementById('sendmod-patient-phone').value = _currentPatient.phone || '';
 }
 
 function goToIAForPatient() {
