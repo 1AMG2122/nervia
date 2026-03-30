@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title id="page-title">Nervia — Dashboard</title>
+  <title id="page-title">NERV-IA — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -11,12 +11,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f0f4f8;
+      --bg: #F0F9FF;
       --sidebar-bg: #ffffff;
       --card-bg: #ffffff;
-      --green: #25d366;
-      --green-dark: #1aab52;
-      --green-dim: rgba(37,211,102,0.08);
+      --green: #0891B2;
+      --green-dark: #0E7490;
+      --green-dim: rgba(8,145,178,0.08);
       --blue: #3b82f6;
       --orange: #f59e0b;
       --purple: #8b5cf6;
@@ -61,17 +61,8 @@
       margin-bottom: 10px;
     }
 
-    .sidebar-logo img {
-      height: 32px;
-      mix-blend-mode: multiply;
-    }
-
-    .sidebar-logo .logo-text {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--green-dark);
-      letter-spacing: -0.5px;
-    }
+    .nervia-logotype { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -2px; line-height: 1; user-select: none; color: #0F172A; }
+    .nervia-logotype span { color: #0891B2; }
 
     .clinic-name {
       font-size: 12px;
@@ -433,7 +424,7 @@
 
     .cal-day.selected.today .cal-day-num {
       background: var(--green-dark);
-      box-shadow: 0 0 0 3px rgba(37,211,102,0.3);
+      box-shadow: 0 0 0 3px rgba(8,145,178,0.3);
     }
 
     .cal-dots {
@@ -446,12 +437,14 @@
     }
 
     .cal-dot {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--green);
       flex-shrink: 0;
     }
+    .cal-dot.pending  { background: var(--orange); }
+    .cal-dot.confirmed { background: var(--green); }
 
     .cal-more {
       font-size: 9px;
@@ -512,14 +505,17 @@
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 10px;
-      border-left: 3px solid var(--green);
+      border-left: 4px solid var(--orange);
       transition: box-shadow 0.15s, opacity 0.3s;
     }
-
-    .appt-card.fisio { border-left-color: var(--green); }
-    .appt-card.psico { border-left-color: var(--blue); }
-    .appt-card.masaje { border-left-color: var(--orange); }
-    .appt-card.consulta { border-left-color: var(--purple); }
+    .appt-card.status-confirmed {
+      border-left-color: var(--green);
+      background: rgba(8,145,178,0.04);
+    }
+    .appt-card.status-pending {
+      border-left-color: var(--orange);
+      background: rgba(245,158,11,0.05);
+    }
 
     .appt-top {
       display: flex;
@@ -557,7 +553,7 @@
       letter-spacing: 0.3px;
     }
 
-    .badge.fisio { background: rgba(37,211,102,0.12); color: var(--green-dark); }
+    .badge.fisio { background: rgba(8,145,178,0.12); color: var(--green-dark); }
     .badge.psico { background: rgba(59,130,246,0.12); color: #2563eb; }
     .badge.masaje { background: rgba(245,158,11,0.12); color: #d97706; }
     .badge.consulta { background: rgba(139,92,246,0.12); color: #7c3aed; }
@@ -591,7 +587,7 @@
     }
 
     .appt-btn.confirm {
-      background: rgba(37,211,102,0.08);
+      background: rgba(8,145,178,0.08);
       color: var(--green-dark);
       border-color: var(--green);
     }
@@ -603,6 +599,160 @@
       border-color: var(--red);
     }
     .appt-btn.cancel:hover { background: var(--red); color: #fff; }
+
+    .appt-btn.pending-btn {
+      background: rgba(245,158,11,0.08);
+      color: #b45309;
+      border-color: var(--orange);
+    }
+    .appt-btn.pending-btn:hover { background: var(--orange); color: #fff; }
+
+    .appt-btn.move-btn {
+      background: rgba(59,130,246,0.07);
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+    .appt-btn.move-btn:hover { background: var(--blue); color: #fff; }
+
+    /* ── MOVE MODAL ── */
+    .move-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .move-overlay.open { opacity: 1; pointer-events: all; }
+    .move-box {
+      background: #fff; border-radius: 16px; padding: 28px 28px 24px;
+      width: min(400px, 92vw); box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+    .move-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .move-box p  { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .move-box input[type="date"] {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 14px; margin-bottom: 18px;
+    }
+    .move-box-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .move-box-actions button {
+      font-size: 13px; font-weight: 600; padding: 8px 18px;
+      border-radius: 8px; cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .move-cancel-btn { background: none; border: 1px solid var(--border); color: var(--muted); }
+    .move-cancel-btn:hover { background: var(--bg); }
+    .move-confirm-btn { background: var(--blue); border: 1px solid var(--blue); color: #fff; }
+    .move-confirm-btn:hover { background: #2563eb; }
+
+    /* ── NUEVA CITA MODAL ── */
+    .nappt-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9100; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .nappt-overlay.open { opacity: 1; pointer-events: all; }
+    .nappt-box {
+      background: #fff; border-radius: 18px; padding: 30px 28px 24px;
+      width: min(460px, 94vw); box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .nappt-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    .nappt-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .nappt-field label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .nappt-field input, .nappt-field select {
+      padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 14px; background: #fff; color: var(--text);
+      transition: border-color 0.15s;
+    }
+    .nappt-field input:focus, .nappt-field select:focus { outline: none; border-color: var(--green); }
+    .nappt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .nappt-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .nappt-actions button {
+      font-size: 13px; font-weight: 600; padding: 10px 22px;
+      border-radius: 8px; cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .nappt-cancel { background: none; border: 1px solid var(--border); color: var(--muted); }
+    .nappt-cancel:hover { background: var(--bg); }
+    .nappt-save   { background: var(--green); border: 1px solid var(--green); color: #fff; }
+    .nappt-save:hover { background: var(--green-dark); }
+
+    /* ── TABLE MINI ACTIONS ── */
+    .tbl-btn {
+      font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px;
+      cursor: pointer; border: 1px solid; font-family: inherit; transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .tbl-btn.confirm  { background: rgba(8,145,178,0.08); color: var(--green-dark); border-color: var(--green); }
+    .tbl-btn.confirm:hover  { background: var(--green); color: #fff; }
+    .tbl-btn.pending  { background: rgba(245,158,11,0.08); color: #b45309; border-color: var(--orange); }
+    .tbl-btn.pending:hover  { background: var(--orange); color: #fff; }
+    .tbl-btn.move     { background: rgba(59,130,246,0.07); color: var(--blue); border-color: var(--blue); }
+    .tbl-btn.move:hover     { background: var(--blue); color: #fff; }
+    .tbl-btn.del      { background: rgba(239,68,68,0.06); color: var(--red); border-color: var(--red); }
+    .tbl-btn.del:hover      { background: var(--red); color: #fff; }
+    .td-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    /* ── HISTORIAL IA EJEMPLOS ── */
+    .hist-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+      color: var(--muted); padding: 14px 0 8px; border-top: 1px solid var(--border); margin-top: 8px;
+    }
+    .hist-item.example { opacity: 0.72; background: #f9fafb; }
+
+    /* ── ANALYSIS DETAIL MODAL ── */
+    .anl-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .anl-overlay.open { opacity: 1; pointer-events: all; }
+    .anl-box {
+      background: #fff; border-radius: 18px;
+      width: min(680px, 96vw); max-height: 88vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+    .anl-header {
+      padding: 22px 26px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .anl-header h3 { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+    .anl-header .anl-meta { font-size: 12px; color: var(--muted); }
+    .anl-close {
+      background: none; border: none; font-size: 20px; cursor: pointer;
+      color: var(--muted); line-height: 1; flex-shrink: 0; padding: 2px 4px;
+    }
+    .anl-close:hover { color: var(--text); }
+    .anl-body { padding: 22px 26px; overflow-y: auto; flex: 1; }
+    .anl-section-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .anl-transcript {
+      background: #f8fafc; border-radius: 10px; padding: 14px 16px;
+      font-size: 13px; line-height: 1.7; color: var(--text);
+      border: 1px solid var(--border); margin-bottom: 20px;
+      max-height: 140px; overflow-y: auto;
+    }
+    .anl-result {
+      background: var(--green-dim); border-radius: 10px; padding: 16px 18px;
+      font-size: 13px; line-height: 1.8; color: var(--text);
+      border: 1px solid rgba(8,145,178,0.2);
+    }
+    .anl-result strong { color: var(--green-dark); }
+    .anl-result ul { padding-left: 18px; margin: 6px 0; }
+    .anl-result li { margin-bottom: 3px; }
+    .anl-footer {
+      padding: 16px 26px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .anl-footer button {
+      font-size: 13px; font-weight: 600; padding: 9px 20px;
+      border-radius: 8px; cursor: pointer; font-family: inherit; transition: all .15s;
+    }
+    .anl-btn-close { background: none; border: 1px solid var(--border); color: var(--muted); }
+    .anl-btn-close:hover { background: var(--bg); }
+    .anl-btn-load  { background: var(--green); border: 1px solid var(--green); color: #fff; }
+    .anl-btn-load:hover  { background: var(--green-dark); }
 
     .new-appt-btn {
       width: calc(100% - 24px);
@@ -691,7 +841,7 @@
       padding: 3px 10px;
       border-radius: 20px;
     }
-    .status-badge.confirmed { background: rgba(37,211,102,0.12); color: var(--green-dark); }
+    .status-badge.confirmed { background: rgba(8,145,178,0.12); color: var(--green-dark); }
     .status-badge.pending { background: rgba(245,158,11,0.12); color: #d97706; }
 
     /* ── FADE TRANSITION ── */
@@ -702,6 +852,49 @@
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── DAY / INTERVAL CHIPS ── */
+    .day-chip, .interval-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: #fff;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .day-chip input, .interval-chip input { display: none; }
+    .day-chip:has(input:checked), .interval-chip:has(input:checked) {
+      background: var(--green-dim); border-color: var(--green);
+      color: var(--green-dark); font-weight: 600;
+    }
+    .sched-slot-preview {
+      padding: 4px 10px; border-radius: 6px; font-size: 12px;
+      background: var(--green-dim); color: var(--green-dark);
+      border: 1px solid rgba(8,145,178,0.25);
+    }
+
+    /* ── TOGGLE SWITCH (read-only) ── */
+    .toggle-switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-knob { position: absolute; inset: 0; background: #d1d5db; border-radius: 22px; transition: background 0.2s; }
+    .toggle-knob::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle-switch input:checked + .toggle-knob { background: var(--green); }
+    .toggle-switch input:checked + .toggle-knob::after { transform: translateX(16px); }
+    .toggle-switch input:disabled + .toggle-knob { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── SUPPORT NOTICE ── */
+    .support-notice {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .support-notice-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .support-notice-text { font-size: 13px; line-height: 1.5; color: #92400e; }
+    .support-notice-text strong { color: #78350f; }
 
     /* ── TOAST ── */
     #toast-container {
@@ -773,6 +966,198 @@
       .upcoming-table th:nth-child(3),
       .upcoming-table td:nth-child(3) { display: none; }
     }
+    /* ── NOTAS IA ── */
+    .ia-tabs { display:flex; gap:8px; margin-bottom:20px; }
+    .ia-tab { padding:8px 18px; border-radius:8px; border:1.5px solid var(--border); background:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted); transition:all .15s; }
+    .ia-tab.active { background:var(--green-dim); color:var(--green-dark); border-color:var(--green); }
+    .ia-tab-panel { display:none; }
+    .ia-tab-panel.active { display:block; }
+    .rec-btn { display:flex; align-items:center; gap:10px; padding:13px 22px; border-radius:10px; border:none; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
+    .rec-btn.idle { background:var(--green); color:#fff; }
+    .rec-btn.idle:hover { background:var(--green-dark); }
+    .rec-btn.recording { background:var(--red); color:#fff; animation:recPulse 1.4s ease-in-out infinite; }
+    @keyframes recPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 10px rgba(239,68,68,0)} }
+    .rec-dot { width:10px; height:10px; border-radius:50%; background:currentColor; }
+    .rec-timer { font-family:'Space Mono',monospace; font-size:13px; color:var(--muted); margin-top:8px; }
+    .live-transcript { min-height:80px; padding:12px; background:var(--bg); border-radius:8px; font-size:13px; line-height:1.6; color:var(--muted); border:1px dashed var(--border); margin-top:12px; white-space:pre-wrap; }
+    .transcript-edit { width:100%; min-height:120px; padding:12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; line-height:1.7; resize:vertical; outline:none; transition:border-color .15s; }
+    .transcript-edit:focus { border-color:var(--green); }
+    .drop-zone { border:2px dashed var(--border); border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:all .2s; }
+    .drop-zone:hover,.drop-zone.drag-over { border-color:var(--green); background:var(--green-dim); }
+    .drop-zone-icon { font-size:36px; margin-bottom:10px; }
+    .analyze-btn { margin-top:18px; width:100%; padding:13px; background:linear-gradient(135deg,#0E7490,#0891B2); color:#fff; border:none; border-radius:10px; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:opacity .15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .analyze-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .ai-result { background:#f8fffe; border:1.5px solid rgba(8,145,178,.25); border-radius:12px; padding:20px; margin-top:20px; }
+    .ai-result h4 { font-size:13px; font-weight:700; color:var(--green-dark); margin:16px 0 6px; text-transform:uppercase; letter-spacing:.04em; }
+    .ai-result h4:first-child { margin-top:0; }
+    .ai-result p,.ai-result li { font-size:13px; line-height:1.7; color:var(--text); }
+    .ai-result ul { padding-left:18px; }
+    .hist-item { display:flex; align-items:flex-start; gap:12px; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:8px; cursor:pointer; transition:background .12s; }
+    .hist-item:hover { background:var(--green-dim); }
+    .hist-date { font-size:10px; color:var(--muted); font-family:'Space Mono',monospace; white-space:nowrap; margin-top:2px; }
+    .hist-name { font-size:13px; font-weight:600; }
+    .hist-preview { font-size:12px; color:var(--muted); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:300px; }
+    .api-key-notice { background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:14px 16px; font-size:13px; color:#92400e; display:flex; gap:10px; align-items:flex-start; }
+
+    /* ── DOCUMENTS VIEW ── */
+    .doc-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:4px; }
+    .doc-template-card { background:var(--bg); border-radius:10px; padding:14px; margin-bottom:10px; border:1.5px solid var(--border); }
+    .doc-template-card .doc-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+    .doc-template-card .doc-preview { font-size:12px; color:var(--muted); margin-bottom:12px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+    .doc-card-actions { display:flex; gap:7px; flex-wrap:wrap; }
+    .doc-btn { padding:5px 11px; border-radius:7px; border:none; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
+    .doc-btn.primary { background:var(--green); color:#fff; }
+    .doc-btn.primary:hover { background:var(--green-dark); }
+    .doc-btn.secondary { background:none; border:1.5px solid var(--border); color:var(--muted); }
+    .doc-btn.secondary:hover { border-color:var(--green); color:var(--green-dark); }
+    .doc-btn.danger { background:none; border:1.5px solid #fecaca; color:var(--red); }
+    .doc-btn.danger:hover { background:#fef2f2; }
+    .doc-sent-item { padding:12px 0; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:12px; }
+    .doc-sent-item:last-child { border-bottom:none; }
+    .doc-status-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+    .doc-status-badge.pending { background:#fef3c7; color:#92400e; }
+    .doc-status-badge.signed { background:#d1fae5; color:#065f46; }
+
+    /* ── PATIENTS VIEW ── */
+    .patients-search { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; outline:none; margin-bottom:20px; transition:border-color .15s; }
+    .patients-search:focus { border-color:var(--green); }
+    .patients-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:14px; }
+    .patient-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; cursor:pointer; transition:all .15s; border:1.5px solid transparent; }
+    .patient-card:hover { box-shadow:var(--shadow-md); border-color:var(--green); }
+    .patient-card .pc-avatar { width:42px; height:42px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:#fff; margin-bottom:10px; }
+    .patient-card .pc-name { font-size:14px; font-weight:700; margin-bottom:3px; }
+    .patient-card .pc-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+
+    /* ── PATIENT PROFILE PANEL ── */
+    .patient-panel-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:500; backdrop-filter:blur(2px); }
+    .patient-panel-overlay.show { display:flex; justify-content:flex-end; }
+    .patient-panel { width:min(520px,95vw); height:100vh; background:var(--card-bg); box-shadow:-8px 0 32px rgba(0,0,0,.15); display:flex; flex-direction:column; animation:slideInRight .25s ease; }
+    @keyframes slideInRight { from{transform:translateX(100%)} to{transform:translateX(0)} }
+    .pp-header { padding:22px 24px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
+    .pp-avatar { width:50px; height:50px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:#fff; flex-shrink:0; }
+    .pp-info { flex:1; min-width:0; }
+    .pp-name { font-size:17px; font-weight:700; }
+    .pp-meta { font-size:12px; color:var(--muted); margin-top:4px; }
+    .pp-close { background:none; border:none; cursor:pointer; font-size:20px; color:var(--muted); padding:4px; transition:color .15s; margin-left:auto; }
+    .pp-close:hover { color:var(--text); }
+    .pp-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .pp-tab { flex:1; padding:12px 8px; text-align:center; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent; transition:all .15s; }
+    .pp-tab.active { color:var(--green-dark); border-bottom-color:var(--green); }
+    .pp-body { flex:1; overflow-y:auto; padding:20px 24px; }
+    .pp-tab-panel { display:none; }
+    .pp-tab-panel.active { display:block; }
+    .pp-appt-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .pp-appt-row:last-child { border-bottom:none; }
+    .pp-appt-date { font-weight:600; min-width:90px; }
+    .pp-note-card { background:var(--bg); border-radius:10px; padding:12px 14px; margin-bottom:10px; cursor:pointer; transition:box-shadow .15s; }
+    .pp-note-card:hover { box-shadow:var(--shadow); }
+    .pp-note-date { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:4px; }
+    .pp-note-preview { font-size:13px; color:var(--text); }
+
+    /* ── DOC EDITOR MODAL ── */
+    .docmod-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .docmod-overlay.show { display:flex; }
+    .docmod-box { background:#fff; border-radius:16px; padding:28px 28px 24px; width:min(620px,95vw); max-height:90vh; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,.2); }
+    .docmod-box h3 { font-size:17px; font-weight:700; margin-bottom:18px; }
+    .docmod-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+    .docmod-input { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; outline:none; margin-bottom:14px; transition:border-color .15s; }
+    .docmod-input:focus { border-color:var(--green); }
+    .docmod-textarea { width:100%; padding:12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; resize:vertical; min-height:200px; transition:border-color .15s; flex:1; }
+    .docmod-textarea:focus { border-color:var(--green); }
+    .docmod-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; flex-shrink:0; }
+
+    /* ── SEND CONSENT MODAL ── */
+    .sendmod-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1001; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .sendmod-overlay.show { display:flex; }
+    .sendmod-box { background:#fff; border-radius:16px; padding:28px; width:min(460px,95vw); box-shadow:0 24px 60px rgba(0,0,0,.2); }
+    .sendmod-box h3 { font-size:17px; font-weight:700; margin-bottom:18px; }
+
+    /* ── WYSIWYG EDITOR ── */
+    .wysiwyg-toolbar { display:flex; flex-wrap:wrap; gap:2px; padding:8px 10px; background:#f8fafc; border:1.5px solid var(--border); border-bottom:none; border-radius:8px 8px 0 0; align-items:center; }
+    .wysiwyg-btn { padding:4px 7px; border:none; background:none; border-radius:5px; cursor:pointer; font-size:13px; font-family:inherit; color:var(--text); transition:background .12s; min-width:28px; line-height:1; }
+    .wysiwyg-btn:hover { background:var(--green-dim); }
+    .wysiwyg-select { padding:4px 6px; border:1px solid var(--border); border-radius:5px; font-size:12px; font-family:inherit; background:#fff; cursor:pointer; outline:none; color:var(--text); max-width:120px; }
+    .wysiwyg-sep { width:1px; height:18px; background:var(--border); margin:0 4px; flex-shrink:0; }
+    .docmod-editor { border:1.5px solid var(--border); border-radius:0 0 8px 8px; padding:14px; font-size:14px; font-family:'Space Grotesk',sans-serif; outline:none; min-height:200px; max-height:320px; overflow-y:auto; line-height:1.75; transition:border-color .15s; flex:1; }
+    .docmod-editor:focus { border-color:var(--green); }
+    .docmod-editor:empty::before { content:attr(data-placeholder); color:var(--muted); pointer-events:none; display:block; }
+    .docmod-editor h1 { font-size:20px; font-weight:700; margin:8px 0 6px; }
+    .docmod-editor h2 { font-size:16px; font-weight:700; margin:7px 0 5px; }
+    .docmod-editor h3 { font-size:14px; font-weight:700; margin:6px 0 4px; }
+    .docmod-editor p { margin:0 0 8px; }
+    .docmod-editor ul, .docmod-editor ol { padding-left:22px; margin:4px 0; }
+    .doc-var { display:inline-block; background:rgba(8,145,178,.12); color:var(--green-dark); border-radius:4px; padding:1px 6px; font-size:12px; font-weight:700; font-family:'Space Mono',monospace; user-select:all; }
+
+    /* ── PATIENT CREATE/EDIT MODAL ── */
+    .patmod-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .patmod-overlay.show { display:flex; }
+    .patmod-box { background:#fff; border-radius:16px; padding:28px; width:min(540px,95vw); max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.2); }
+    .patmod-box h3 { font-size:17px; font-weight:700; margin-bottom:18px; }
+    .patmod-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+    .patmod-field { margin-bottom:14px; }
+    .patmod-field.full { grid-column:1/-1; }
+    .patmod-field label { display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+    .patmod-field input { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; outline:none; transition:border-color .15s; }
+    .patmod-field input:focus { border-color:var(--green); }
+
+    /* ── BILLING ── */
+    .bill-header { display:grid; grid-template-columns:1fr 56px 76px 60px 32px; gap:6px; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; padding:0 2px; }
+    .bill-row { display:grid; grid-template-columns:1fr 56px 76px 60px 32px; gap:6px; align-items:center; margin-bottom:6px; }
+    .bill-input { padding:7px 9px; border:1.5px solid var(--border); border-radius:7px; font-size:13px; font-family:inherit; outline:none; width:100%; transition:border-color .15s; }
+    .bill-input:focus { border-color:var(--green); }
+    .bill-del { background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; padding:2px; transition:color .12s; }
+    .bill-del:hover { color:var(--red); }
+    .bill-totals { text-align:right; padding:10px 0 4px; border-top:1.5px solid var(--border); margin-top:4px; font-size:13px; }
+    .bill-total-val { font-size:17px; font-weight:700; color:var(--green-dark); }
+
+    /* ── INVOICE MODAL ── */
+    .invmod-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1100; align-items:flex-start; justify-content:center; backdrop-filter:blur(4px); overflow-y:auto; padding:24px 16px; }
+    .invmod-overlay.show { display:flex; }
+    .invmod-box { background:#fff; border-radius:16px; width:min(700px,95vw); margin:auto; box-shadow:0 24px 60px rgba(0,0,0,.2); overflow:hidden; }
+    .inv-actions { padding:14px 24px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; }
+    .inv-actions-title { flex:1; font-size:14px; font-weight:600; }
+    .inv-btn { border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .inv-btn.print { background:var(--green); color:#fff; }
+    .inv-btn.print:hover { background:var(--green-dark); }
+    .inv-btn.wa { background:#25d366; color:#fff; }
+    .inv-btn.close { background:none; border:1.5px solid var(--border); color:var(--muted); }
+    .inv-body { padding:36px 40px; font-size:14px; color:#0F172A; line-height:1.6; }
+    .inv-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; }
+    .inv-logo { font-weight:800; font-size:24px; letter-spacing:-2px; }
+    .inv-logo span { color:#0891B2; }
+    .inv-head-right { text-align:right; }
+    .inv-num { font-size:22px; font-weight:700; color:#0891B2; }
+    .inv-date-str { font-size:12px; color:#6b7280; margin-top:3px; }
+    .inv-parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:28px; }
+    .inv-party h4 { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:6px; }
+    .inv-party p { font-size:13px; color:#0F172A; margin:0; }
+    .inv-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
+    .inv-table th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; padding:7px 10px; border-bottom:2px solid #e5e7eb; text-align:left; }
+    .inv-table th:nth-child(2), .inv-table th:nth-child(3), .inv-table th:last-child { text-align:right; }
+    .inv-table td { padding:9px 10px; border-bottom:1px solid #f1f5f9; font-size:13px; }
+    .inv-table td:nth-child(2), .inv-table td:nth-child(3), .inv-table td:last-child { text-align:right; }
+    .inv-totals-wrap { display:flex; justify-content:flex-end; }
+    .inv-totals { width:240px; border-collapse:collapse; }
+    .inv-totals td { padding:5px 10px; font-size:13px; }
+    .inv-totals tr.inv-total-final td { font-weight:700; font-size:16px; color:#0F172A; border-top:2px solid #e5e7eb; padding-top:10px; }
+    .inv-footer-note { margin-top:28px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:11px; color:#9ca3af; text-align:center; }
+    @media print {
+      .inv-actions { display:none !important; }
+      .invmod-overlay { position:static; background:none; padding:0; }
+      .invmod-box { box-shadow:none; border-radius:0; }
+    }
+
+    /* ── CHANGE PASSWORD MODAL ── */
+    .chpass-overlay { display:none; position:fixed; inset:0; background:rgba(4,8,15,.75); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .chpass-overlay.show { display:flex; }
+    .chpass-box { background:#fff; border-radius:18px; padding:36px 32px; max-width:400px; width:90%; box-shadow:0 24px 60px rgba(0,0,0,.25); }
+    .chpass-box h2 { font-size:20px; font-weight:700; margin:10px 0 6px; }
+    .chpass-box p { font-size:13px; color:var(--muted); margin-bottom:22px; line-height:1.5; }
+    .chpass-input { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:9px; font-size:14px; font-family:inherit; outline:none; margin-bottom:10px; transition:border-color .15s; }
+    .chpass-input:focus { border-color:var(--green); }
+    .chpass-err { font-size:12px; color:var(--red); min-height:18px; margin-bottom:10px; }
+    .chpass-btn { width:100%; padding:11px; background:var(--green); color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .chpass-btn:hover { background:var(--green-dark); }
   </style>
 </head>
 <body>
@@ -786,8 +1171,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <img src="../imagenes/logo.png" alt="Nervia" onerror="this.style.display='none'" />
-        <span class="logo-text">nervia</span>
+        <span class="nervia-logotype">NERV<span>-IA</span></span>
       </div>
       <div class="clinic-name" id="display-clinic-name">Cargando...</div>
     </div>
@@ -806,6 +1190,19 @@
       <div class="nav-item" data-view="estadisticas" onclick="setActive(this)">
         <span class="nav-icon">📊</span>
         Estadísticas
+      </div>
+      <div class="nav-label">Herramientas</div>
+      <div class="nav-item" data-view="notas-ia" onclick="setActive(this)">
+        <span class="nav-icon">🧠</span>
+        Notas IA
+      </div>
+      <div class="nav-item" data-view="pacientes" onclick="setActive(this)">
+        <span class="nav-icon">👥</span>
+        Pacientes
+      </div>
+      <div class="nav-item" data-view="documentos" onclick="setActive(this)">
+        <span class="nav-icon">📁</span>
+        Documentos
       </div>
       <div class="nav-label">Cuenta</div>
       <div class="nav-item" data-view="configuracion" onclick="setActive(this)">
@@ -859,19 +1256,19 @@
         <!-- STATS ROW -->
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-number">3</div>
+            <div class="stat-number" id="cal-stat-today">0</div>
             <div class="stat-label">Hoy</div>
           </div>
           <div class="stat-card blue">
-            <div class="stat-number">11</div>
+            <div class="stat-number" id="cal-stat-week">0</div>
             <div class="stat-label">Esta semana</div>
           </div>
           <div class="stat-card orange">
-            <div class="stat-number">2</div>
+            <div class="stat-number" id="cal-stat-pending">0</div>
             <div class="stat-label">Pendientes confirmación</div>
           </div>
           <div class="stat-card purple">
-            <div class="stat-number">38</div>
+            <div class="stat-number" id="cal-stat-month">0</div>
             <div class="stat-label">Este mes</div>
           </div>
         </div>
@@ -893,11 +1290,11 @@
           <!-- DAY PANEL -->
           <div class="day-panel">
             <div class="day-panel-header">
-              <div class="day-panel-title" id="dayPanelTitle">Martes 25 de marzo</div>
-              <div class="day-panel-count" id="dayPanelCount">3 citas</div>
+              <div class="day-panel-title" id="dayPanelTitle"></div>
+              <div class="day-panel-count" id="dayPanelCount">0 citas</div>
             </div>
             <div class="day-panel-body" id="dayPanelBody"></div>
-            <button class="new-appt-btn" onclick="showToast('Nueva cita — función próximamente', 'success')">
+            <button class="new-appt-btn" onclick="openNewAppt()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
               Nueva cita
             </button>
@@ -922,6 +1319,16 @@
             </table>
           </div>
         </div>
+      <!-- PAPELERA -->
+      <div id="trash-card" class="calendar-card" style="display:none;margin-top:0;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span style="font-size:18px;">🗑️</span>
+          <div class="section-title" style="font-size:14px;margin:0;">Papelera</div>
+          <span id="trash-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:2px 7px;min-width:18px;text-align:center;">0</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:auto;">Las citas se eliminan permanentemente tras 5 días</span>
+        </div>
+        <div id="trash-list"></div>
+      </div>
       </div>
 
       <!-- VISTA: PRÓXIMAS CITAS -->
@@ -945,83 +1352,63 @@
 
       <!-- VISTA: ESTADÍSTICAS -->
       <div id="view-estadisticas" class="view-container fade-in">
-        <div class="section-title">Estadísticas de rendimiento</div>
+        <div class="section-title">Estadísticas</div>
+
+        <!-- Contadores principales -->
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-number">92%</div>
-            <div class="stat-label">Tasa de conversión</div>
+            <div class="stat-number" id="stat-total-appts">0</div>
+            <div class="stat-label">Citas totales</div>
           </div>
           <div class="stat-card blue">
-            <div class="stat-number">14h</div>
-            <div class="stat-label">Tiempo ahorrado/mes</div>
+            <div class="stat-number" id="stat-confirmed">0</div>
+            <div class="stat-label">Confirmadas</div>
           </div>
           <div class="stat-card orange">
-            <div class="stat-number">24</div>
-            <div class="stat-label">Nuevos pacientes (IA)</div>
+            <div class="stat-number" id="stat-pending">0</div>
+            <div class="stat-label">Pendientes</div>
           </div>
           <div class="stat-card purple">
-            <div class="stat-number">4.8</div>
-            <div class="stat-label">Valoración media</div>
+            <div class="stat-number" id="stat-interactions">0</div>
+            <div class="stat-label">Interacciones totales</div>
           </div>
         </div>
 
         <div class="two-col">
+          <!-- Interacciones por origen -->
           <div class="calendar-card">
-            <div class="section-title" style="font-size:14px;">Citas por canal</div>
-            <div style="margin-top:20px; display:grid; gap:16px;">
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                  <span>WhatsApp Business</span>
-                  <span>75%</span>
+            <div class="section-title" style="font-size:14px;">Interacciones por origen</div>
+            <div style="margin-top:18px;display:grid;gap:14px;" id="interactions-breakdown">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:18px;">🔗</span>
+                  <span style="font-size:13px;">Enlace de reserva</span>
                 </div>
-                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
-                  <div style="height:100%; width:75%; background:var(--green);"></div>
-                </div>
+                <span style="font-size:20px;font-weight:700;color:var(--green)" id="int-booking">0</span>
               </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                  <span>Telegram Bot</span>
-                  <span>15%</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:18px;">🤖</span>
+                  <span style="font-size:13px;">Agente IA (bot)</span>
                 </div>
-                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
-                  <div style="height:100%; width:15%; background:var(--blue);"></div>
-                </div>
+                <span style="font-size:20px;font-weight:700;color:var(--blue)" id="int-bot">0</span>
               </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                  <span>Enlace Directo / Web</span>
-                  <span>10%</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:18px;">🧠</span>
+                  <span style="font-size:13px;">Análisis IA (Notas)</span>
                 </div>
-                <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
-                  <div style="height:100%; width:10%; background:var(--orange);"></div>
-                </div>
+                <span style="font-size:20px;font-weight:700;color:var(--purple)" id="int-ia">0</span>
               </div>
             </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:18px;line-height:1.5;">Las interacciones se registran automáticamente cada vez que un paciente usa el enlace de reserva, el bot o se realiza un análisis IA.</p>
           </div>
 
+          <!-- Servicios más solicitados -->
           <div class="calendar-card">
-            <div class="section-title" style="font-size:14px;">Distribución de servicios</div>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
-               <div style="display:flex; align-items:center; gap:10px;">
-                 <div style="width:12px; height:12px; border-radius:3px; background:var(--green);"></div>
-                 <span style="font-size:13px; flex:1;">Fisioterapia</span>
-                 <span style="font-size:13px; font-weight:600;">45%</span>
-               </div>
-               <div style="display:flex; align-items:center; gap:10px;">
-                 <div style="width:12px; height:12px; border-radius:3px; background:var(--blue);"></div>
-                 <span style="font-size:13px; flex:1;">Psicología</span>
-                 <span style="font-size:13px; font-weight:600;">25%</span>
-               </div>
-               <div style="display:flex; align-items:center; gap:10px;">
-                 <div style="width:12px; height:12px; border-radius:3px; background:var(--orange);"></div>
-                 <span style="font-size:13px; flex:1;">Masaje</span>
-                 <span style="font-size:13px; font-weight:600;">20%</span>
-               </div>
-               <div style="display:flex; align-items:center; gap:10px;">
-                 <div style="width:12px; height:12px; border-radius:3px; background:var(--purple);"></div>
-                 <span style="font-size:13px; flex:1;">Otros</span>
-                 <span style="font-size:13px; font-weight:600;">10%</span>
-               </div>
+            <div class="section-title" style="font-size:14px;">Servicios más solicitados</div>
+            <div id="services-breakdown" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
+              <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">Sin citas registradas aún</div>
             </div>
           </div>
         </div>
@@ -1050,23 +1437,39 @@
           </div>
 
           <div class="calendar-card">
-            <div class="section-title" style="font-size:14px;">Parámetros del Agente IA</div>
-            <div style="display: grid; gap: 16px; margin-top:15px;">
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Tono de voz</label>
-                <select style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px;">
-                  <option selected>Cercano y profesional</option>
-                  <option>Formal y clínico</option>
-                  <option>Relajado y casual</option>
-                </select>
+            <div class="section-title" style="font-size:14px;">Agente IA — Estado</div>
+            <div style="margin-top:15px;">
+              <div class="support-notice">
+                <span class="support-notice-icon">🛠️</span>
+                <div class="support-notice-text">
+                  <strong>¿Necesitas cambiar algo del agente?</strong><br>
+                  Para cualquier modificación en el comportamiento, mensajes o configuración del agente, por favor contacta con <strong>soporte</strong>. Nuestro equipo actualizará el agente por ti.
+                </div>
               </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Mensaje de bienvenida IA</label>
-                <textarea id="conf-ai-welcome" style="width:100%; padding:9px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; height:80px; resize:none;"></textarea>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" checked id="conf-triaje" style="accent-color:var(--green);">
-                <label for="conf-triaje" style="font-size:13px;">Activar triaje automático</label>
+              <div style="display:grid; gap:14px;">
+                <div>
+                  <label style="display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); text-transform:uppercase;">Bot de Telegram</label>
+                  <div id="bot-url-wrap" style="display:none;">
+                    <a id="conf-bot-url" href="#" target="_blank" rel="noopener"
+                       style="font-size:13px; color:var(--green-dark); text-decoration:underline; word-break:break-all;"></a>
+                  </div>
+                  <div id="bot-url-empty" style="font-size:13px; color:var(--muted);">Sin enlace configurado — contacta con soporte.</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="prof-whatsapp" disabled>
+                    <span class="toggle-knob"></span>
+                  </label>
+                  <span style="font-size:13px;">WhatsApp Business habilitado</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="prof-email-resumen" disabled>
+                    <span class="toggle-knob"></span>
+                  </label>
+                  <span style="font-size:13px;">Resumen diario por email</span>
+                </div>
+                <p style="font-size:11px; color:var(--muted); margin-top:4px;">Estas opciones son gestionadas por el administrador de NERV-IA.</p>
               </div>
             </div>
           </div>
@@ -1088,18 +1491,62 @@
            </div>
         </div>
 
+
+        <!-- ══ HORARIO DE TRABAJO ══ -->
         <div class="calendar-card" style="margin-top:20px;">
-           <div class="section-title" style="font-size:14px;">Notificaciones</div>
-           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:15px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" checked id="notif-wa" style="accent-color:var(--green);">
-                <label for="notif-wa" style="font-size:13px;">WhatsApp (Nuevas citas)</label>
+          <div class="section-title" style="font-size:14px;">Horario de trabajo</div>
+          <p style="font-size:13px;color:var(--muted);margin:8px 0 18px;">Define los días y franjas horarias en que recibes pacientes. Esto controla qué huecos aparecen en tu página de reservas.</p>
+
+          <!-- Días activos -->
+          <div style="margin-bottom:20px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Días de atención</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sched-days-wrap">
+              <label class="day-chip"><input type="checkbox" value="1" class="sched-day"> Lun</label>
+              <label class="day-chip"><input type="checkbox" value="2" class="sched-day"> Mar</label>
+              <label class="day-chip"><input type="checkbox" value="3" class="sched-day"> Mié</label>
+              <label class="day-chip"><input type="checkbox" value="4" class="sched-day"> Jue</label>
+              <label class="day-chip"><input type="checkbox" value="5" class="sched-day"> Vie</label>
+              <label class="day-chip"><input type="checkbox" value="6" class="sched-day"> Sáb</label>
+              <label class="day-chip"><input type="checkbox" value="7" class="sched-day"> Dom</label>
+            </div>
+          </div>
+
+          <!-- Franjas horarias -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Mañana</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="time" id="sched-morn-start" value="09:00" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+                <span style="color:var(--muted);font-size:12px;">hasta</span>
+                <input type="time" id="sched-morn-end" value="14:00" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
               </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="notif-email" style="accent-color:var(--green);">
-                <label for="notif-email" style="font-size:13px;">Email (Resumen diario)</label>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Tarde <span style="font-weight:400;text-transform:none;">(opcional)</span></label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="time" id="sched-aft-start" value="16:00" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+                <span style="color:var(--muted);font-size:12px;">hasta</span>
+                <input type="time" id="sched-aft-end" value="20:00" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
               </div>
-           </div>
+            </div>
+          </div>
+
+          <!-- Intervalo entre citas -->
+          <div style="margin-bottom:20px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Duración de cada cita</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sched-interval-wrap">
+              <label class="interval-chip"><input type="radio" name="sched-interval" value="15"> 15 min</label>
+              <label class="interval-chip"><input type="radio" name="sched-interval" value="30" checked> 30 min</label>
+              <label class="interval-chip"><input type="radio" name="sched-interval" value="45"> 45 min</label>
+              <label class="interval-chip"><input type="radio" name="sched-interval" value="60"> 60 min</label>
+            </div>
+          </div>
+
+          <!-- Preview de huecos -->
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Vista previa de huecos generados</label>
+            <div id="sched-preview" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
         </div>
 
         <div class="calendar-card" style="margin-top:20px;">
@@ -1128,74 +1575,548 @@
         </div>
       </div>
 
+      <!-- ═══ VISTA: NOTAS IA ═══ -->
+      <div id="view-notas-ia" class="view-container fade-in">
+        <div class="section-title">🧠 Notas Clínicas con IA</div>
+
+        <!-- Estado IA (solo lectura — la clave la configura el administrador) -->
+        <div id="ia-status-bar" style="margin-bottom:18px;display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;">
+        </div>
+
+        <!-- Nombre del paciente -->
+        <div class="calendar-card" style="margin-bottom:18px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Nombre del paciente / etiqueta</label>
+          <input type="text" id="ia-patient" class="transcript-edit" style="min-height:unset;height:42px;" placeholder="Ej: María López — Sesión 3">
+        </div>
+
+        <!-- Tabs -->
+        <div class="calendar-card">
+          <div class="ia-tabs">
+            <button class="ia-tab active" onclick="iaTab('record',this)">🎙️ Grabar</button>
+            <button class="ia-tab" onclick="iaTab('upload',this)">📎 Subir archivo</button>
+            <button class="ia-tab" onclick="iaTab('texto',this)">✏️ Escribir</button>
+          </div>
+
+          <!-- TAB: GRABAR -->
+          <div id="ia-panel-record" class="ia-tab-panel active">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <button class="rec-btn idle" id="rec-btn" onclick="toggleRecording()">
+                <span class="rec-dot"></span> Iniciar grabación
+              </button>
+              <div class="rec-timer" id="rec-timer" style="display:none;">⏱ <span id="rec-time">00:00</span></div>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px;">La transcripción aparece en tiempo real mientras hablas. Requiere Chrome o Edge.</div>
+            <div class="live-transcript" id="live-transcript">Esperando grabación…</div>
+          </div>
+
+          <!-- TAB: SUBIR ARCHIVO -->
+          <div id="ia-panel-upload" class="ia-tab-panel">
+            <div class="drop-zone" id="drop-zone" onclick="document.getElementById('ia-file').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+              <div class="drop-zone-icon">📎</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Arrastra un archivo aquí o haz clic para seleccionar</div>
+              <div style="font-size:12px;color:var(--muted);">Formatos admitidos: .txt — Para audio, usa la pestaña Grabar</div>
+            </div>
+            <input type="file" id="ia-file" accept=".txt" style="display:none;" onchange="handleFileUpload(this)">
+          </div>
+
+          <!-- TAB: ESCRIBIR -->
+          <div id="ia-panel-texto" class="ia-tab-panel">
+            <textarea class="transcript-edit" id="ia-text-input" placeholder="Escribe o pega aquí las notas de la sesión, observaciones clínicas, síntomas del paciente…" style="min-height:160px;" oninput="syncTranscript('text')"></textarea>
+          </div>
+
+          <!-- TRANSCRIPT FINAL (editable) -->
+          <div style="margin-top:18px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Transcripción / texto a analizar <span style="font-weight:400;color:var(--muted);">(editable)</span></div>
+            <textarea class="transcript-edit" id="ia-transcript" placeholder="El texto aparecerá aquí. Puedes editarlo antes de analizar." style="min-height:130px;"></textarea>
+          </div>
+
+          <button class="analyze-btn" id="analyze-btn" onclick="analyzeWithAI()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            Analizar con IA
+          </button>
+
+          <!-- RESULTADO -->
+          <div id="ia-result" style="display:none;" class="ai-result">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="font-size:14px;font-weight:700;color:var(--green-dark);">✅ Análisis completado</div>
+              <button onclick="saveAnalysis()" style="font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--green);background:none;color:var(--green-dark);cursor:pointer;font-family:inherit;font-weight:600;">💾 Guardar</button>
+            </div>
+            <div id="ia-result-content"></div>
+          </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="calendar-card" style="margin-top:18px;">
+          <div class="section-title" style="font-size:14px;">📋 Análisis guardados</div>
+          <div id="ia-history"></div>
+        </div>
+      </div>
+
+      <!-- ═══ VISTA: PACIENTES ═══ -->
+      <div id="view-pacientes" class="view-container fade-in">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div class="section-title" style="margin:0;">👥 Fichas de Pacientes</div>
+          <button onclick="openPatientModal()" style="padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Nuevo paciente</button>
+        </div>
+        <input type="text" class="patients-search" id="patients-search" placeholder="Buscar por nombre, teléfono o NIF…" oninput="filterPatients(this.value)">
+        <div id="patients-grid" class="patients-grid"></div>
+      </div>
+
+      <!-- ═══ VISTA: DOCUMENTOS ═══ -->
+      <div id="view-documentos" class="view-container fade-in">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <div class="section-title" style="margin:0;">📁 Documentos y Consentimientos</div>
+          <button onclick="openDocEditorModal()" style="padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Nueva plantilla</button>
+        </div>
+        <div class="doc-grid">
+          <div class="calendar-card">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📄 Plantillas de consentimiento</div>
+            <div id="doc-templates-list"></div>
+          </div>
+          <div class="calendar-card">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📤 Enviados para firma</div>
+            <div id="doc-sent-list"></div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- end scroll-area -->
   </div><!-- end main -->
 </div><!-- end app -->
 
+<!-- CHANGE PASSWORD OVERLAY -->
+<div class="chpass-overlay" id="chpass-overlay">
+  <div class="chpass-box">
+    <div style="font-size:36px;">🔐</div>
+    <h2>Crea tu contraseña</h2>
+    <p>Es tu primera vez accediendo. Por seguridad, establece una contraseña personal.</p>
+    <input type="password" id="chpass-new" class="chpass-input" placeholder="Nueva contraseña (mín. 4 caracteres)" onkeydown="if(event.key==='Enter')saveNewPass()">
+    <input type="password" id="chpass-confirm" class="chpass-input" placeholder="Repite la contraseña" onkeydown="if(event.key==='Enter')saveNewPass()">
+    <div class="chpass-err" id="chpass-err"></div>
+    <button class="chpass-btn" onclick="saveNewPass()">Guardar y entrar →</button>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
+<!-- ANALYSIS DETAIL MODAL -->
+<div class="anl-overlay" id="anl-overlay" onclick="if(event.target===this)closeAnlModal()">
+  <div class="anl-box">
+    <div class="anl-header">
+      <div>
+        <h3 id="anl-patient-title">—</h3>
+        <div class="anl-meta" id="anl-date-meta">—</div>
+      </div>
+      <button class="anl-close" onclick="closeAnlModal()">✕</button>
+    </div>
+    <div class="anl-body">
+      <div class="anl-section-title">Transcripción / notas de sesión</div>
+      <div class="anl-transcript" id="anl-transcript-text">—</div>
+      <div class="anl-section-title">✅ Análisis IA</div>
+      <div class="anl-result" id="anl-result-text">—</div>
+    </div>
+    <div class="anl-footer">
+      <button class="anl-btn-close" onclick="closeAnlModal()">Cerrar</button>
+      <button class="anl-btn-load" id="anl-load-btn" onclick="loadAnlIntoEditor()">Cargar en editor</button>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVA CITA MODAL -->
+<div class="nappt-overlay" id="nappt-overlay" onclick="if(event.target===this)closeNewAppt()">
+  <div class="nappt-box">
+    <h3>📅 Nueva cita</h3>
+    <div class="nappt-field">
+      <label>Paciente</label>
+      <input type="text" id="nappt-name" placeholder="Nombre del paciente" autocomplete="off" />
+    </div>
+    <div class="nappt-field">
+      <label>Servicio</label>
+      <select id="nappt-service"></select>
+    </div>
+    <div class="nappt-row">
+      <div class="nappt-field">
+        <label>Fecha</label>
+        <input type="date" id="nappt-date" />
+      </div>
+      <div class="nappt-field">
+        <label>Hora</label>
+        <select id="nappt-time"></select>
+      </div>
+    </div>
+    <div class="nappt-field">
+      <label>Teléfono <span style="font-weight:400;text-transform:none;">(opcional)</span></label>
+      <input type="tel" id="nappt-phone" placeholder="+34 600 000 000" />
+    </div>
+    <div class="nappt-actions">
+      <button class="nappt-cancel" onclick="closeNewAppt()">Cancelar</button>
+      <button class="nappt-save" onclick="saveNewAppt()">Guardar cita</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVE APPOINTMENT MODAL -->
+<div class="move-overlay" id="move-overlay" onclick="if(event.target===this)closeMoveModal()">
+  <div class="move-box">
+    <h3>📅 Mover cita</h3>
+    <p id="move-appt-info">Selecciona el nuevo día y hora para esta cita.</p>
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Fecha</label>
+        <input type="date" id="move-date-input" />
+      </div>
+      <div style="flex:0 0 130px;display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Hora</label>
+        <select id="move-time-input" style="padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;cursor:pointer;">
+          <option value="">— misma —</option>
+          <option value="8:00">8:00</option><option value="8:30">8:30</option>
+          <option value="9:00">9:00</option><option value="9:30">9:30</option>
+          <option value="10:00">10:00</option><option value="10:30">10:30</option>
+          <option value="11:00">11:00</option><option value="11:30">11:30</option>
+          <option value="12:00">12:00</option><option value="12:30">12:30</option>
+          <option value="15:00">15:00</option><option value="15:30">15:30</option>
+          <option value="16:00">16:00</option><option value="16:30">16:30</option>
+          <option value="17:00">17:00</option><option value="17:30">17:30</option>
+          <option value="18:00">18:00</option><option value="18:30">18:30</option>
+          <option value="19:00">19:00</option>
+        </select>
+      </div>
+    </div>
+    <div class="move-box-actions">
+      <button class="move-cancel-btn" onclick="closeMoveModal()">Cancelar</button>
+      <button class="move-confirm-btn" onclick="confirmMoveAppt()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PATIENT CREATE/EDIT MODAL -->
+<div class="patmod-overlay" id="patmod-overlay" onclick="if(event.target===this)closePatientModal()">
+  <div class="patmod-box">
+    <h3 id="patmod-title">👤 Nuevo paciente</h3>
+    <div class="patmod-grid">
+      <div class="patmod-field full">
+        <label>Nombre completo *</label>
+        <input type="text" id="patmod-name" placeholder="Nombre y apellidos">
+      </div>
+      <div class="patmod-field">
+        <label>DNI / NIF</label>
+        <input type="text" id="patmod-nif" placeholder="12345678A">
+      </div>
+      <div class="patmod-field">
+        <label>Fecha de nacimiento</label>
+        <input type="date" id="patmod-dob">
+      </div>
+      <div class="patmod-field">
+        <label>Teléfono</label>
+        <input type="tel" id="patmod-phone" placeholder="+34 600 000 000">
+      </div>
+      <div class="patmod-field">
+        <label>Email</label>
+        <input type="email" id="patmod-email" placeholder="paciente@email.com">
+      </div>
+      <div class="patmod-field full">
+        <label>Dirección</label>
+        <input type="text" id="patmod-address" placeholder="Calle, número, piso">
+      </div>
+      <div class="patmod-field">
+        <label>Ciudad</label>
+        <input type="text" id="patmod-city" placeholder="Madrid">
+      </div>
+      <div class="patmod-field">
+        <label>Código postal</label>
+        <input type="text" id="patmod-cp" placeholder="28001">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px;">
+      <button onclick="closePatientModal()" style="padding:9px 18px;border-radius:8px;border:1.5px solid var(--border);background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="savePatient()" style="padding:9px 18px;border-radius:8px;background:var(--green);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Guardar paciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE PREVIEW MODAL -->
+<div class="invmod-overlay" id="invmod-overlay">
+  <div class="invmod-box">
+    <div class="inv-actions">
+      <span class="inv-actions-title" id="inv-actions-title">Factura</span>
+      <button class="inv-btn print" onclick="printInvoice()">🖨️ Imprimir / PDF</button>
+      <button class="inv-btn wa" id="inv-wa-btn" onclick="sendInvoiceViaWA()">📱 WhatsApp</button>
+      <button class="inv-btn close" onclick="closeInvoiceModal()">✕ Cerrar</button>
+    </div>
+    <div class="inv-body" id="inv-body"></div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
+
+<!-- PATIENT PROFILE PANEL -->
+<div class="patient-panel-overlay" id="patient-panel-overlay" onclick="if(event.target===this)closePatientPanel()">
+  <div class="patient-panel" id="patient-panel">
+    <div class="pp-header">
+      <div class="pp-avatar" id="pp-avatar">--</div>
+      <div class="pp-info">
+        <div class="pp-name" id="pp-name">—</div>
+        <div class="pp-meta" id="pp-meta">—</div>
+      </div>
+      <button class="pp-close" onclick="closePatientPanel()">✕</button>
+    </div>
+    <div class="pp-tabs">
+      <div class="pp-tab active" onclick="ppTab('historial',this)">📅 Historial</div>
+      <div class="pp-tab" onclick="ppTab('notas',this)">🧠 Notas IA</div>
+      <div class="pp-tab" onclick="ppTab('docs',this)">📁 Docs</div>
+      <div class="pp-tab" onclick="ppTab('facturacion',this)">💰 Factura</div>
+    </div>
+    <div class="pp-body">
+      <div class="pp-tab-panel active" id="pp-panel-historial"></div>
+      <div class="pp-tab-panel" id="pp-panel-notas"></div>
+      <div class="pp-tab-panel" id="pp-panel-docs"></div>
+      <div class="pp-tab-panel" id="pp-panel-facturacion"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOC EDITOR MODAL -->
+<div class="docmod-overlay" id="docmod-overlay" onclick="if(event.target===this)closeDocEditorModal()">
+  <div class="docmod-box">
+    <h3 id="docmod-title">📄 Nueva plantilla</h3>
+    <div class="docmod-label">Título del documento</div>
+    <input type="text" class="docmod-input" id="docmod-name" placeholder="Ej: Consentimiento informado — Fisioterapia">
+    <div class="docmod-label">Contenido del documento</div>
+    <div class="wysiwyg-toolbar">
+      <select class="wysiwyg-select" onchange="fmtBlock(this.value);this.value=''" title="Formato">
+        <option value="">— Formato —</option>
+        <option value="h1">Título grande</option>
+        <option value="h2">Título medio</option>
+        <option value="h3">Subtítulo</option>
+        <option value="p">Párrafo</option>
+      </select>
+      <div class="wysiwyg-sep"></div>
+      <button type="button" class="wysiwyg-btn" title="Negrita (Ctrl+B)" onclick="fmtCmd('bold')"><strong>B</strong></button>
+      <button type="button" class="wysiwyg-btn" title="Cursiva (Ctrl+I)" onclick="fmtCmd('italic')"><em>I</em></button>
+      <button type="button" class="wysiwyg-btn" title="Subrayado (Ctrl+U)" onclick="fmtCmd('underline')"><u>U</u></button>
+      <div class="wysiwyg-sep"></div>
+      <button type="button" class="wysiwyg-btn" title="Lista con viñetas" onclick="fmtCmd('insertUnorderedList')">•≡</button>
+      <button type="button" class="wysiwyg-btn" title="Lista numerada" onclick="fmtCmd('insertOrderedList')">1≡</button>
+      <div class="wysiwyg-sep"></div>
+      <button type="button" class="wysiwyg-btn" title="Alinear izquierda" onclick="fmtCmd('justifyLeft')">⬅</button>
+      <button type="button" class="wysiwyg-btn" title="Centrar" onclick="fmtCmd('justifyCenter')">⬛</button>
+      <button type="button" class="wysiwyg-btn" title="Alinear derecha" onclick="fmtCmd('justifyRight')">➡</button>
+      <div class="wysiwyg-sep"></div>
+      <button type="button" class="wysiwyg-btn" title="Línea separadora" onclick="fmtCmd('insertHorizontalRule')">—</button>
+      <div class="wysiwyg-sep"></div>
+      <select class="wysiwyg-select" style="color:var(--green-dark);font-weight:600;" onchange="insertVariable(this.value);this.value=''" title="Insertar variable">
+        <option value="">＋ Variable</option>
+        <option value="{{NOMBRE_PACIENTE}}">Nombre paciente</option>
+        <option value="{{FECHA}}">Fecha actual</option>
+        <option value="{{NOMBRE_CLINICA}}">Nombre clínica</option>
+        <option value="{{DNI_PACIENTE}}">DNI paciente</option>
+        <option value="{{TELEFONO_PACIENTE}}">Teléfono paciente</option>
+      </select>
+    </div>
+    <div class="docmod-editor" id="docmod-content" contenteditable="true" data-placeholder="Escribe aquí el texto del consentimiento. El paciente lo leerá antes de firmar."></div>
+    <div class="docmod-actions">
+      <button onclick="closeDocEditorModal()" style="padding:9px 18px;border-radius:8px;border:1.5px solid var(--border);background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="saveDocTemplate()" style="padding:9px 18px;border-radius:8px;background:var(--green);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Guardar plantilla</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEND CONSENT MODAL -->
+<div class="sendmod-overlay" id="sendmod-overlay" onclick="if(event.target===this)closeSendModal()">
+  <div class="sendmod-box">
+    <h3>📤 Enviar consentimiento por WhatsApp</h3>
+    <div class="docmod-label" style="margin-bottom:4px;">Plantilla seleccionada</div>
+    <div style="padding:10px 12px;background:var(--bg);border-radius:8px;font-size:13px;font-weight:600;margin-bottom:16px;" id="sendmod-doc-name">—</div>
+    <div class="docmod-label">Nombre del paciente</div>
+    <input type="text" class="docmod-input" id="sendmod-patient-name" placeholder="Nombre completo">
+    <div class="docmod-label">Teléfono WhatsApp del paciente</div>
+    <input type="tel" class="docmod-input" id="sendmod-patient-phone" placeholder="+34 600 000 000">
+    <div class="docmod-actions">
+      <button onclick="closeSendModal()" style="padding:9px 18px;border-radius:8px;border:1.5px solid var(--border);background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="sendConsentViaWA()" style="padding:9px 18px;border-radius:8px;background:#25d366;color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">📱 Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-const APPOINTMENTS = {
-  '2026-03-03': [
-    { time: '10:00', name: 'Ana López',       service: 'Fisioterapia', status: 'confirmed' },
-    { time: '11:30', name: 'Carlos Ruiz',     service: 'Psicología',   status: 'confirmed' },
-  ],
-  '2026-03-05': [
-    { time: '09:00', name: 'María García',    service: 'Masaje',             status: 'confirmed' },
-    { time: '16:00', name: 'José Martínez',   service: 'Consulta General',   status: 'pending' },
-  ],
-  '2026-03-07': [
-    { time: '10:30', name: 'Laura Sánchez',   service: 'Fisioterapia', status: 'confirmed' },
-  ],
-  '2026-03-10': [
-    { time: '09:30', name: 'Pedro Fernández', service: 'Psicología',         status: 'confirmed' },
-    { time: '11:00', name: 'Isabel Torres',   service: 'Fisioterapia',       status: 'confirmed' },
-    { time: '17:00', name: 'Miguel Díaz',     service: 'Consulta General',   status: 'pending' },
-  ],
-  '2026-03-12': [
-    { time: '10:00', name: 'Carmen Jiménez',  service: 'Masaje',       status: 'confirmed' },
-  ],
-  '2026-03-14': [
-    { time: '09:00', name: 'Antonio Moreno',  service: 'Fisioterapia', status: 'confirmed' },
-    { time: '16:30', name: 'Rosa Herrera',    service: 'Psicología',   status: 'confirmed' },
-  ],
-  '2026-03-17': [
-    { time: '11:00', name: 'David Navarro',   service: 'Consulta General', status: 'confirmed' },
-    { time: '17:00', name: 'Elena Castillo',  service: 'Fisioterapia',     status: 'confirmed' },
-  ],
-  '2026-03-19': [
-    { time: '09:30', name: 'Fernando Romero', service: 'Masaje',       status: 'confirmed' },
-    { time: '10:30', name: 'Lucía Vega',      service: 'Fisioterapia', status: 'confirmed' },
-  ],
-  '2026-03-21': [
-    { time: '11:00', name: 'Alejandro Reyes', service: 'Psicología',   status: 'confirmed' },
-  ],
-  '2026-03-24': [
-    { time: '09:00', name: 'Sofía Morales',   service: 'Fisioterapia',     status: 'confirmed' },
-    { time: '10:30', name: 'Javier Ortega',   service: 'Consulta General', status: 'confirmed' },
-    { time: '16:00', name: 'Pilar Santos',    service: 'Masaje',           status: 'confirmed' },
-  ],
-  '2026-03-25': [
-    { time: '09:00', name: 'Marta Ramos',     service: 'Fisioterapia', status: 'confirmed' },
-    { time: '11:00', name: 'Roberto Gil',     service: 'Psicología',   status: 'confirmed' },
-    { time: '17:30', name: 'Cristina López',  service: 'Masaje',       status: 'pending' },
-  ],
-  '2026-03-26': [
-    { time: '10:00', name: 'Diego Flores',    service: 'Consulta General', status: 'confirmed' },
-    { time: '16:30', name: 'Eva Torres',      service: 'Fisioterapia',     status: 'confirmed' },
-  ],
-  '2026-03-28': [
-    { time: '09:30', name: 'Pablo Moreno',    service: 'Fisioterapia', status: 'confirmed' },
-    { time: '11:00', name: 'Natalia Ruiz',    service: 'Masaje',       status: 'confirmed' },
-  ],
-};
+let APPOINTMENTS = {};
+let TRASH = [];        // papelera: [{ appt, origKey, deletedAt }]
+const _anlCache = {};  // caché modal de análisis
 
-const TODAY = new Date(2026, 2, 25); // March 25 2026
-let currentYear = 2026;
-let currentMonth = 2; // 0-indexed March
-let selectedDay = 25;
+const DEMO_ANALYSES = [
+  {
+    patient: 'Ana López — Sesión 5',
+    date: new Date(Date.now() - 2*24*3600*1000).toISOString(),
+    transcript: 'La paciente refiere mejora en movilidad lumbar. Persiste tensión en trapecio derecho. Refiere episodios de estrés laboral que agravan la sintomatología.',
+    result: '**Puntos clave de la sesión:**\n\n- Mejora progresiva en rango de movimiento lumbar (aprox. 70% recuperación)\n- Hipertonía persistente en trapecio derecho — posible origen postural o emocional\n- Factor estresante laboral identificado como desencadenante de reagudización\n\n**Recomendaciones:**\n- Continuar pauta de estiramientos 2×/día\n- Valorar derivación a psicología si el estrés persiste\n- Próxima revisión en 2 semanas'
+  },
+  {
+    patient: 'Carlos Ruiz — Sesión 2',
+    date: new Date(Date.now() - 5*24*3600*1000).toISOString(),
+    transcript: 'Paciente de 42 años con cervicalgia crónica. Refiere cefaleas tensionales frecuentes, especialmente al final de la jornada laboral. Trabaja frente a ordenador más de 8 horas.',
+    result: '**Puntos clave de la sesión:**\n\n- Cervicalgia crónica con componente postural claro\n- Cefaleas tensionales frecuentes vinculadas a fatiga muscular cervical\n- Trabajo sedentario prolongado como factor de mantenimiento\n\n**Recomendaciones:**\n- Higiene postural frente al ordenador (pantalla a nivel de ojos, descansos cada 45min)\n- Trabajo específico en suboccipitales y escalenos\n- Ejercicios de fortalecimiento de musculatura cervical profunda'
+  },
+  {
+    patient: 'María García — Valoración inicial',
+    date: new Date(Date.now() - 9*24*3600*1000).toISOString(),
+    transcript: 'Primera consulta. Dolor en rodilla derecha tras carrera de 10km hace 3 semanas. Inflamación leve. Sin antecedentes traumáticos previos. Deportista habitual.',
+    result: '**Puntos clave de la sesión:**\n\n- Síndrome de la cintilla iliotibial (IT band) compatible con la clínica descrita\n- Inflamación leve localizada en cara lateral de rodilla\n- Perfil de corredora activa — sobrecarga por aumento reciente de carga de entrenamiento\n\n**Recomendaciones:**\n- Reposo relativo 1-2 semanas (sustituir carrera por natación o bici)\n- Foam roller en tensor de la fascia lata diariamente\n- Revisar plan de entrenamiento y calzado\n- Valorar en próxima sesión con ecografía si no mejora'
+  }
+];
+
+function isDemo() {
+  return currentUser && (currentUser.slug === 'demo' || currentUser.isDemo === true);
+}
+
+function apptStorageKey() {
+  return currentUser ? 'nervia_appts_' + currentUser.email : null;
+}
+
+// Genera citas demo — sin dependencias externas para máxima robustez
+function buildDemoAppointments() {
+  const pad = n => String(n).padStart(2,'0');
+  const mkKey = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+
+  const NAMES = ['Ana López','Carlos Ruiz','María García','José Martínez','Laura Sánchez',
+    'Pedro Fernández','Isabel Torres','Carmen Jiménez','Antonio Moreno','Rosa Herrera',
+    'David Navarro','Elena Castillo','Fernando Romero','Lucía Vega','Alejandro Reyes'];
+  const SVCS  = ['Fisioterapia','Psicología','Masaje Terapéutico','Consulta General','Revisión'];
+  const TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','16:00','16:30','17:00','17:30'];
+
+  const result = {};
+  const base = new Date();
+  base.setHours(0,0,0,0);
+  let ni = 0;
+
+  for (let off = -14; off <= 21; off++) {
+    const d = new Date(base.getTime());
+    d.setDate(base.getDate() + off);
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue;
+
+    const key = mkKey(d);
+    const count = 1 + ((Math.abs(off) + d.getDate()) % 3);
+    result[key] = [];
+    for (let i = 0; i < count; i++) {
+      result[key].push({
+        time:    TIMES[(ni + i) % TIMES.length],
+        name:    NAMES[ni % NAMES.length],
+        service: SVCS[(ni + i) % SVCS.length],
+        status:  (ni % 3 === 0) ? 'pending' : 'confirmed'
+      });
+      ni++;
+    }
+  }
+  return result;
+}
+
+function loadAppointments() {
+  if (isDemo()) {
+    APPOINTMENTS = buildDemoAppointments();
+    return;
+  }
+  const key = apptStorageKey();
+  if (!key) return;
+  APPOINTMENTS = JSON.parse(localStorage.getItem(key) || '{}');
+}
+
+function saveAppointments() {
+  if (isDemo()) return;
+  const key = apptStorageKey();
+  if (!key) return;
+  localStorage.setItem(key, JSON.stringify(APPOINTMENTS));
+}
+
+// ── PAPELERA ──────────────────────────────────────────────────────────────────
+const TRASH_TTL = 5 * 24 * 60 * 60 * 1000; // 5 días en ms
+
+function trashKey() {
+  return currentUser ? 'nervia_trash_' + currentUser.email : null;
+}
+
+function loadTrash() {
+  if (isDemo()) { TRASH = []; return; }
+  const k = trashKey(); if (!k) return;
+  const raw = JSON.parse(localStorage.getItem(k) || '[]');
+  // Purgar entradas > 5 días
+  const now = Date.now();
+  TRASH = raw.filter(t => (now - t.deletedAt) < TRASH_TTL);
+  if (TRASH.length !== raw.length) saveTrash(); // actualizar si hubo purga
+}
+
+function saveTrash() {
+  if (isDemo()) return;
+  const k = trashKey(); if (!k) return;
+  localStorage.setItem(k, JSON.stringify(TRASH));
+}
+
+function moveToTrash(key, idx) {
+  const appts = APPOINTMENTS[key];
+  if (!appts || !appts[idx]) return false;
+  const appt = appts.splice(idx, 1)[0];
+  if (appts.length === 0) delete APPOINTMENTS[key];
+  TRASH.unshift({ appt, origKey: key, deletedAt: Date.now() });
+  saveAppointments();
+  saveTrash();
+  return true;
+}
+
+function restoreAppt(trashIdx) {
+  const item = TRASH[trashIdx];
+  if (!item) return;
+  TRASH.splice(trashIdx, 1);
+  const { appt, origKey } = item;
+  appt.status = 'pending';
+  if (!APPOINTMENTS[origKey]) APPOINTMENTS[origKey] = [];
+  APPOINTMENTS[origKey].push(appt);
+  APPOINTMENTS[origKey].sort((a, b) => a.time.localeCompare(b.time));
+  saveAppointments();
+  saveTrash();
+  renderCalStats();
+  renderCalendar();
+  renderDayPanel(selectedDay);
+  renderUpcoming();
+  renderStats();
+  renderTrash();
+  showToast('Cita restaurada ✓', 'success');
+}
+
+function renderTrash() {
+  const card = document.getElementById('trash-card');
+  const list = document.getElementById('trash-list');
+  const badge = document.getElementById('trash-badge');
+  if (!card) return;
+
+  if (!TRASH.length) {
+    card.style.display = 'none';
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  if (badge) { badge.textContent = TRASH.length; badge.style.display = 'inline-flex'; }
+
+  const now = Date.now();
+  list.innerHTML = TRASH.map((t, i) => {
+    const daysLeft = Math.ceil((TRASH_TTL - (now - t.deletedAt)) / 86400000);
+    const orig = new Date(t.origKey + 'T00:00:00');
+    const dateStr = orig.toLocaleDateString('es-ES', { day:'2-digit', month:'short' });
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;">${escHtml(t.appt.name)}</div>
+        <div style="font-size:11px;color:var(--muted);">${escHtml(t.appt.service)} · ${dateStr} ${t.appt.time}</div>
+      </div>
+      <span style="font-size:11px;color:var(--orange);font-weight:600;white-space:nowrap;">⏱ ${daysLeft}d</span>
+      <button onclick="restoreAppt(${i})" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--green);background:rgba(8,145,178,0.08);color:var(--green-dark);cursor:pointer;">↩ Restaurar</button>
+    </div>`;
+  }).join('');
+}
+
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+let currentYear  = TODAY.getFullYear();
+let currentMonth = TODAY.getMonth();
+let selectedDay  = TODAY.getDate();
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function padDate(n) { return String(n).padStart(2,'0'); }
@@ -1252,8 +2173,8 @@ function renderCalendar() {
 
     let dots = '';
     if (appts.length > 0) {
-      const shown = Math.min(appts.length, 3);
-      for (let k = 0; k < shown; k++) dots += '<span class="cal-dot"></span>';
+      const shown = appts.slice(0, 3);
+      dots = shown.map(a => `<span class="cal-dot ${a.status || 'pending'}"></span>`).join('');
       if (appts.length > 3) dots += `<span class="cal-more">+${appts.length - 3}</span>`;
       dots = `<div class="cal-dots">${dots}</div>`;
     }
@@ -1293,6 +2214,32 @@ function selectDay(day) {
   renderDayPanel(day);
 }
 
+function renderCalStats() {
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  // Week bounds (Mon–Sun)
+  const dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - dow);
+  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
+
+  let countToday = 0, countWeek = 0, countPending = 0, countMonth = 0;
+
+  Object.entries(APPOINTMENTS).forEach(([key, appts]) => {
+    const d = new Date(key + 'T00:00:00');
+    appts.forEach(a => {
+      if (d.getTime() === now.getTime()) countToday++;
+      if (d >= weekStart && d <= weekEnd)  countWeek++;
+      if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) countMonth++;
+      if (a.status === 'pending') countPending++;
+    });
+  });
+
+  document.getElementById('cal-stat-today').textContent   = countToday;
+  document.getElementById('cal-stat-week').textContent    = countWeek;
+  document.getElementById('cal-stat-pending').textContent = countPending;
+  document.getElementById('cal-stat-month').textContent   = countMonth;
+}
+
 function renderDayPanel(day) {
   const key = dateKey(currentYear, currentMonth, day);
   const appts = APPOINTMENTS[key] || [];
@@ -1301,7 +2248,7 @@ function renderDayPanel(day) {
   const label = `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${day} de ${MONTHS_ES[currentMonth]}`;
 
   document.getElementById('dayPanelTitle').textContent = label;
-  document.getElementById('dayPanelCount').textContent = appts.length === 0 ? 'Sin citas' : `${appts.length} cita${appts.length !== 1 ? 's' : ''}`;
+  document.getElementById('dayPanelCount').textContent = `${appts.length} cita${appts.length !== 1 ? 's' : ''}`;
 
   const body = document.getElementById('dayPanelBody');
 
@@ -1316,8 +2263,9 @@ function renderDayPanel(day) {
   let html = '<div class="fade-in">';
   appts.forEach((a, idx) => {
     const sc = serviceClass(a.service);
-    const statusLabel = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
-    html += `<div class="appt-card ${sc}" id="appt-${key}-${idx}">
+    const confirmed = a.status === 'confirmed';
+    const statusLabel = confirmed ? 'Confirmada' : 'Por confirmar';
+    html += `<div class="appt-card status-${a.status || 'pending'}" id="appt-${key}-${idx}">
       <div class="appt-top">
         <div>
           <div class="appt-time">${a.time}</div>
@@ -1326,12 +2274,15 @@ function renderDayPanel(day) {
       </div>
       <div class="appt-meta">
         <span class="badge ${sc}">${a.service}</span>
-        <span class="status-dot ${a.status}"></span>
+        <span class="status-dot ${a.status || 'pending'}"></span>
         <span class="status-label">${statusLabel}</span>
       </div>
       <div class="appt-actions">
-        <button class="appt-btn confirm" onclick="confirmAppt('${key}',${idx})">✓ Confirmar</button>
-        <button class="appt-btn cancel" onclick="cancelAppt('${key}',${idx})">✕ Cancelar</button>
+        ${confirmed
+          ? `<button class="appt-btn pending-btn" onclick="revertAppt('${key}',${idx})">↩ Pendiente</button>`
+          : `<button class="appt-btn confirm" onclick="confirmAppt('${key}',${idx})">✓ Confirmar</button>`}
+        <button class="appt-btn move-btn" onclick="openMoveModal('${key}',${idx})">📅 Mover</button>
+        <button class="appt-btn cancel" onclick="deleteAppt('${key}',${idx})">✕ Eliminar</button>
       </div>
     </div>`;
   });
@@ -1343,24 +2294,181 @@ function confirmAppt(key, idx) {
   const appts = APPOINTMENTS[key];
   if (appts && appts[idx]) {
     appts[idx].status = 'confirmed';
+    const appt = appts[idx]; // capture before re-renders
+    saveAppointments();
+    renderCalStats();
+    renderCalendar();
     renderDayPanel(selectedDay);
-    showToast(`Cita confirmada ✓`, 'success');
+    renderUpcoming();
+    renderStats();
+    sendWhatsAppNotif(appt, key);
   }
 }
 
-function cancelAppt(key, idx) {
+function revertAppt(key, idx) {
   const appts = APPOINTMENTS[key];
   if (appts && appts[idx]) {
-    appts.splice(idx, 1);
-    renderDayPanel(selectedDay);
+    appts[idx].status = 'pending';
+    saveAppointments();
+    renderCalStats();
     renderCalendar();
-    showToast(`Cita cancelada`, 'error');
+    renderDayPanel(selectedDay);
+    renderUpcoming();
+    renderStats();
+    showToast('Cita marcada como pendiente', 'error');
   }
+}
+
+function deleteAppt(key, idx) {
+  if (!APPOINTMENTS[key]?.[idx]) return;
+  if (moveToTrash(key, idx)) {
+    renderCalStats();
+    renderCalendar();
+    renderDayPanel(selectedDay);
+    renderUpcoming();
+    renderStats();
+    renderTrash();
+    showToast('Cita enviada a la papelera — se eliminará en 5 días', 'error');
+  }
+}
+
+let _moveKey = null, _moveIdx = null;
+
+function openMoveModal(key, idx) {
+  _moveKey = key; _moveIdx = idx;
+  const appts = APPOINTMENTS[key];
+  if (!appts || !appts[idx]) return;
+  // Pre-select current time in the select
+  const curTime = appts[idx].time || '';
+  const sel = document.getElementById('move-time-input');
+  sel.value = curTime;
+  if (sel.value !== curTime) sel.value = ''; // fallback if time not in list
+  const a = appts[idx];
+  document.getElementById('move-appt-info').textContent =
+    `${a.name} · ${a.service} · ${a.time}`;
+  // min date = today
+  const todayStr = dateKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+  const inp = document.getElementById('move-date-input');
+  inp.min = todayStr;
+  inp.value = key;
+  document.getElementById('move-overlay').classList.add('open');
+}
+
+function closeMoveModal() {
+  document.getElementById('move-overlay').classList.remove('open');
+  _moveKey = null; _moveIdx = null;
+}
+
+function confirmMoveAppt() {
+  const newKey  = document.getElementById('move-date-input').value;
+  const newTime = document.getElementById('move-time-input').value;
+  if (!newKey || !_moveKey || _moveIdx === null) return;
+  const src = APPOINTMENTS[_moveKey];
+  if (!src || !src[_moveIdx]) return;
+  const appt = src.splice(_moveIdx, 1)[0];
+  // Apply new time if selected
+  if (newTime) appt.time = newTime;
+  // If only time changed (same date), put back and save
+  if (newKey === _moveKey) {
+    src.splice(_moveIdx, 0, appt);
+    src.sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    saveAppointments();
+    renderCalStats(); renderCalendar(); renderDayPanel(selectedDay);
+    renderUpcoming(); renderStats();
+    closeMoveModal();
+    showToast('Hora actualizada ✓', 'success');
+    return;
+  }
+  if (src.length === 0) delete APPOINTMENTS[_moveKey];
+  if (!APPOINTMENTS[newKey]) APPOINTMENTS[newKey] = [];
+  // keep status as-is (or reset to pending on move)
+  appt.status = 'pending';
+  APPOINTMENTS[newKey].push(appt);
+  APPOINTMENTS[newKey].sort((a, b) => a.time.localeCompare(b.time));
+  saveAppointments();
+  renderCalStats();
+  renderCalendar();
+  renderDayPanel(selectedDay);
+  renderUpcoming();
+  renderStats();
+  closeMoveModal();
+  showToast('Cita movida correctamente ✓', 'success');
+}
+
+// ── NUEVA CITA ────────────────────────────────────────────────────────────────
+function openNewAppt(prefillDate) {
+  // Populate services
+  const svcSel = document.getElementById('nappt-service');
+  const services = (currentUser && currentUser.services && currentUser.services.length)
+    ? currentUser.services.map(s => typeof s === 'string' ? s : (s.nombre || s.name || 'Servicio'))
+    : ['Consulta', 'Sesión de fisioterapia', 'Masaje', 'Valoración'];
+  svcSel.innerHTML = services.map(s => `<option value="${s}">${s}</option>`).join('');
+
+  // Populate time slots from schedule
+  const timeSel = document.getElementById('nappt-time');
+  const slots = (currentUser && currentUser.schedule && currentUser.schedule.slots && currentUser.schedule.slots.length)
+    ? currentUser.schedule.slots
+    : ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','16:00','16:30','17:00','17:30','18:00'];
+  timeSel.innerHTML = slots.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  // Default date: selected day in calendar or today
+  const dateInp = document.getElementById('nappt-date');
+  if (prefillDate) {
+    dateInp.value = prefillDate;
+  } else {
+    dateInp.value = dateKey(currentYear, currentMonth, selectedDay);
+  }
+  dateInp.min = dateKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+
+  document.getElementById('nappt-name').value  = '';
+  document.getElementById('nappt-phone').value = '';
+  document.getElementById('nappt-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('nappt-name').focus(), 100);
+}
+
+function closeNewAppt() {
+  document.getElementById('nappt-overlay').classList.remove('open');
+}
+
+function saveNewAppt() {
+  const name    = document.getElementById('nappt-name').value.trim();
+  const service = document.getElementById('nappt-service').value;
+  const date    = document.getElementById('nappt-date').value;
+  const time    = document.getElementById('nappt-time').value;
+  const phone   = document.getElementById('nappt-phone').value.trim();
+
+  if (!name) { showToast('Introduce el nombre del paciente', 'error'); return; }
+  if (!date) { showToast('Selecciona una fecha', 'error'); return; }
+  if (!time) { showToast('Selecciona una hora', 'error'); return; }
+
+  if (!APPOINTMENTS[date]) APPOINTMENTS[date] = [];
+  // Check duplicate
+  if (APPOINTMENTS[date].some(a => a.time === time)) {
+    showToast(`La hora ${time} ya está ocupada ese día`, 'error'); return;
+  }
+
+  APPOINTMENTS[date].push({ name, service, time, status: 'pending', phone: phone || undefined });
+  APPOINTMENTS[date].sort((a, b) => a.time.localeCompare(b.time));
+  saveAppointments();
+
+  // Navigate calendar to that date
+  const [y, m, d] = date.split('-').map(Number);
+  currentYear  = y;
+  currentMonth = m - 1;
+  selectedDay  = d;
+
+  renderCalStats();
+  renderCalendar();
+  renderDayPanel(selectedDay);
+  renderUpcoming();
+  renderStats();
+  closeNewAppt();
+  showToast(`Cita añadida para ${name} ✓`, 'success');
 }
 
 // ── UPCOMING TABLE ────────────────────────────────────────────────────────────
 function renderUpcoming() {
-  const today = new Date(2026, 2, 25);
+  const today = TODAY;
   const allAppts = [];
 
   Object.entries(APPOINTMENTS).forEach(([key, appts]) => {
@@ -1385,17 +2493,23 @@ function renderUpcoming() {
   if (todayAppts.length === 0) {
     miniHtml = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No hay citas para hoy</td></tr>';
   } else {
-    todayAppts.forEach(a => {
+    todayAppts.forEach((a, idx) => {
       const sc = serviceClass(a.service);
-      const statusCls = a.status === 'confirmed' ? 'confirmed' : 'pending';
-      const statusTxt = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
+      const confirmed = a.status === 'confirmed';
+      const statusCls = confirmed ? 'confirmed' : 'pending';
+      const statusTxt = confirmed ? 'Confirmada' : 'Pendiente';
+      const tkey = dateKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
       miniHtml += `<tr>
         <td class="td-patient">${a.name}</td>
         <td class="td-datetime">${a.time}</td>
         <td><span class="badge ${sc}">${a.service}</span></td>
         <td><span class="status-badge ${statusCls}">${statusTxt}</span></td>
         <td class="td-actions">
-          <button onclick="showToast('Ver detalle — próximamente', 'success')">Ver</button>
+          ${confirmed
+            ? `<button class="tbl-btn pending" onclick="revertAppt('${tkey}',${idx})">↩ Pdte.</button>`
+            : `<button class="tbl-btn confirm" onclick="confirmAppt('${tkey}',${idx})">✓ Confirmar</button>`}
+          <button class="tbl-btn move" onclick="openMoveModal('${tkey}',${idx})">📅</button>
+          <button class="tbl-btn del" onclick="deleteAppt('${tkey}',${idx})">✕</button>
         </td>
       </tr>`;
     });
@@ -1409,18 +2523,26 @@ function renderUpcoming() {
   if (allAppts.length === 0) {
     fullHtml = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No hay próximas citas</td></tr>';
   } else {
-    allAppts.forEach(a => {
+    allAppts.forEach((a, listIdx) => {
       const sc = serviceClass(a.service);
-      const statusCls = a.status === 'confirmed' ? 'confirmed' : 'pending';
-      const statusTxt = a.status === 'confirmed' ? 'Confirmada' : 'Pendiente';
+      const confirmed = a.status === 'confirmed';
+      const statusCls = confirmed ? 'confirmed' : 'pending';
+      const statusTxt = confirmed ? 'Confirmada' : 'Pendiente';
       const dateStr = `${a.day} ${MONTHS_ES[a.month].slice(0,3)}. · ${a.time}`;
+      // find real index within that day's array
+      const dayArr = APPOINTMENTS[a.key] || [];
+      const realIdx = dayArr.findIndex(x => x.name === a.name && x.time === a.time && x.service === a.service);
       fullHtml += `<tr>
         <td class="td-patient">${a.name}</td>
         <td class="td-datetime">${dateStr}</td>
         <td><span class="badge ${sc}">${a.service}</span></td>
         <td><span class="status-badge ${statusCls}">${statusTxt}</span></td>
         <td class="td-actions">
-          <button onclick="showToast('Ver detalle — próximamente', 'success')">Ver</button>
+          ${confirmed
+            ? `<button class="tbl-btn pending" onclick="revertAppt('${a.key}',${realIdx})">↩ Pdte.</button>`
+            : `<button class="tbl-btn confirm" onclick="confirmAppt('${a.key}',${realIdx})">✓ Ok</button>`}
+          <button class="tbl-btn move" onclick="openMoveModal('${a.key}',${realIdx})">📅 Mover</button>
+          <button class="tbl-btn del" onclick="deleteAppt('${a.key}',${realIdx})">✕ Eliminar</button>
         </td>
       </tr>`;
     });
@@ -1439,9 +2561,11 @@ function setActive(el) {
   // Update views
   document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
   const targetView = document.getElementById('view-' + viewId);
-  if (targetView) {
-    targetView.classList.add('active');
-  }
+  if (targetView) targetView.classList.add('active');
+
+  // Lazy-render data-driven views
+  if (viewId === 'pacientes') renderPatientsView();
+  if (viewId === 'documentos') renderDocumentsView();
 
   if (window.innerWidth <= 768) closeSidebar();
 }
@@ -1457,30 +2581,229 @@ function closeSidebar() {
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────────
-function showToast(msg, type) {
+function showToast(msg, type, duration = 2500) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.textContent = msg;
+  // Support HTML (for wa links)
+  if (msg.includes('<')) toast.innerHTML = msg;
+  else toast.textContent = msg;
   container.appendChild(toast);
 
   setTimeout(() => {
     toast.classList.add('hide');
     setTimeout(() => toast.remove(), 300);
-  }, 2500);
+  }, duration);
+}
+
+// ── WHATSAPP NOTIFICATION ──────────────────────────────────────────────────────
+function sendWhatsAppNotif(appt, dateKey) {
+  // Format readable date
+  const parts = dateKey.split('-');
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dateLabel = `${parseInt(parts[2])} de ${months[parseInt(parts[1])-1]}`;
+  const clinicName = currentUser.clinicName || currentUser.name || 'la clínica';
+
+  const msgText =
+    `Hola ${appt.name || 'paciente'} 👋\n\n` +
+    `Tu cita ha sido *confirmada* ✅\n\n` +
+    `📅 *Fecha:* ${dateLabel}\n` +
+    `🕐 *Hora:* ${appt.time}h\n` +
+    `💼 *Servicio:* ${appt.service}\n\n` +
+    `Te esperamos en ${clinicName}.\n\n` +
+    `_Hasta pronto_ 😊`;
+
+  const phone = (appt.phone || '').replace(/[\s\-\(\)]/g, '').replace(/^\+/, '');
+
+  if (phone.length >= 9) {
+    // Has phone — show toast with direct WhatsApp link
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msgText)}`;
+    showToast(
+      `Cita confirmada ✓ &nbsp;—&nbsp; <a href="${waUrl}" target="_blank" rel="noopener" ` +
+      `style="color:#fff;font-weight:700;text-decoration:underline;white-space:nowrap;">` +
+      `📱 Enviar WhatsApp al paciente →</a>`,
+      'success', 7000
+    );
+  } else {
+    // No phone stored — show toast + open WA panel with the message to copy
+    showToast('Cita confirmada ✓', 'success');
+    showWAPanel(msgText);
+  }
+}
+
+function showWAPanel(msgText) {
+  // Remove existing panel if any
+  const old = document.getElementById('wa-notif-panel');
+  if (old) old.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'wa-notif-panel';
+  panel.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.14);padding:20px 22px;
+    z-index:9998;width:min(420px,92vw);animation:fadeUp .25s ease both;
+  `;
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-weight:700;font-size:14px;color:#0f172a;">📱 Mensaje de confirmación</div>
+      <button onclick="this.closest('#wa-notif-panel').remove()"
+        style="background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;line-height:1;">✕</button>
+    </div>
+    <textarea readonly
+      style="width:100%;height:110px;font-size:12px;line-height:1.55;border:1px solid #e2e8f0;
+             border-radius:8px;padding:10px;resize:none;font-family:'Space Grotesk',sans-serif;
+             color:#334155;background:#f8fafc;"
+    >${msgText}</textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button onclick="navigator.clipboard.writeText(this.closest('#wa-notif-panel').querySelector('textarea').value);showToast('Mensaje copiado','success');"
+        style="flex:1;padding:9px;border:1.5px solid #e2e8f0;border-radius:8px;
+               font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#334155;">
+        📋 Copiar
+      </button>
+      <a href="https://wa.me/?text=${encodeURIComponent(msgText)}" target="_blank" rel="noopener"
+        style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px;
+               padding:9px;border-radius:8px;background:#25d366;color:#fff;text-decoration:none;
+               font-family:inherit;font-size:13px;font-weight:700;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.003 22l4.978-1.38A9.944 9.944 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 11.998 2z"/>
+        </svg>
+        Abrir WhatsApp
+      </a>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  // Auto-close after 15s
+  setTimeout(() => { if (panel.parentNode) panel.remove(); }, 15000);
+}
+
+// ── ESTADÍSTICAS ─────────────────────────────────────────────────────────────
+function interactionKey() {
+  return currentUser ? 'nervia_interactions_' + currentUser.email : null;
+}
+
+function getInteractions() {
+  if (isDemo()) return { booking: 47, bot: 134, ia: 18 };
+  const key = interactionKey();
+  if (!key) return { booking: 0, bot: 0, ia: 0 };
+  return JSON.parse(localStorage.getItem(key) || '{"booking":0,"bot":0,"ia":0}');
+}
+
+function trackInteraction(type) {
+  const key = interactionKey();
+  if (!key) return;
+  const data = getInteractions();
+  data[type] = (data[type] || 0) + 1;
+  localStorage.setItem(key, JSON.stringify(data));
+  renderStats();
+}
+
+function renderStats() {
+  // Contadores de citas desde APPOINTMENTS
+  let total = 0, confirmed = 0, pending = 0;
+  const serviceCounts = {};
+
+  Object.values(APPOINTMENTS).forEach(dayAppts => {
+    dayAppts.forEach(a => {
+      total++;
+      if (a.status === 'confirmed') confirmed++;
+      else pending++;
+      const svc = a.service || 'Otro';
+      serviceCounts[svc] = (serviceCounts[svc] || 0) + 1;
+    });
+  });
+
+  // Interacciones
+  const inter = getInteractions();
+  const totalInter = (inter.booking || 0) + (inter.bot || 0) + (inter.ia || 0);
+
+  // Actualizar contadores principales
+  document.getElementById('stat-total-appts').textContent = total;
+  document.getElementById('stat-confirmed').textContent   = confirmed;
+  document.getElementById('stat-pending').textContent     = pending;
+  document.getElementById('stat-interactions').textContent = totalInter;
+
+  // Interacciones por origen
+  document.getElementById('int-booking').textContent = inter.booking || 0;
+  document.getElementById('int-bot').textContent     = inter.bot     || 0;
+  document.getElementById('int-ia').textContent      = inter.ia      || 0;
+
+  // Servicios más solicitados
+  const container = document.getElementById('services-breakdown');
+  const sorted = Object.entries(serviceCounts).sort((a,b) => b[1] - a[1]);
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">Sin citas registradas aún</div>';
+    return;
+  }
+
+  const colors = ['var(--green)','var(--blue)','var(--orange)','var(--purple)','var(--red)'];
+  const max = sorted[0][1];
+
+  container.innerHTML = sorted.slice(0, 5).map(([name, count], i) => {
+    const pct = Math.round((count / total) * 100);
+    const w   = Math.round((count / max) * 100);
+    return `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="font-weight:500;">${name}</span>
+          <span style="color:var(--muted);">${count} cita${count !== 1 ? 's' : ''} · ${pct}%</span>
+        </div>
+        <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${w}%;background:${colors[i % colors.length]};border-radius:4px;transition:width .4s;"></div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ── AUTH & INIT ───────────────────────────────────────────────────────────────
 let currentUser = null;
 
 function initAuth() {
-  const auth = sessionStorage.getItem('nervia_auth');
+  // ── Asegurar usuario demo en localStorage ──────────────────────────────────
+  const DEMO_USER = { email:'demo@nerv-ia.com', pass:'nervia2025', name:'Demo Cliente',
+    clinicName:'Clínica Demo', slug:'demo', role:'client', isDemo:true };
+
+  let users = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+  const demoIdx = users.findIndex(u => u.email === 'demo@nerv-ia.com');
+  if (demoIdx === -1) {
+    users.push(DEMO_USER);
+    localStorage.setItem('nervia_users', JSON.stringify(users));
+  } else {
+    // Actualizar campos críticos si faltan
+    let changed = false;
+    if (!users[demoIdx].slug)   { users[demoIdx].slug   = 'demo'; changed = true; }
+    if (!users[demoIdx].isDemo) { users[demoIdx].isDemo = true;   changed = true; }
+    if (changed) localStorage.setItem('nervia_users', JSON.stringify(users));
+  }
+
+  // ── Sesión ─────────────────────────────────────────────────────────────────
+  // Permitir acceso directo desde admin via ?user=email
+  const _urlEmail = new URLSearchParams(window.location.search).get('user');
+  if (_urlEmail) {
+    const _urlUser = JSON.parse(localStorage.getItem('nervia_users') || '[]').find(u => u.email === _urlEmail);
+    if (_urlUser) sessionStorage.setItem('nervia_auth', JSON.stringify(_urlUser));
+  }
+
+  let auth = sessionStorage.getItem('nervia_auth');
   if (!auth) {
-    window.location.href = 'login.html';
-    return;
+    // Apertura directa sin sesión: auto-login como demo
+    const demo = JSON.parse(localStorage.getItem('nervia_users') || '[]')
+      .find(u => u.email === 'demo@nerv-ia.com') || DEMO_USER;
+    sessionStorage.setItem('nervia_auth', JSON.stringify(demo));
+    auth = sessionStorage.getItem('nervia_auth');
   }
 
   currentUser = JSON.parse(auth);
+
+  // Normalizar demo aunque la sesión fuera antigua
+  if (currentUser.email === 'demo@nerv-ia.com') {
+    currentUser.slug   = 'demo';
+    currentUser.isDemo = true;
+  }
+
+  // Si es admin ir al panel admin
   if (currentUser.role === 'admin') {
     window.location.href = 'admin.html';
     return;
@@ -1498,17 +2821,45 @@ function initAuth() {
 
   // Update config fields
   document.getElementById('conf-clinic-name').value = currentUser.clinicName || '';
-  document.getElementById('conf-ai-welcome').value = `¡Hola! Soy el asistente de ${currentUser.clinicName || 'la clínica'} 👋 ¿En qué puedo ayudarte hoy?`;
+
+  // Bot Telegram URL
+  const botUrl = currentUser.botUrl || '';
+  if (botUrl) {
+    document.getElementById('bot-url-wrap').style.display = 'block';
+    document.getElementById('bot-url-empty').style.display = 'none';
+    const link = document.getElementById('conf-bot-url');
+    link.href = botUrl;
+    link.textContent = botUrl;
+  }
+
+  // Read-only toggles (admin-set)
+  document.getElementById('prof-whatsapp').checked = !!currentUser.whatsappEnabled;
+  document.getElementById('prof-email-resumen').checked = !!currentUser.emailResumen;
 
   const now = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('display-date').textContent = now.toLocaleDateString('es-ES', options);
 
+  loadAppointments();
+  loadTrash();
+  renderCalStats();
   renderCalendar();
   renderDayPanel(now.getDate());
   renderUpcoming();
+  renderStats();
+  renderTrash();
   updateBookingInfo();
   renderServicesConfig();
+  initScheduleEditor();
+  renderAnalysisHistory();
+
+  // Primera vez: contraseña 0000 → forzar cambio
+  if (currentUser.pass === '0000') {
+    document.getElementById('chpass-overlay').classList.add('show');
+  }
+
+  // Estado API key
+  refreshApiKeyUI();
 }
 
 function renderServicesConfig() {
@@ -1520,9 +2871,9 @@ function renderServicesConfig() {
 
   container.innerHTML = services.map((s, idx) => `
     <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px; align-items: center; margin-bottom: 8px;" class="service-row">
-      <input type="text" value="${s.name}" class="svc-name" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
-      <input type="text" value="${s.duration}" class="svc-duration" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
-      <input type="text" value="${s.price}" class="svc-price" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
+      <input type="text" value="${s.name || s.nombre || ''}" class="svc-name" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
+      <input type="text" value="${s.duration || s.duracion || ''}" class="svc-duration" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
+      <input type="text" value="${s.price || (s.precio ? s.precio+'€' : '')}" class="svc-price" style="padding:7px; border:1px solid var(--border); border-radius:6px; font-size:13px;">
       <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="this.parentElement.remove()">✕</button>
     </div>
   `).join('');
@@ -1542,6 +2893,88 @@ function addNewServiceRow() {
   container.appendChild(div);
 }
 
+// ── SCHEDULE EDITOR ──────────────────────────────────────────────────────────
+function initScheduleEditor() {
+  const sched = currentUser.schedule || { days: [1,2,3,4,5], slots: [] };
+
+  // Restore checked days
+  document.querySelectorAll('.sched-day').forEach(cb => {
+    cb.checked = sched.days.includes(Number(cb.value));
+  });
+
+  // Restore time ranges from existing slots
+  if (sched.morningStart) document.getElementById('sched-morn-start').value = sched.morningStart;
+  if (sched.morningEnd)   document.getElementById('sched-morn-end').value   = sched.morningEnd;
+  if (sched.afternoonStart) document.getElementById('sched-aft-start').value = sched.afternoonStart;
+  if (sched.afternoonEnd)   document.getElementById('sched-aft-end').value   = sched.afternoonEnd;
+
+  // Restore interval
+  const interval = sched.interval || 30;
+  const rb = document.querySelector(`input[name="sched-interval"][value="${interval}"]`);
+  if (rb) rb.checked = true;
+
+  // Attach live preview
+  ['sched-morn-start','sched-morn-end','sched-aft-start','sched-aft-end'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderSchedPreview);
+  });
+  document.querySelectorAll('.sched-day').forEach(cb => cb.addEventListener('change', renderSchedPreview));
+  document.querySelectorAll('input[name="sched-interval"]').forEach(rb => rb.addEventListener('change', renderSchedPreview));
+
+  renderSchedPreview();
+}
+
+function buildTimeSlots(startStr, endStr, intervalMin) {
+  const slots = [];
+  if (!startStr || !endStr) return slots;
+  const [sh, sm] = startStr.split(':').map(Number);
+  const [eh, em] = endStr.split(':').map(Number);
+  let cur = sh * 60 + sm;
+  const end = eh * 60 + em;
+  while (cur < end) {
+    const h = String(Math.floor(cur/60)).padStart(2,'0');
+    const m = String(cur % 60).padStart(2,'0');
+    slots.push(`${h}:${m}`);
+    cur += intervalMin;
+  }
+  return slots;
+}
+
+function renderSchedPreview() {
+  const interval = Number(document.querySelector('input[name="sched-interval"]:checked')?.value || 30);
+  const mornStart = document.getElementById('sched-morn-start').value;
+  const mornEnd   = document.getElementById('sched-morn-end').value;
+  const aftStart  = document.getElementById('sched-aft-start').value;
+  const aftEnd    = document.getElementById('sched-aft-end').value;
+
+  const slots = [
+    ...buildTimeSlots(mornStart, mornEnd, interval),
+    ...buildTimeSlots(aftStart, aftEnd, interval)
+  ];
+
+  const preview = document.getElementById('sched-preview');
+  if (slots.length === 0) {
+    preview.innerHTML = '<span style="font-size:12px;color:var(--muted);">Sin huecos — revisa las horas.</span>';
+    return;
+  }
+  preview.innerHTML = slots.map(s => `<span class="sched-slot-preview">${s}</span>`).join('');
+}
+
+function getScheduleFromEditor() {
+  const days = Array.from(document.querySelectorAll('.sched-day:checked')).map(cb => Number(cb.value));
+  const interval = Number(document.querySelector('input[name="sched-interval"]:checked')?.value || 30);
+  const morningStart   = document.getElementById('sched-morn-start').value;
+  const morningEnd     = document.getElementById('sched-morn-end').value;
+  const afternoonStart = document.getElementById('sched-aft-start').value;
+  const afternoonEnd   = document.getElementById('sched-aft-end').value;
+
+  const slots = [
+    ...buildTimeSlots(morningStart, morningEnd, interval),
+    ...buildTimeSlots(afternoonStart, afternoonEnd, interval)
+  ];
+
+  return { days, slots, interval, morningStart, morningEnd, afternoonStart, afternoonEnd };
+}
+
 function updateBookingInfo() {
   const slug = currentUser.slug || 'default';
   // En un entorno real usaríamos location.origin, pero para esta demo usamos rutas relativas
@@ -1557,6 +2990,7 @@ function copyBookingUrl() {
   const input = document.getElementById('booking-url-input');
   input.select();
   document.execCommand('copy');
+  trackInteraction('booking');
   showToast('¡URL copiada al portapapeles!', 'success');
 }
 
@@ -1583,9 +3017,13 @@ function saveConfiguration() {
     if (name) services.push({ name, duration, price });
   });
 
+  // Recolectar horario
+  const schedule = getScheduleFromEditor();
+
   // Actualizar objeto en sesión
   currentUser.clinicName = newName;
   currentUser.services = services;
+  currentUser.schedule = schedule;
   sessionStorage.setItem('nervia_auth', JSON.stringify(currentUser));
 
   // Actualizar persistencia (localStorage)
@@ -1594,6 +3032,7 @@ function saveConfiguration() {
   if (userIdx !== -1) {
     allUsers[userIdx].clinicName = newName;
     allUsers[userIdx].services = services;
+    allUsers[userIdx].schedule = schedule;
     localStorage.setItem('nervia_users', JSON.stringify(allUsers));
   }
 
@@ -1605,12 +3044,1065 @@ function saveConfiguration() {
   showToast('Cambios guardados correctamente', 'success');
 }
 
-initAuth();
+try {
+  initAuth();
+} catch(e) {
+  console.error('Nervia initAuth error:', e);
+  document.body.insertAdjacentHTML('afterbegin',
+    `<div style="position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:12px 20px;font-family:monospace;font-size:13px;z-index:99999;">
+      ⚠ Error al cargar: ${e.message} — ver consola para detalles
+    </div>`);
+}
 
 // ── LOGOUT ──
 function logOut() {
   sessionStorage.removeItem('nervia_auth');
   window.location.href = 'login.html';
+}
+
+/* ══════════════════════════════════════════════════════
+   CHANGE PASSWORD (primera vez, pass = 0000)
+══════════════════════════════════════════════════════ */
+function saveNewPass() {
+  const p1 = document.getElementById('chpass-new').value;
+  const p2 = document.getElementById('chpass-confirm').value;
+  const err = document.getElementById('chpass-err');
+  err.textContent = '';
+  if (!p1 || p1.length < 4) { err.textContent = 'Mínimo 4 caracteres.'; return; }
+  if (p1 === '0000')         { err.textContent = 'No puedes usar 0000.'; return; }
+  if (p1 !== p2)             { err.textContent = 'Las contraseñas no coinciden.'; return; }
+
+  const all = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+  const idx = all.findIndex(u => u.email === currentUser.email);
+  if (idx !== -1) { all[idx].pass = p1; localStorage.setItem('nervia_users', JSON.stringify(all)); currentUser.pass = p1; }
+  sessionStorage.setItem('nervia_auth', JSON.stringify(currentUser));
+  document.getElementById('chpass-overlay').classList.remove('show');
+  showToast('¡Contraseña guardada!', 'success');
+}
+
+/* ══════════════════════════════════════════════════════
+   NOTAS IA — TABS & RECORDING
+══════════════════════════════════════════════════════ */
+let _mediaRec = null, _recognition = null, _recInterval = null, _recSeconds = 0;
+let _transcript = '';
+
+function iaTab(name, btn) {
+  document.querySelectorAll('.ia-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ia-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ia-panel-' + name).classList.add('active');
+}
+
+function syncTranscript(src) {
+  if (src === 'text') {
+    document.getElementById('ia-transcript').value = document.getElementById('ia-text-input').value;
+  }
+}
+
+/* Recording with SpeechRecognition */
+function toggleRecording() {
+  const btn = document.getElementById('rec-btn');
+  if (_recognition && _recognitionActive) {
+    stopRecording(); return;
+  }
+  startRecording();
+}
+
+let _recognitionActive = false;
+
+function startRecording() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    showToast('Tu navegador no soporta grabación. Usa Chrome o Edge.', 'error'); return;
+  }
+  _recognition = new SpeechRec();
+  _recognition.lang = 'es-ES';
+  _recognition.continuous = true;
+  _recognition.interimResults = true;
+
+  let interim = '';
+  _transcript = document.getElementById('ia-transcript').value;
+
+  _recognition.onresult = e => {
+    interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    if (final) _transcript += final;
+    document.getElementById('live-transcript').textContent = _transcript + interim;
+    document.getElementById('ia-transcript').value = _transcript + interim;
+  };
+
+  _recognition.onerror = e => { showToast('Error de micrófono: ' + e.error, 'error'); stopRecording(); };
+  _recognition.onend = () => { if (_recognitionActive) _recognition.start(); }; // auto-restart
+
+  _recognition.start();
+  _recognitionActive = true;
+
+  const btn = document.getElementById('rec-btn');
+  btn.className = 'rec-btn recording';
+  btn.innerHTML = '<span class="rec-dot"></span> Detener grabación';
+
+  const timerEl = document.getElementById('rec-timer');
+  timerEl.style.display = 'block';
+  _recSeconds = 0;
+  _recInterval = setInterval(() => {
+    _recSeconds++;
+    const m = String(Math.floor(_recSeconds / 60)).padStart(2,'0');
+    const s = String(_recSeconds % 60).padStart(2,'0');
+    document.getElementById('rec-time').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function stopRecording() {
+  _recognitionActive = false;
+  if (_recognition) { _recognition.stop(); _recognition = null; }
+  clearInterval(_recInterval);
+  const btn = document.getElementById('rec-btn');
+  btn.className = 'rec-btn idle';
+  btn.innerHTML = '<span class="rec-dot"></span> Iniciar grabación';
+  document.getElementById('rec-timer').style.display = 'none';
+  showToast('Grabación finalizada', 'success');
+}
+
+/* File upload */
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    document.getElementById('ia-transcript').value = text;
+    showToast(`Archivo cargado: ${file.name}`, 'success');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const fakeInput = { files: [file] };
+  handleFileUpload(fakeInput);
+}
+
+/* ══════════════════════════════════════════════════════
+   NOTAS IA — ANÁLISIS CON CLAUDE
+══════════════════════════════════════════════════════ */
+// ── API KEY MANAGEMENT ────────────────────────────────────────────────────────
+function getApiKey() {
+  return currentUser.anthropicKey || localStorage.getItem('nervia_anthropic_key') || '';
+}
+
+function refreshApiKeyUI() {
+  const bar = document.getElementById('ia-status-bar');
+  if (!bar) return;
+  if (getApiKey()) {
+    bar.style.background = 'rgba(8,145,178,0.08)';
+    bar.style.border = '1px solid rgba(8,145,178,0.3)';
+    bar.style.color = 'var(--green-dark)';
+    bar.innerHTML = '<span style="font-size:15px;">🟢</span> IA conectada';
+  } else {
+    bar.style.background = '#fef2f2';
+    bar.style.border = '1px solid #fecaca';
+    bar.style.color = '#991b1b';
+    bar.innerHTML = '<span style="font-size:15px;">🔴</span> IA no configurada — contacta con tu administrador';
+  }
+}
+
+async function analyzeWithAI() {
+  const transcript = document.getElementById('ia-transcript').value.trim();
+  const patient = document.getElementById('ia-patient').value.trim() || 'Sin nombre';
+
+  if (!transcript) { showToast('Añade texto o graba antes de analizar', 'error'); return; }
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('La IA no está configurada — contacta con el administrador', 'error'); return;
+  }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Analizando…';
+
+  const specialty = currentUser.specialty || 'profesional de la salud';
+  const prompt = `Eres un asistente clínico experto para ${specialty}. Analiza las siguientes notas o transcripción de sesión con el paciente "${patient}" y proporciona:
+
+**1. Puntos principales de la sesión** (máx. 5 bullets concisos)
+**2. Estado observado del paciente** (físico/emocional según contexto)
+**3. Observaciones clínicas relevantes**
+**4. Puntos de atención para próximas sesiones**
+**5. Resumen ejecutivo** (2-3 frases)
+
+Mantén un tono clínico profesional. No realices diagnósticos definitivos.
+
+---
+NOTAS/TRANSCRIPCIÓN:
+${transcript}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Error API');
+    }
+
+    const data = await res.json();
+    const text = data.content[0].text;
+    renderAIResult(text);
+    // Store temporarily for saving
+    window._lastAnalysis = { patient, transcript, result: text, date: new Date().toISOString() };
+
+  } catch (err) {
+    showToast('Error al llamar a la IA: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> Analizar con IA';
+  }
+}
+
+function renderAIResult(text) {
+  // Convert markdown-ish to HTML
+  const html = text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^(\d+\.\s|\*\s|- )/gm, '')
+    .split('\n')
+    .filter(l => l.trim())
+    .map(l => l.startsWith('<strong>') ? `<h4>${l}</h4>` : `<p>${l}</p>`)
+    .join('');
+  document.getElementById('ia-result-content').innerHTML = html;
+  document.getElementById('ia-result').style.display = 'block';
+  document.getElementById('ia-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function saveAnalysis() {
+  if (!window._lastAnalysis) return;
+  const key = `nervia_analyses_${currentUser.email}`;
+  const all = JSON.parse(localStorage.getItem(key) || '[]');
+  all.unshift(window._lastAnalysis);
+  if (all.length > 50) all.pop(); // keep max 50
+  localStorage.setItem(key, JSON.stringify(all));
+  trackInteraction('ia');
+  renderAnalysisHistory();
+  showToast('Análisis guardado', 'success');
+}
+
+
+function renderAnalysisHistory() {
+  const container = document.getElementById('ia-history');
+  let html = '';
+
+  if (isDemo()) {
+    // Demo: mostrar análisis ficticios como si fueran reales
+    html = DEMO_ANALYSES.map((a, i) => histItemHtml(a, i, false, true)).join('');
+  } else {
+    // Cuenta real: solo análisis guardados, sin ejemplos
+    const savedKey = `nervia_analyses_${currentUser.email}`;
+    const real = JSON.parse(localStorage.getItem(savedKey) || '[]');
+    if (real.length) {
+      html = real.map((a, i) => histItemHtml(a, i, false, false)).join('');
+    } else {
+      html = '<p style="font-size:13px;color:var(--muted);padding:16px 0;">Aún no hay análisis guardados. Graba o escribe tus notas y pulsa <strong>Analizar con IA</strong>.</p>';
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+function histItemHtml(a, i, isExample, isDemoUser) {
+  const cacheKey = (isExample ? 'ex_' : 'real_') + i;
+  _anlCache[cacheKey] = a;
+  const d = new Date(a.date);
+  const dateStr = d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+  const timeStr = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+  const cls = isExample ? 'hist-item example' : 'hist-item';
+  return `<div class="${cls}" style="cursor:pointer;" onclick="_openAnlByKey('${cacheKey}',${isExample})">
+    <div style="flex:1;min-width:0;">
+      <div class="hist-name">${escHtml(a.patient)}</div>
+      <div class="hist-preview">${escHtml(a.transcript.substring(0, 80))}…</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="hist-date">${dateStr}<br>${timeStr}</div>
+      ${isExample
+        ? `<span style="font-size:10px;color:var(--muted);">ejemplo</span>`
+        : (!isDemoUser ? `<button onclick="event.stopPropagation();deleteHistItem(${i})" style="margin-top:4px;font-size:10px;background:none;border:none;cursor:pointer;color:var(--muted);">✕ borrar</button>` : '')
+      }
+    </div>
+  </div>`;
+}
+
+function _openAnlByKey(key, isExample) {
+  openAnlModal(_anlCache[key], isExample);
+}
+
+function loadDemoHistItem(i) {
+  openAnlModal(DEMO_ANALYSES[i], true);
+}
+
+// ── ANALYSIS DETAIL MODAL ─────────────────────────────────────────────────────
+let _anlItem = null, _anlIsExample = false;
+
+function openAnlModal(a, isExample) {
+  if (!a) return;
+  _anlItem = a; _anlIsExample = isExample;
+
+  document.getElementById('anl-patient-title').textContent = a.patient || '—';
+  const d = new Date(a.date);
+  const dateStr = d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+    + ' · ' + d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('anl-date-meta').textContent = dateStr;
+
+  // Transcript
+  document.getElementById('anl-transcript-text').textContent = a.transcript || '—';
+
+  // Result — render markdown-like formatting
+  document.getElementById('anl-result-text').innerHTML = formatAnalysisText(a.result || '—');
+
+  // Hide "Cargar en editor" for demo examples
+  document.getElementById('anl-load-btn').style.display = isExample ? 'none' : '';
+
+  document.getElementById('anl-overlay').classList.add('open');
+}
+
+function closeAnlModal() {
+  document.getElementById('anl-overlay').classList.remove('open');
+  _anlItem = null;
+}
+
+function loadAnlIntoEditor() {
+  if (!_anlItem) return;
+  document.getElementById('ia-patient').value = _anlItem.patient;
+  document.getElementById('ia-transcript').value = _anlItem.transcript;
+  renderAIResult(_anlItem.result);
+  window._lastAnalysis = _anlItem;
+  closeAnlModal();
+  // Switch to Notas IA view if not already there
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => { if (n.getAttribute('data-view') === 'notas-ia') setActive(n); });
+  setTimeout(() => document.getElementById('ia-result').scrollIntoView({ behavior:'smooth' }), 100);
+}
+
+function formatAnalysisText(text) {
+  if (!text) return '';
+  // Split into lines and process each
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      if (inList) { html += '</ul>'; inList = false; }
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (!inList) { html += '<ul style="padding-left:18px;margin:6px 0;">'; inList = true; }
+      html += `<li style="margin-bottom:3px;">${fmtInline(line.slice(2))}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p style="margin:0 0 8px;">${fmtInline(line)}</p>`;
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+function fmtInline(s) {
+  return s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
+function loadHistItem(i) {
+  const all = JSON.parse(localStorage.getItem(`nervia_analyses_${currentUser.email}`) || '[]');
+  const a = all[i]; if (!a) return;
+  openAnlModal(a, false);
+}
+
+function deleteHistItem(i) {
+  if (isDemo()) { showToast('En la demo no se pueden borrar análisis', 'error'); return; }
+  const key = `nervia_analyses_${currentUser.email}`;
+  const all = JSON.parse(localStorage.getItem(key) || '[]');
+  all.splice(i, 1);
+  localStorage.setItem(key, JSON.stringify(all));
+  renderAnalysisHistory();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── WYSIWYG EDITOR ───────────────────────────────────────────
+function fmtCmd(cmd) {
+  document.getElementById('docmod-content').focus();
+  document.execCommand(cmd, false, null);
+}
+function fmtBlock(tag) {
+  if (!tag) return;
+  document.getElementById('docmod-content').focus();
+  document.execCommand('formatBlock', false, tag);
+}
+function insertVariable(varName) {
+  if (!varName) return;
+  const ed = document.getElementById('docmod-content');
+  ed.focus();
+  document.execCommand('insertHTML', false, `<span class="doc-var">${varName}</span>&nbsp;`);
+}
+
+// CSS keyframe for spinner in analyze btn
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s); })();
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENTS & CONSENTS
+// ═══════════════════════════════════════════════════════════════
+let _editDocId = null;
+let _sendDocId = null;
+
+function docsKey()     { return `nervia_doc_templates_${currentUser.email}`; }
+function consentsKey() { return `nervia_doc_consents_${currentUser.email}`; }
+function getDocTemplates() { return JSON.parse(localStorage.getItem(docsKey()) || '[]'); }
+function getConsents()     { return JSON.parse(localStorage.getItem(consentsKey()) || '[]'); }
+function saveDocTemplates(arr) { localStorage.setItem(docsKey(), JSON.stringify(arr)); }
+function saveConsents(arr)     { localStorage.setItem(consentsKey(), JSON.stringify(arr)); }
+
+function renderDocumentsView() {
+  renderDocTemplates();
+  renderDocSent();
+}
+
+function renderDocTemplates() {
+  const list = document.getElementById('doc-templates-list');
+  const templates = getDocTemplates();
+  if (!templates.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">Sin plantillas todavía.<br>Crea la primera con el botón ↗</div>';
+    return;
+  }
+  list.innerHTML = templates.map(t => `
+    <div class="doc-template-card">
+      <div class="doc-title">${escHtml(t.title)}</div>
+      <div class="doc-preview">${escHtml(t.content.slice(0,120))}…</div>
+      <div class="doc-card-actions">
+        <button class="doc-btn primary" onclick="openSendModal('${escHtml(t.id)}')">📤 Enviar</button>
+        <button class="doc-btn secondary" onclick="openDocEditorModal('${escHtml(t.id)}')">✏️ Editar</button>
+        <button class="doc-btn danger" onclick="deleteDocTemplate('${escHtml(t.id)}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDocSent() {
+  const list = document.getElementById('doc-sent-list');
+  const consents = getConsents();
+  if (!consents.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">Ningún consentimiento enviado aún.</div>';
+    return;
+  }
+  list.innerHTML = [...consents].reverse().map(c => `
+    <div class="doc-sent-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;">${escHtml(c.patientName)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escHtml(c.docTitle)} · ${new Date(c.sentAt).toLocaleDateString('es-ES')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        <span class="doc-status-badge ${c.status}">${c.status === 'signed' ? '✅ Firmado' : '⏳ Pendiente'}</span>
+        ${c.status === 'pending' ? `<button onclick="markConsentSigned('${c.id}')" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid var(--green);background:none;color:var(--green-dark);cursor:pointer;font-family:inherit;font-weight:600;">Marcar firmado</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openDocEditorModal(docId) {
+  _editDocId = docId || null;
+  const nameInput    = document.getElementById('docmod-name');
+  const contentInput = document.getElementById('docmod-content');
+  const editor = document.getElementById('docmod-content');
+  if (docId) {
+    const t = getDocTemplates().find(x => x.id === docId);
+    if (!t) return;
+    document.getElementById('docmod-title').textContent = '✏️ Editar plantilla';
+    nameInput.value  = t.title;
+    editor.innerHTML = t.content;
+  } else {
+    document.getElementById('docmod-title').textContent = '📄 Nueva plantilla';
+    nameInput.value  = '';
+    editor.innerHTML = '';
+  }
+  document.getElementById('docmod-overlay').classList.add('show');
+  setTimeout(() => nameInput.focus(), 50);
+}
+
+function closeDocEditorModal() {
+  document.getElementById('docmod-overlay').classList.remove('show');
+  _editDocId = null;
+}
+
+function saveDocTemplate() {
+  if (isDemo()) { showToast('En la demo no se guardan plantillas', 'error'); return; }
+  const title   = document.getElementById('docmod-name').value.trim();
+  const content = document.getElementById('docmod-content').innerHTML.trim();
+  if (!title)   { showToast('Escribe un título para la plantilla', 'error'); return; }
+  if (!content) { showToast('El contenido no puede estar vacío', 'error'); return; }
+  const templates = getDocTemplates();
+  if (_editDocId) {
+    const idx = templates.findIndex(t => t.id === _editDocId);
+    if (idx >= 0) { templates[idx].title = title; templates[idx].content = content; }
+  } else {
+    templates.push({ id: 'doc_' + Date.now(), title, content, createdAt: new Date().toISOString() });
+  }
+  saveDocTemplates(templates);
+  closeDocEditorModal();
+  renderDocTemplates();
+  showToast(_editDocId ? 'Plantilla actualizada ✓' : 'Plantilla guardada ✓', 'success');
+}
+
+function deleteDocTemplate(docId) {
+  if (isDemo()) { showToast('En la demo no se puede eliminar', 'error'); return; }
+  if (!confirm('¿Eliminar esta plantilla?')) return;
+  saveDocTemplates(getDocTemplates().filter(t => t.id !== docId));
+  renderDocTemplates();
+  showToast('Plantilla eliminada', 'success');
+}
+
+function openSendModal(docId) {
+  _sendDocId = docId;
+  const t = getDocTemplates().find(x => x.id === docId);
+  if (!t) return;
+  document.getElementById('sendmod-doc-name').textContent = t.title;
+  document.getElementById('sendmod-patient-name').value  = '';
+  document.getElementById('sendmod-patient-phone').value = '';
+  document.getElementById('sendmod-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('sendmod-patient-name').focus(), 50);
+}
+
+function closeSendModal() {
+  document.getElementById('sendmod-overlay').classList.remove('show');
+  _sendDocId = null;
+}
+
+function sendConsentViaWA() {
+  const patientName  = document.getElementById('sendmod-patient-name').value.trim();
+  const patientPhone = document.getElementById('sendmod-patient-phone').value.trim().replace(/\s/g,'');
+  if (!patientName)  { showToast('Escribe el nombre del paciente', 'error'); return; }
+  if (!patientPhone) { showToast('Escribe el teléfono del paciente', 'error'); return; }
+  const t = getDocTemplates().find(x => x.id === _sendDocId);
+  if (!t) return;
+
+  // Replace variables in content
+  const today = new Date().toLocaleDateString('es-ES');
+  const resolvedContent = t.content
+    .replace(/\{\{NOMBRE_PACIENTE\}\}/g, patientName)
+    .replace(/\{\{FECHA\}\}/g, today)
+    .replace(/\{\{NOMBRE_CLINICA\}\}/g, currentUser.clinicName || currentUser.name)
+    .replace(/\{\{TELEFONO_PACIENTE\}\}/g, patientPhone);
+
+  // Build signing URL (content encoded as base64)
+  const base = window.location.href.replace(/\/[^\/]*$/, '/firma.html');
+  const tB64 = btoa(unescape(encodeURIComponent(t.title)));
+  const cB64 = btoa(unescape(encodeURIComponent(resolvedContent)));
+  const signingUrl = `${base}?t=${encodeURIComponent(tB64)}&c=${encodeURIComponent(cB64)}&n=${encodeURIComponent(patientName)}&clinic=${encodeURIComponent(currentUser.clinicName || currentUser.name)}&wa=${encodeURIComponent((currentUser.phone||'').replace(/\s/g,''))}`;
+
+  const msg = `Hola ${patientName} 👋\n\nTe enviamos el consentimiento para firma digital:\n\n📄 *${t.title}*\n\nAccede al enlace, léelo y fírmalo con tu nombre:\n${signingUrl}\n\nGracias, ${currentUser.clinicName || currentUser.name}`;
+
+  const phone = patientPhone.startsWith('+') ? patientPhone.slice(1) : patientPhone;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+
+  // Register consent as sent
+  const consents = getConsents();
+  consents.push({ id: 'c_' + Date.now(), docId: _sendDocId, docTitle: t.title, patientName, patientPhone, sentAt: new Date().toISOString(), status: 'pending' });
+  saveConsents(consents);
+  closeSendModal();
+  renderDocSent();
+  showToast(`Consentimiento enviado a ${patientName} ✓`, 'success');
+}
+
+function markConsentSigned(consentId) {
+  const consents = getConsents();
+  const c = consents.find(x => x.id === consentId);
+  if (c) { c.status = 'signed'; c.signedAt = new Date().toISOString(); }
+  saveConsents(consents);
+  renderDocSent();
+  showToast('Marcado como firmado ✅', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PATIENTS VIEW
+// ═══════════════════════════════════════════════════════════════
+let _allPatients = [];
+let _editPatientId = null;
+
+function patientsKey() { return `nervia_patients_${currentUser.email}`; }
+function getManualPatients() { return JSON.parse(localStorage.getItem(patientsKey()) || '[]'); }
+function saveManualPatients(arr) { localStorage.setItem(patientsKey(), JSON.stringify(arr)); }
+
+function buildPatientList() {
+  // Gather appointment data
+  const stored = JSON.parse(localStorage.getItem(`nervia_appts_${currentUser.email}`) || '{}');
+  const apptMap = {};
+  Object.entries(stored).forEach(([date, appts]) => {
+    appts.forEach(a => {
+      if (!a.name) return;
+      const key = a.name.trim().toLowerCase();
+      if (!apptMap[key]) apptMap[key] = [];
+      apptMap[key].push({ date, time: a.time||'', service: a.service||'', status: a.status||'pending' });
+    });
+  });
+
+  // Merge with manual patients (manual data takes priority)
+  const manual = getManualPatients();
+  const merged = [];
+  const usedKeys = new Set();
+
+  manual.forEach(m => {
+    const key = m.name.trim().toLowerCase();
+    usedKeys.add(key);
+    merged.push({ ...m, appts: apptMap[key] || [], isManual: true });
+  });
+
+  // Add appointment-only patients not in manual list
+  Object.entries(apptMap).forEach(([key, appts]) => {
+    if (usedKeys.has(key)) return;
+    const name = appts[0] ? appts.find(a=>a)?.name || key : key;
+    // Try to get real name from stored appts
+    let realName = key;
+    Object.values(stored).forEach(dayAppts => {
+      dayAppts.forEach(a => { if (a.name && a.name.trim().toLowerCase() === key) realName = a.name.trim(); });
+    });
+    merged.push({ id: null, name: realName, phone: '', email: '', nif: '', address: '', city: '', cp: '', appts, isManual: false });
+  });
+
+  _allPatients = merged.sort((a,b) => a.name.localeCompare(b.name,'es'));
+}
+
+function renderPatientsView() {
+  buildPatientList();
+  document.getElementById('patients-search').value = '';
+  renderPatientsGrid(_allPatients);
+}
+
+function renderPatientsGrid(patients) {
+  const grid = document.getElementById('patients-grid');
+  if (!patients.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:14px;">No se encontraron pacientes.</div>';
+    return;
+  }
+  grid.innerHTML = patients.map((p, i) => {
+    const initials = p.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const total    = p.appts.length;
+    const lastDate = p.appts.map(a=>a.date).sort().reverse()[0];
+    const lastStr  = lastDate ? new Date(lastDate.replace(/_/g,'-')).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
+    return `<div class="patient-card" onclick="openPatientPanel(${i})">
+      <div class="pc-avatar">${initials}</div>
+      <div class="pc-name">${escHtml(p.name)}</div>
+      <div class="pc-meta">📅 ${total} cita${total!==1?'s':''} · Última: ${lastStr}</div>
+      ${p.phone ? `<div class="pc-meta">📱 ${escHtml(p.phone)}</div>` : ''}
+      ${p.nif   ? `<div class="pc-meta">🪪 ${escHtml(p.nif)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function filterPatients(q) {
+  const lq = q.toLowerCase();
+  const filtered = _allPatients.map((p,i) => ({p,i})).filter(({p}) =>
+    p.name.toLowerCase().includes(lq) || p.phone.includes(lq) || p.nif.toLowerCase().includes(lq)
+  );
+  const grid = document.getElementById('patients-grid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:14px;">No se encontraron pacientes.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(({p,i}) => {
+    const initials = p.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const total    = p.appts.length;
+    const lastDate = p.appts.map(a=>a.date).sort().reverse()[0];
+    const lastStr  = lastDate ? new Date(lastDate.replace(/_/g,'-')).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
+    return `<div class="patient-card" onclick="openPatientPanel(${i})">
+      <div class="pc-avatar">${initials}</div>
+      <div class="pc-name">${escHtml(p.name)}</div>
+      <div class="pc-meta">📅 ${total} cita${total!==1?'s':''} · Última: ${lastStr}</div>
+      ${p.phone ? `<div class="pc-meta">📱 ${escHtml(p.phone)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── PATIENT MODAL (create/edit) ────────────────────────────────
+function openPatientModal(patIdx) {
+  _editPatientId = null;
+  const fields = ['name','nif','dob','phone','email','address','city','cp'];
+  fields.forEach(f => document.getElementById('patmod-'+f).value = '');
+  document.getElementById('patmod-title').textContent = '👤 Nuevo paciente';
+  if (patIdx !== undefined) {
+    const p = _allPatients[patIdx];
+    if (p && p.isManual && p.id) {
+      _editPatientId = p.id;
+      document.getElementById('patmod-title').textContent = '✏️ Editar paciente';
+      document.getElementById('patmod-name').value    = p.name || '';
+      document.getElementById('patmod-nif').value     = p.nif || '';
+      document.getElementById('patmod-dob').value     = p.dob || '';
+      document.getElementById('patmod-phone').value   = p.phone || '';
+      document.getElementById('patmod-email').value   = p.email || '';
+      document.getElementById('patmod-address').value = p.address || '';
+      document.getElementById('patmod-city').value    = p.city || '';
+      document.getElementById('patmod-cp').value      = p.cp || '';
+    }
+  }
+  document.getElementById('patmod-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('patmod-name').focus(), 50);
+}
+
+function closePatientModal() {
+  document.getElementById('patmod-overlay').classList.remove('show');
+  _editPatientId = null;
+}
+
+function savePatient() {
+  if (isDemo()) { showToast('En la demo no se guardan pacientes', 'error'); return; }
+  const name = document.getElementById('patmod-name').value.trim();
+  if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
+  const manual = getManualPatients();
+  const data = {
+    name,
+    nif:     document.getElementById('patmod-nif').value.trim(),
+    dob:     document.getElementById('patmod-dob').value,
+    phone:   document.getElementById('patmod-phone').value.trim(),
+    email:   document.getElementById('patmod-email').value.trim(),
+    address: document.getElementById('patmod-address').value.trim(),
+    city:    document.getElementById('patmod-city').value.trim(),
+    cp:      document.getElementById('patmod-cp').value.trim(),
+  };
+  if (_editPatientId) {
+    const idx = manual.findIndex(p => p.id === _editPatientId);
+    if (idx >= 0) Object.assign(manual[idx], data);
+  } else {
+    manual.push({ id: 'pat_' + Date.now(), ...data, createdAt: new Date().toISOString() });
+  }
+  saveManualPatients(manual);
+  closePatientModal();
+  renderPatientsView();
+  showToast(_editPatientId ? 'Paciente actualizado ✓' : 'Paciente creado ✓', 'success');
+}
+
+// ── PATIENT PROFILE PANEL ──────────────────────────────────────
+let _currentPatient = null;
+
+function openPatientPanel(idx) {
+  buildPatientList();
+  const patient = _allPatients[idx];
+  if (!patient) return;
+  _currentPatient = { ...patient, _idx: idx };
+
+  const initials = patient.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  document.getElementById('pp-avatar').textContent = initials;
+  document.getElementById('pp-name').textContent   = patient.name;
+  document.getElementById('pp-meta').textContent   = [
+    patient.nif   ? `🪪 ${patient.nif}` : null,
+    patient.phone ? `📱 ${patient.phone}` : null,
+    patient.email || null,
+    `${patient.appts.length} cita${patient.appts.length!==1?'s':''}`
+  ].filter(Boolean).join(' · ');
+
+  // Reset tabs to first
+  document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pp-tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.pp-tab')[0].classList.add('active');
+  document.getElementById('pp-panel-historial').classList.add('active');
+
+  renderPpHistorial(patient);
+  renderPpNotas(patient);
+  renderPpDocs(patient);
+  renderPpFacturacion(patient);
+  document.getElementById('patient-panel-overlay').classList.add('show');
+}
+
+function closePatientPanel() {
+  document.getElementById('patient-panel-overlay').classList.remove('show');
+  _currentPatient = null;
+}
+
+function ppTab(tab, el) {
+  document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.pp-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('pp-panel-' + tab).classList.add('active');
+}
+
+function renderPpHistorial(patient) {
+  const panel = document.getElementById('pp-panel-historial');
+  const isManual = patient.isManual && patient.id;
+  const editBtn = isManual ? `<button onclick="openPatientModal(${_currentPatient._idx})" style="margin-bottom:14px;padding:7px 14px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--muted);">✏️ Editar ficha</button>` : '';
+  const sorted = [...patient.appts].sort((a,b) => b.date.localeCompare(a.date));
+  if (!sorted.length) {
+    panel.innerHTML = editBtn + '<div style="color:var(--muted);font-size:13px;padding:16px 0;">Sin citas registradas.</div>';
+    return;
+  }
+  const statusStyle = s => {
+    if (s==='confirmed') return 'background:#d1fae5;color:#065f46';
+    if (s==='cancelled') return 'background:#fee2e2;color:#991b1b';
+    return 'background:#fef3c7;color:#92400e';
+  };
+  panel.innerHTML = editBtn + sorted.map(a => {
+    const dateStr = new Date(a.date.replace(/_/g,'-')).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+    return `<div class="pp-appt-row">
+      <div class="pp-appt-date">${dateStr}</div>
+      ${a.time ? `<div style="font-size:12px;color:var(--muted);min-width:38px;">${a.time}h</div>` : ''}
+      <div style="flex:1;font-size:13px;color:var(--muted);">${escHtml(a.service||'—')}</div>
+      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;${statusStyle(a.status)}">${a.status||'pendiente'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderPpNotas(patient) {
+  const panel = document.getElementById('pp-panel-notas');
+  const all   = JSON.parse(localStorage.getItem(`nervia_analyses_${currentUser.email}`) || '[]');
+  const lname = patient.name.toLowerCase();
+  const notes = all.map((a,i) => ({...a,_i:i})).filter(a => a.patientName && a.patientName.toLowerCase().includes(lname));
+  if (!notes.length) {
+    panel.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:16px 0;">No hay notas IA para este paciente.</div>
+      <button onclick="goToIAForPatient()" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🧠 Crear nota IA →</button>`;
+    return;
+  }
+  panel.innerHTML = [...notes].reverse().map(a => {
+    const date    = new Date(a.savedAt||a.date||'').toLocaleDateString('es-ES');
+    const preview = (a.result||'').replace(/<[^>]*>/g,'').slice(0,130);
+    return `<div class="pp-note-card" onclick="loadHistItem(${a._i})">
+      <div class="pp-note-date">${date} · ${escHtml(a.patientName||'')}</div>
+      <div class="pp-note-preview">${escHtml(preview)}…</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPpDocs(patient) {
+  const panel    = document.getElementById('pp-panel-docs');
+  const consents = getConsents().filter(c => c.patientName.toLowerCase() === patient.name.toLowerCase());
+  if (!consents.length) {
+    panel.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:16px 0;">Sin consentimientos enviados.</div>`;
+    return;
+  }
+  panel.innerHTML = [...consents].reverse().map(c => `
+    <div class="doc-sent-item">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">${escHtml(c.docTitle)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(c.sentAt).toLocaleDateString('es-ES')}</div>
+      </div>
+      <span class="doc-status-badge ${c.status}">${c.status==='signed'?'✅ Firmado':'⏳ Pendiente'}</span>
+    </div>
+  `).join('');
+}
+
+function goToIAForPatient() {
+  const name = _currentPatient ? _currentPatient.name : '';
+  closePatientPanel();
+  if (name) document.getElementById('ia-patient').value = name;
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => { if (n.getAttribute('data-view')==='notas-ia') setActive(n); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BILLING & INVOICES
+// ═══════════════════════════════════════════════════════════════
+function billKey(patientId) { return `nervia_bill_${currentUser.email}_${patientId||'anon'}`; }
+function invKey()  { return `nervia_invoices_${currentUser.email}`; }
+function getBillItems(patientId) { return JSON.parse(localStorage.getItem(billKey(patientId)) || '[]'); }
+function saveBillItems(patientId, arr) { localStorage.setItem(billKey(patientId), JSON.stringify(arr)); }
+function getInvoices() { return JSON.parse(localStorage.getItem(invKey()) || '[]'); }
+function saveInvoices(arr) { localStorage.setItem(invKey(), JSON.stringify(arr)); }
+
+function renderPpFacturacion(patient) {
+  const panel = document.getElementById('pp-panel-facturacion');
+  const pid = patient.id || ('anon_' + patient.name.trim().toLowerCase().replace(/\s+/g,'_'));
+  const items = getBillItems(pid);
+
+  const rowsHtml = items.map((it, i) => `
+    <div class="bill-row">
+      <input class="bill-input" value="${escHtml(it.desc)}" oninput="updateBillItem('${pid}',${i},'desc',this.value)" placeholder="Descripción">
+      <input class="bill-input" type="number" min="1" value="${it.qty}" oninput="updateBillItem('${pid}',${i},'qty',this.value)" style="text-align:center;">
+      <input class="bill-input" type="number" min="0" step="0.01" value="${it.price}" oninput="updateBillItem('${pid}',${i},'price',this.value)" placeholder="0.00">
+      <input class="bill-input" type="number" min="0" max="100" value="${it.iva}" oninput="updateBillItem('${pid}',${i},'iva',this.value)" style="text-align:center;">
+      <button class="bill-del" onclick="removeBillItem('${pid}',${i})">✕</button>
+    </div>
+  `).join('');
+
+  const base    = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1), 0);
+  const ivaAmt  = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1)*((parseFloat(it.iva)||0)/100), 0);
+  const total   = base + ivaAmt;
+
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button onclick="generateInvoice('${escHtml(pid)}')" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🧾 Generar factura</button>
+    </div>
+    <div class="bill-header">
+      <div>Concepto</div><div style="text-align:center;">Cant.</div><div style="text-align:right;">Precio</div><div style="text-align:center;">IVA%</div><div></div>
+    </div>
+    ${rowsHtml}
+    <button onclick="addBillItem('${escHtml(pid)}')" style="width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:8px;background:none;color:var(--muted);font-size:13px;cursor:pointer;margin-top:4px;font-family:inherit;">＋ Añadir concepto</button>
+    <div class="bill-totals">
+      <div>Base imponible: <strong>${base.toFixed(2)} €</strong></div>
+      ${ivaAmt > 0 ? `<div>IVA: <strong>${ivaAmt.toFixed(2)} €</strong></div>` : ''}
+      <div>Total: <span class="bill-total-val">${total.toFixed(2)} €</span></div>
+    </div>
+  `;
+}
+
+function addBillItem(pid) {
+  const items = getBillItems(pid);
+  items.push({ desc:'', qty:1, price:'', iva:0 });
+  saveBillItems(pid, items);
+  if (_currentPatient) renderPpFacturacion(_currentPatient);
+}
+
+function removeBillItem(pid, idx) {
+  const items = getBillItems(pid);
+  items.splice(idx, 1);
+  saveBillItems(pid, items);
+  if (_currentPatient) renderPpFacturacion(_currentPatient);
+}
+
+function updateBillItem(pid, idx, field, val) {
+  const items = getBillItems(pid);
+  if (items[idx]) items[idx][field] = val;
+  saveBillItems(pid, items);
+  // Recalc totals without full re-render
+  const base   = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1), 0);
+  const ivaAmt = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1)*((parseFloat(it.iva)||0)/100), 0);
+  const total  = base + ivaAmt;
+  const panel  = document.getElementById('pp-panel-facturacion');
+  if (!panel) return;
+  const totDiv = panel.querySelector('.bill-totals');
+  if (!totDiv) return;
+  totDiv.innerHTML = `
+    <div>Base imponible: <strong>${base.toFixed(2)} €</strong></div>
+    ${ivaAmt > 0 ? `<div>IVA: <strong>${ivaAmt.toFixed(2)} €</strong></div>` : ''}
+    <div>Total: <span class="bill-total-val">${total.toFixed(2)} €</span></div>
+  `;
+}
+
+// ── INVOICE GENERATION ────────────────────────────────────────
+let _currentInvoice = null;
+
+function nextInvoiceNum() {
+  const year    = new Date().getFullYear();
+  const invs    = getInvoices().filter(i => i.num && i.num.startsWith(String(year)));
+  const last    = invs.length ? parseInt(invs[invs.length-1].num.split('-')[1]||0) : 0;
+  return `${year}-${String(last+1).padStart(3,'0')}`;
+}
+
+function generateInvoice(pid) {
+  if (!_currentPatient) return;
+  const patient = _currentPatient;
+  const items   = getBillItems(pid).filter(it => it.desc || it.price);
+  if (!items.length) { showToast('Añade al menos un concepto', 'error'); return; }
+
+  const num     = nextInvoiceNum();
+  const today   = new Date().toLocaleDateString('es-ES');
+  const base    = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1), 0);
+  const ivaAmt  = items.reduce((s,it) => s + (parseFloat(it.price)||0)*(parseInt(it.qty)||1)*((parseFloat(it.iva)||0)/100), 0);
+  const total   = base + ivaAmt;
+
+  const clinic = {
+    name:    currentUser.clinicName || currentUser.name,
+    nif:     currentUser.nif || '—',
+    address: currentUser.address || '—',
+    phone:   currentUser.phone || ''
+  };
+
+  const inv = { id:'inv_'+Date.now(), num, patientId:pid, patientName:patient.name, patientNif:patient.nif||'', patientAddress:[patient.address, patient.cp, patient.city].filter(Boolean).join(', ')||'—', items, base, ivaAmt, total, date:today, status:'draft' };
+
+  const all = getInvoices();
+  all.push(inv);
+  saveInvoices(all);
+  _currentInvoice = inv;
+
+  document.getElementById('inv-actions-title').textContent = `Factura ${num}`;
+  document.getElementById('inv-body').innerHTML = buildInvoiceHtml(inv, clinic);
+  document.getElementById('invmod-overlay').classList.add('show');
+}
+
+function buildInvoiceHtml(inv, clinic) {
+  const rowsHtml = inv.items.map(it => {
+    const sub = (parseFloat(it.price)||0)*(parseInt(it.qty)||1);
+    const ivaV = sub * ((parseFloat(it.iva)||0)/100);
+    return `<tr>
+      <td>${escHtml(it.desc||'—')}</td>
+      <td>${it.qty}</td>
+      <td>${(parseFloat(it.price)||0).toFixed(2)} €</td>
+      <td>${it.iva}%</td>
+      <td>${(sub+ivaV).toFixed(2)} €</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="inv-head">
+      <div>
+        <div class="inv-logo">NERV<span>-IA</span></div>
+        <div style="font-size:13px;color:#6b7280;margin-top:6px;">${escHtml(clinic.name)}<br>${escHtml(clinic.nif)}<br>${escHtml(clinic.address)}</div>
+      </div>
+      <div class="inv-head-right">
+        <div class="inv-num">Factura ${escHtml(inv.num)}</div>
+        <div class="inv-date-str">Fecha: ${escHtml(inv.date)}</div>
+      </div>
+    </div>
+    <div class="inv-parties">
+      <div class="inv-party">
+        <h4>Emisor</h4>
+        <p><strong>${escHtml(clinic.name)}</strong><br>NIF: ${escHtml(clinic.nif)}<br>${escHtml(clinic.address)}</p>
+      </div>
+      <div class="inv-party">
+        <h4>Cliente</h4>
+        <p><strong>${escHtml(inv.patientName)}</strong><br>${inv.patientNif ? 'NIF: '+escHtml(inv.patientNif)+'<br>' : ''}${escHtml(inv.patientAddress)}</p>
+      </div>
+    </div>
+    <table class="inv-table">
+      <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>IVA</th><th>Total</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <div class="inv-totals-wrap">
+      <table class="inv-totals">
+        <tr><td>Base imponible</td><td>${inv.base.toFixed(2)} €</td></tr>
+        ${inv.ivaAmt > 0 ? `<tr><td>IVA</td><td>${inv.ivaAmt.toFixed(2)} €</td></tr>` : ''}
+        <tr class="inv-total-final"><td><strong>TOTAL</strong></td><td><strong>${inv.total.toFixed(2)} €</strong></td></tr>
+      </table>
+    </div>
+    <div class="inv-footer-note">Generado con NERV-IA · ${escHtml(clinic.name)} · ${escHtml(inv.date)}</div>
+  `;
+}
+
+function closeInvoiceModal() {
+  document.getElementById('invmod-overlay').classList.remove('show');
+  _currentInvoice = null;
+}
+
+function printInvoice() {
+  window.print();
+}
+
+function sendInvoiceViaWA() {
+  if (!_currentInvoice) return;
+  const phone = (_currentPatient?.phone||'').replace(/\s/g,'');
+  if (!phone) { showToast('El paciente no tiene teléfono registrado', 'error'); return; }
+  const inv = _currentInvoice;
+  const msg = `Hola ${escHtml(inv.patientName)} 👋\n\nTe adjuntamos el resumen de tu factura:\n\n🧾 *Factura ${inv.num}*\n📅 Fecha: ${inv.date}\n\n${inv.items.map(it=>`• ${it.desc}: ${((parseFloat(it.price)||0)*(parseInt(it.qty)||1)).toFixed(2)} €`).join('\n')}\n\n*TOTAL: ${inv.total.toFixed(2)} €*\n\n${currentUser.clinicName || currentUser.name}`;
+  const p = phone.startsWith('+') ? phone.slice(1) : phone;
+  window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`, '_blank');
+  // Mark as sent
+  const all = getInvoices();
+  const i   = all.find(x => x.id === inv.id);
+  if (i) i.status = 'sent';
+  saveInvoices(all);
+  showToast('Factura enviada por WhatsApp ✓', 'success');
 }
 </script>
 </body>

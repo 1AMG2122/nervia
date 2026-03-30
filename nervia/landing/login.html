@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nervia — Acceso Área Cliente</title>
+  <title>NERV-IA — Acceso Área Cliente</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green:      #25d366;
-      --green-dark: #1aab52;
-      --green-dim:  rgba(37,211,102,0.12);
-      --green-glow: rgba(37,211,102,0.30);
-      --bg-dark:    #04080f;
-      --bg-card:    #080d1a;
-      --text-dark:  #e2e8f0;
-      --muted-dark: #64748b;
-      --bg-light:   #f7fdf9;
+      --green:      #0891B2;
+      --green-dark: #0E7490;
+      --green-dim:  rgba(8,145,178,0.12);
+      --green-glow: rgba(8,145,178,0.30);
+      --bg-dark:    #0C4A6E;
+      --bg-card:    #075985;
+      --text-dark:  #F0F9FF;
+      --muted-dark: #BAE6FD;
+      --bg-light:   #F0F9FF;
       --text:       #111827;
       --muted:      #6b7280;
       --border:     #e5e7eb;
@@ -37,7 +37,8 @@
     #bg-canvas { position: absolute; inset: 0; opacity: 0.5; pointer-events: none; }
     .left-content { position: relative; z-index: 1; }
     .left-logo { margin-bottom: 3rem; }
-    .left-logo img { height: 42px; mix-blend-mode: screen; }
+    .nervia-logotype { font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: -2px; line-height: 1; user-select: none; color: #F0F9FF; }
+    .nervia-logotype span { color: #7DD3FC; }
     .left h1 {
       font-weight: 700; font-size: 2.2rem; line-height: 1.15;
       letter-spacing: -0.02em; color: var(--text-dark); margin-bottom: 1rem;
@@ -51,7 +52,7 @@
     }
     .feat-icon {
       width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.2);
+      background: rgba(8,145,178,0.1); border: 1px solid rgba(8,145,178,0.2);
       display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
     }
 
@@ -81,7 +82,7 @@
       font-size: 0.92rem; color: var(--text);
       transition: border-color 0.2s, box-shadow 0.2s; outline: none;
     }
-    .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(37,211,102,0.12); }
+    .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(8,145,178,0.12); }
     .form-input.error { border-color: var(--error); }
     .form-input.error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
     .input-wrap { position: relative; }
@@ -106,9 +107,9 @@
       width: 100%; padding: 0.85rem; border-radius: 8px;
       background: var(--green); color: #fff; border: none; cursor: pointer;
       font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
-      transition: all 0.25s; box-shadow: 0 4px 14px rgba(37,211,102,0.25);
+      transition: all 0.25s; box-shadow: 0 4px 14px rgba(8,145,178,0.25);
     }
-    .btn-login:hover { background: var(--green-dark); box-shadow: 0 6px 20px rgba(37,211,102,0.4); transform: translateY(-1px); }
+    .btn-login:hover { background: var(--green-dark); box-shadow: 0 6px 20px rgba(8,145,178,0.4); transform: translateY(-1px); }
     .btn-login:active { transform: translateY(0); }
     .btn-login.loading { opacity: 0.75; pointer-events: none; }
     .btn-login.shake { animation: shake 0.4s ease; }
@@ -128,7 +129,7 @@
     .demo-box {
       margin-top: 2rem;
       background: #fff;
-      border: 1.5px dashed rgba(37,211,102,0.4);
+      border: 1.5px dashed rgba(8,145,178,0.4);
       border-radius: 10px; padding: 1.1rem 1.2rem;
     }
     .demo-box-title {
@@ -156,12 +157,12 @@
     .demo-fill-btn {
       margin-top: 0.9rem; width: 100%;
       padding: 0.55rem; border-radius: 6px;
-      background: var(--green-dim); border: 1px solid rgba(37,211,102,0.3);
+      background: var(--green-dim); border: 1px solid rgba(8,145,178,0.3);
       color: var(--green-dark); font-family: 'Space Grotesk', sans-serif;
       font-weight: 600; font-size: 0.82rem; cursor: pointer;
       transition: all 0.2s;
     }
-    .demo-fill-btn:hover { background: rgba(37,211,102,0.2); }
+    .demo-fill-btn:hover { background: rgba(8,145,178,0.2); }
 
     /* ── BACK LINK ── */
     .back-link {
@@ -188,7 +189,7 @@
     <canvas id="bg-canvas"></canvas>
     <div class="left-content">
       <div class="left-logo">
-        <img src="../imagenes/logo.png" alt="Nervia">
+        <span class="nervia-logotype" style="font-size:34px;">NERV<span>-IA</span></span>
       </div>
       <h1>Gestiona tu consulta<br>con <span>inteligencia.</span></h1>
       <p class="left-sub">Accede a tu panel de control para ver todas tus citas, gestionar tu agenda y consultar el rendimiento de tu agente IA.</p>
@@ -251,7 +252,7 @@
         </div>
         <div class="demo-row">
           <span class="demo-key">Usuario</span>
-          <span class="demo-val">demo@nervia.es</span>
+          <span class="demo-val">demo@nerv-ia.com</span>
         </div>
         <div class="demo-row">
           <span class="demo-key">Contraseña</span>
@@ -277,7 +278,7 @@ const DEFAULT_ADMIN = {
 };
 
 const DEFAULT_DEMO = {
-  email: 'demo@nervia.es',
+  email: 'demo@nerv-ia.com',
   pass: 'nervia2025',
   name: 'Demo Cliente',
   clinicName: 'Clínica Demo',
@@ -293,8 +294,8 @@ function ensureDefaultUsers() {
     users.push(DEFAULT_ADMIN);
   }
 
-  // Ensure demo@nervia.es exists as client
-  let demoUser = users.find(u => u.email === 'demo@nervia.es');
+  // Ensure demo@nerv-ia.com exists as client
+  let demoUser = users.find(u => u.email === 'demo@nerv-ia.com');
   if (!demoUser) {
     users.push(DEFAULT_DEMO);
   } else if (demoUser.role !== 'client') {
@@ -335,9 +336,9 @@ initNodes();
   for (let i=0;i<nodes.length;i++) {
     for (let j=i+1;j<nodes.length;j++) {
       const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y, d=Math.sqrt(dx*dx+dy*dy);
-      if (d<120) { ctx.strokeStyle=`rgba(37,211,102,${(1-d/120)*0.2})`; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke(); }
+      if (d<120) { ctx.strokeStyle=`rgba(8,145,178,${(1-d/120)*0.2})`; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke(); }
     }
-    ctx.fillStyle='rgba(37,211,102,0.5)'; ctx.beginPath(); ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(8,145,178,0.5)'; ctx.beginPath(); ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2); ctx.fill();
   }
   requestAnimationFrame(draw);
 })();
@@ -358,6 +359,8 @@ function setError(groupId, show) {
 }
 
 /* ── LOGIN LOGIC ── */
+let _pendingUser = null; // user waiting for password change
+
 function attemptLogin(email, pass) {
   const btn = document.getElementById('loginBtn');
   const errBox = document.getElementById('globalError');
@@ -370,8 +373,16 @@ function attemptLogin(email, pass) {
     const user = allUsers.find(u => u.email === email && u.pass === pass);
 
     if (user) {
-      btn.textContent = '✓ Acceso correcto — redirigiendo...';
-      btn.style.background = '#1aab52';
+      // Primera vez: contraseña es 0000 → forzar cambio
+      if (user.pass === '0000' && user.role !== 'admin') {
+        _pendingUser = user;
+        document.getElementById('chpass-overlay').style.display = 'flex';
+        btn.textContent = 'Entrar al panel →';
+        return;
+      }
+
+      btn.textContent = '&#10003; Acceso correcto — redirigiendo...';
+      btn.style.background = '#0E7490';
       sessionStorage.setItem('nervia_auth', JSON.stringify(user));
 
       setTimeout(() => {
@@ -387,6 +398,27 @@ function attemptLogin(email, pass) {
       setTimeout(() => btn.classList.remove('shake'), 400);
     }
   }, 900);
+}
+
+function saveNewPassword() {
+  const p1 = document.getElementById('chpass-new').value;
+  const p2 = document.getElementById('chpass-confirm').value;
+  const err = document.getElementById('chpass-err');
+  err.textContent = '';
+
+  if (!p1 || p1.length < 4)   { err.textContent = 'La contraseña debe tener al menos 4 caracteres.'; return; }
+  if (p1 === '0000')           { err.textContent = 'No puedes usar 0000 como contraseña.'; return; }
+  if (p1 !== p2)               { err.textContent = 'Las contraseñas no coinciden.'; return; }
+
+  // Update in localStorage
+  const allUsers = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+  const idx = allUsers.findIndex(u => u.email === _pendingUser.email);
+  if (idx !== -1) { allUsers[idx].pass = p1; localStorage.setItem('nervia_users', JSON.stringify(allUsers)); _pendingUser = allUsers[idx]; }
+
+  // Store session and redirect
+  sessionStorage.setItem('nervia_auth', JSON.stringify(_pendingUser));
+  document.getElementById('chpass-overlay').style.display = 'none';
+  window.location.href = 'cliente.html';
 }
 
 document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -416,8 +448,8 @@ document.getElementById('demoFillBtn').addEventListener('click', function() {
   document.getElementById('globalError').classList.remove('show');
 
   // Brief highlight then auto-submit
-  emailInp.style.borderColor = '#25d366';
-  passInp.style.borderColor  = '#25d366';
+  emailInp.style.borderColor = '#0891B2';
+  passInp.style.borderColor  = '#0891B2';
   setTimeout(() => attemptLogin(DEFAULT_DEMO.email, DEFAULT_DEMO.pass), 400);
 });
 
@@ -431,5 +463,34 @@ document.getElementById('password').addEventListener('input', () => {
   document.getElementById('globalError').classList.remove('show');
 });
 </script>
+
+<!-- ── CHANGE PASSWORD OVERLAY ── -->
+<div id="chpass-overlay" style="display:none;position:fixed;inset:0;background:rgba(4,8,15,0.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:#fff;border-radius:18px;padding:36px 32px;max-width:400px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <div style="font-size:32px;margin-bottom:10px;">🔐</div>
+    <div style="font-size:20px;font-weight:700;color:#111827;margin-bottom:6px;">Crea tu contraseña</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:22px;line-height:1.5;">Es tu primera vez accediendo. Por seguridad, establece una contraseña personal para tu cuenta.</p>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;">Nueva contraseña</label>
+      <input type="password" id="chpass-new" placeholder="Mínimo 4 caracteres"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:'Space Grotesk',sans-serif;outline:none;"
+        onfocus="this.style.borderColor='#0891B2'" onblur="this.style.borderColor='#e5e7eb'">
+    </div>
+    <div style="margin-bottom:8px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;">Repetir contraseña</label>
+      <input type="password" id="chpass-confirm" placeholder="Repite tu contraseña"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:'Space Grotesk',sans-serif;outline:none;"
+        onfocus="this.style.borderColor='#0891B2'" onblur="this.style.borderColor='#e5e7eb'"
+        onkeydown="if(event.key==='Enter') saveNewPassword()">
+    </div>
+    <div id="chpass-err" style="font-size:12px;color:#ef4444;min-height:18px;margin-bottom:14px;"></div>
+    <button onclick="saveNewPassword()"
+      style="width:100%;padding:11px;background:#0891B2;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:background .15s;"
+      onmouseover="this.style.background='#0E7490'" onmouseout="this.style.background='#0891B2'">
+      Guardar y entrar →
+    </button>
+  </div>
+</div>
+
 </body>
 </html>

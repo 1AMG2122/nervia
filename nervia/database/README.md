@@ -66,5 +66,5 @@ node -e "const b=require('bcrypt'); b.hash('nervia2025',12).then(console.log)"
 
 Luego:
 ```sql
-UPDATE usuarios SET password_hash='<hash_generado>' WHERE email='demo@nervia.es';
+UPDATE usuarios SET password_hash='<hash_generado>' WHERE email='demo@nerv-ia.com';
 ```

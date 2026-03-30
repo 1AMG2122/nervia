@@ -145,7 +145,7 @@ Edita `landing/index.html`:
 
 ### Cambiar el email de contacto (línea ~560):
 ```html
-<a href="mailto:hola@nervia.es">hola@nervia.es</a>
+<a href="mailto:hola@nerv-ia.com">hola@nerv-ia.com</a>
 ```
 
 ### Conectar el formulario de leads:
@@ -200,4 +200,4 @@ NERVIA_ADMIN_TELEGRAM=123456789   (tu chat ID para notificaciones)
 
 ## ❓ Soporte
 
-Para cualquier duda: hola@nervia.es
+Para cualquier duda: hola@nerv-ia.com

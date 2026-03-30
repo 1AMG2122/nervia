@@ -3,287 +3,882 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nervia — Panel de Administración</title>
+  <title>NERV-IA — Panel de Administración</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #f0f4f8;
-      --sidebar-bg: #ffffff;
-      --card-bg: #ffffff;
-      --green: #25d366;
-      --green-dark: #1aab52;
-      --green-dim: rgba(37,211,102,0.08);
-      --blue: #3b82f6;
-      --orange: #f59e0b;
-      --purple: #8b5cf6;
-      --red: #ef4444;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --sidebar-w: 240px;
-      --radius: 12px;
+      --bg: #F0F9FF; --sidebar-bg: #ffffff; --card-bg: #ffffff;
+      --green: #0891B2; --green-dark: #0E7490; --green-dim: rgba(8,145,178,0.08);
+      --blue: #3b82f6; --orange: #f59e0b; --purple: #8b5cf6; --red: #ef4444;
+      --text: #111827; --muted: #6b7280; --border: #e5e7eb;
+      --sidebar-w: 248px; --radius: 12px;
       --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
     }
-
     html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); }
-
     .app { display: flex; height: 100vh; overflow: hidden; }
 
-    .sidebar {
-      width: var(--sidebar-w);
-      min-width: var(--sidebar-w);
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; height: 100%; z-index: 100;
-    }
-
-    .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
-    .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .sidebar-logo img { height: 32px; mix-blend-mode: multiply; }
-    .sidebar-logo .logo-text { font-weight: 700; font-size: 18px; color: var(--green-dark); letter-spacing: -0.5px; }
-    .sidebar-nav { flex: 1; padding: 16px 12px; }
-    .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); padding: 0 8px; margin-bottom: 8px; margin-top: 16px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border-left: 3px solid transparent; transition: all 0.15s ease; margin-bottom: 2px; }
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; z-index: 100; }
+    .sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .nervia-logotype { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -2px; line-height: 1; user-select: none; color: #0F172A; }
+    .nervia-logotype span { color: #0891B2; }
+    .sidebar-admin-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--green-dark); background: var(--green-dim); padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+    .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 8px; margin: 14px 0 6px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border-left: 3px solid transparent; transition: all 0.15s; margin-bottom: 2px; user-select: none; }
     .nav-item:hover { background: var(--green-dim); color: var(--text); }
     .nav-item.active { background: var(--green-dim); color: var(--green-dark); border-left-color: var(--green); font-weight: 600; }
-    .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-item .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 14px; border-top: 1px solid var(--border); }
 
+    /* MAIN */
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-    .topbar-left .greeting { font-size: 20px; font-weight: 700; color: var(--text); }
-    .topbar-left .date-str { font-size: 13px; color: var(--muted); margin-top: 2px; }
-
-    .scroll-area { flex: 1; overflow-y: auto; padding: 24px 28px 32px; }
+    .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .topbar-title { font-size: 19px; font-weight: 700; }
+    .topbar-date  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .scroll-area  { flex: 1; overflow-y: auto; padding: 22px 28px 36px; }
     .view-container { display: none; }
-    .view-container.active { display: block; }
-    .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .view-container.active { display: block; animation: fadeIn 0.22s ease-out; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
-    .calendar-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 24px; }
-    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+    /* CARDS */
+    .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 20px; }
+    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
-    .btn-primary { background: var(--green); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    /* STAT CARDS */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+    .stat-card .sl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .stat-card .sv { font-size: 26px; font-weight: 700; margin-top: 5px; }
+    .stat-card .ss { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sc-green  { border-top: 3px solid var(--green); }
+    .sc-blue   { border-top: 3px solid var(--blue); }
+    .sc-purple { border-top: 3px solid var(--purple); }
+    .sc-orange { border-top: 3px solid var(--orange); }
+
+    /* FORM */
+    .form-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .form-group { margin-bottom: 2px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+    .form-input, .form-select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; color: var(--text); background: #fff; outline: none; transition: border-color 0.15s; }
+    .form-input:focus, .form-select:focus { border-color: var(--green); }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+    .col-full { grid-column: 1 / -1; }
+
+    /* TOGGLE SWITCH */
+    .toggle-group  { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+    .toggle-row    { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+    .toggle-row span { font-size: 14px; color: var(--text); }
+    .toggle-switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-knob { position: absolute; inset: 0; background: #d1d5db; border-radius: 22px; transition: background 0.2s; cursor: pointer; }
+    .toggle-knob::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    input:checked + .toggle-knob { background: var(--green); }
+    input:checked + .toggle-knob::before { transform: translateX(16px); }
+    input:disabled + .toggle-knob { opacity: 0.45; cursor: not-allowed; }
+
+    /* BUTTONS */
+    .btn-primary   { background: var(--green); color: #fff; border: none; padding: 9px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-primary:hover { background: var(--green-dark); }
-    .btn-danger { background: none; border: 1px solid var(--red); color: var(--red); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 9px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green-dark); }
+    .btn-danger    { background: none; border: 1px solid var(--red); color: var(--red); padding: 5px 11px; border-radius: 6px; font-size: 12px; font-family: inherit; cursor: pointer; transition: all 0.15s; }
     .btn-danger:hover { background: var(--red); color: #fff; }
+    .btn-sm        { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+    .btn-sm:hover  { border-color: var(--green); color: var(--green-dark); }
 
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; }
+    /* COLOR PRESETS */
+    .color-preset {
+      width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent;
+      cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+      padding: 0;
+    }
+    .color-preset:hover { transform: scale(1.15); }
+    .color-preset.active { border-color: #fff; outline: 2px solid #333; }
 
-    .client-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .client-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); padding: 12px 16px; background: #fafafa; border-bottom: 1px solid var(--border); }
-    .client-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 9px 13px; background: #fafafa; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .data-table td { padding: 11px 13px; font-size: 13px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #fafeff; }
+    .overflow-table { overflow-x: auto; }
 
-    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    .toast { padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); animation: toastIn 0.3s ease forwards; }
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .b-estandar  { background: rgba(59,130,246,0.1);  color: #2563eb; }
+    .b-plus      { background: rgba(139,92,246,0.1);  color: #7c3aed; }
+    .b-admin     { background: rgba(239,68,68,0.1);   color: #dc2626; }
+    .b-pendiente { background: rgba(245,158,11,0.12); color: #d97706; }
+    .b-pagada    { background: rgba(8,145,178,0.12); color: #0E7490; }
+    .b-anulada   { background: rgba(107,114,128,0.12); color: #374151; }
+
+    /* ICON CHECK */
+    .ico-yes { color: var(--green-dark); font-weight: 700; }
+    .ico-no  { color: #d1d5db; }
+
+    /* CRON BANNER */
+    .cron-banner { background: linear-gradient(135deg,#f59e0b,#fbbf24); color:#fff; border-radius: var(--radius); padding: 13px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .cron-banner .ct { font-size: 14px; font-weight: 600; }
+    .cron-banner .cs { font-size: 12px; opacity: 0.88; }
+
+    /* LOGO CELL */
+    .logo-thumb { width:36px;height:36px;border-radius:8px;object-fit:contain;border:1px solid var(--border);background:#fafafa; }
+    .logo-thumb-empty { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:#fafafa;display:flex;align-items:center;justify-content:center;font-size:16px; }
+
+    /* ESTADO SELECT */
+    .estado-sel { border: none; border-radius: 20px; font-size: 11px; font-weight: 700; padding: 4px 10px; cursor: pointer; font-family: inherit; outline: none; appearance: none; -webkit-appearance: none; }
+    .estado-sel.ep { background: rgba(245,158,11,0.12); color: #d97706; }
+    .estado-sel.eg { background: rgba(8,145,178,0.12);  color: #0E7490; }
+    .estado-sel.ea { background: rgba(107,114,128,0.12); color: #374151; }
+
+    /* TOAST */
+    #toast-container { position: fixed; bottom: 22px; right: 22px; z-index: 9999; display: flex; flex-direction: column; gap: 7px; pointer-events: none; }
+    .toast { padding: 11px 17px; border-radius: 9px; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); pointer-events: auto; animation: tin 0.3s ease; }
+    @keyframes tin { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
     .toast.success { background: var(--green-dark); }
-    .toast.error { background: var(--red); }
-    @keyframes toastIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .toast.error   { background: var(--red); }
+    .toast.info    { background: var(--blue); }
   </style>
 </head>
 <body>
 <div class="app">
+
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <img src="../imagenes/logo.png" alt="Nervia" />
-        <span class="logo-text">nervia</span>
+        <span class="nervia-logotype">NERV<span>-IA</span></span>
       </div>
-      <div class="clinic-name">Super Administrador</div>
+      <span class="sidebar-admin-tag">Super Admin</span>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-label">Administración</div>
-      <div class="nav-item active" data-view="clientes" onclick="setActive(this)">
+      <div class="nav-label">Usuarios</div>
+      <div class="nav-item active" data-view="clientes" onclick="switchView('clientes',this)">
         <span class="nav-icon">👥</span> Clientes
+      </div>
+      <div class="nav-item" data-view="admins" onclick="switchView('admins',this)">
+        <span class="nav-icon">🔐</span> Administradores
+      </div>
+      <div class="nav-label">Finanzas</div>
+      <div class="nav-item" data-view="facturas" onclick="switchView('facturas',this)">
+        <span class="nav-icon">🧾</span> Facturas
       </div>
     </nav>
     <div class="sidebar-footer">
-      <button class="btn-danger" style="width: 100%;" onclick="logOut()">Cerrar sesión</button>
+      <button class="btn-danger" style="width:100%;" onclick="logOut()">Cerrar sesión</button>
     </div>
   </aside>
 
+  <!-- MAIN -->
   <div class="main">
     <header class="topbar">
-      <div class="topbar-left">
-        <div class="greeting">Panel de Control Global</div>
-        <div class="date-str" id="display-date">Hoy</div>
+      <div>
+        <div class="topbar-title" id="topbar-title">Gestión de Clientes</div>
+        <div class="topbar-date"  id="display-date"></div>
       </div>
     </header>
 
     <div class="scroll-area">
-      <div id="view-clientes" class="view-container active fade-in">
-        <div class="calendar-card">
-          <div class="section-title">Crear Nuevo Cliente</div>
-          <form id="create-client-form">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+      <!-- ══════════════ VIEW: CLIENTES ══════════════ -->
+      <div id="view-clientes" class="view-container active">
+
+        <div class="stats-row">
+          <div class="stat-card sc-green"><div class="sl">Clientes</div><div class="sv" id="st-total">0</div><div class="ss">activos</div></div>
+          <div class="stat-card sc-blue"><div class="sl">Estándar</div><div class="sv" id="st-est">0</div><div class="ss">39 €/mes</div></div>
+          <div class="stat-card sc-purple"><div class="sl">Plus</div><div class="sv" id="st-plus">0</div><div class="ss">49 €/mes</div></div>
+          <div class="stat-card sc-orange"><div class="sl">MRR</div><div class="sv" id="st-mrr">0 €</div><div class="ss">ingresos mensuales</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">➕ Crear Nuevo Cliente</div>
+          <form id="form-client">
+            <div class="form-grid">
               <div class="form-group">
                 <label>Nombre del Profesional</label>
-                <input type="text" id="client-name" class="form-input" placeholder="Ej: Dr. García" required>
+                <input type="text" id="c-name" class="form-input" placeholder="Ej: Dr. García" required>
               </div>
               <div class="form-group">
                 <label>Nombre de la Clínica</label>
-                <input type="text" id="clinic-name" class="form-input" placeholder="Ej: Clínica Central" required>
+                <input type="text" id="c-clinic" class="form-input" placeholder="Ej: Clínica Central" required>
               </div>
               <div class="form-group">
                 <label>Especialidad</label>
-                <input type="text" id="client-specialty" class="form-input" placeholder="Ej: Odontología" required>
+                <input type="text" id="c-specialty" class="form-input" placeholder="Ej: Fisioterapeuta" required>
               </div>
               <div class="form-group">
                 <label>Ubicación</label>
-                <input type="text" id="client-location" class="form-input" placeholder="Ej: Valencia" required>
+                <input type="text" id="c-location" class="form-input" placeholder="Ej: Valencia" required>
               </div>
               <div class="form-group">
-                <label>Email de Acceso</label>
-                <input type="email" id="client-email" class="form-input" placeholder="cliente@ejemplo.com" required>
+                <label>Correo electrónico (contacto / facturación)</label>
+                <input type="email" id="c-contact-email" class="form-input" placeholder="contacto@clinica.com" required>
               </div>
               <div class="form-group">
-                <label>Contraseña</label>
-                <input type="password" id="client-pass" class="form-input" required>
+                <label>Email de acceso (login)</label>
+                <input type="email" id="c-email" class="form-input" placeholder="acceso@ejemplo.com" required>
+              </div>
+              <div class="form-group col-full">
+                <label>Logo de la clínica (se mostrará en el formulario de reserva)</label>
+                <div style="display:flex;align-items:flex-start;gap:18px;margin-top:6px;flex-wrap:wrap;">
+                  <div id="logo-preview" style="width:110px;height:110px;border-radius:12px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:32px;background:#fafafa;overflow:hidden;flex-shrink:0;transition:border-color .2s;">🏥</div>
+                  <div style="flex:1;min-width:180px;">
+                    <input type="file" id="c-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;" onchange="previewLogo(this)">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                      <button type="button" class="btn-primary" style="font-size:13px;padding:8px 16px;" onclick="document.getElementById('c-logo').click()">📁 Subir logo</button>
+                      <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 12px;display:none;" onclick="clearLogo()" id="logo-clear-btn">✕ Quitar</button>
+                    </div>
+                    <p style="font-size:11px;color:var(--muted);line-height:1.5;">PNG con fondo transparente recomendado. El color dominante se detecta automáticamente y adapta la página de reserva.</p>
+                    <div id="color-detected-row" style="display:flex;margin-top:10px;align-items:center;gap:10px;flex-wrap:wrap;">
+                      <span style="font-size:11px;color:var(--muted);font-weight:600;">Color activo:</span>
+                      <div id="color-swatch" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#0D2240;"></div>
+                      <code id="color-code" style="font-size:11px;">#0D2240</code>
+                      <input type="color" id="c-brand-color-picker" value="#0D2240" style="width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0;" title="Ajusta el color manualmente" oninput="updateBrandColor(this.value)">
+                    </div>
+                    <!-- Color presets -->
+                    <div style="margin-top:12px;">
+                      <span style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Color de marca (paleta rápida):</span>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="color-presets">
+                        <button type="button" class="color-preset" style="background:#0D2240;" data-color="#0D2240" title="Azul marino"></button>
+                        <button type="button" class="color-preset" style="background:#1A7A6E;" data-color="#1A7A6E" title="Verde teal"></button>
+                        <button type="button" class="color-preset" style="background:#3B82F6;" data-color="#3B82F6" title="Azul"></button>
+                        <button type="button" class="color-preset" style="background:#8B5CF6;" data-color="#8B5CF6" title="Violeta"></button>
+                        <button type="button" class="color-preset" style="background:#EC4899;" data-color="#EC4899" title="Rosa"></button>
+                        <button type="button" class="color-preset" style="background:#EF4444;" data-color="#EF4444" title="Rojo"></button>
+                        <button type="button" class="color-preset" style="background:#F59E0B;" data-color="#F59E0B" title="Ámbar"></button>
+                        <button type="button" class="color-preset" style="background:#10B981;" data-color="#10B981" title="Esmeralda"></button>
+                        <button type="button" class="color-preset" style="background:#6B7280;" data-color="#6B7280" title="Gris"></button>
+                        <button type="button" class="color-preset" style="background:#111827;" data-color="#111827" title="Negro"></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" id="c-logo-b64">
+                <input type="hidden" id="c-brand-color" value="#0D2240">
               </div>
               <div class="form-group">
-                <label>Slug (Identificador único para URL)</label>
-                <input type="text" id="client-slug" class="form-input" placeholder="ej-clinica-garcia" required>
+                <label>Slug (URL única)</label>
+                <input type="text" id="c-slug" class="form-input" placeholder="clinica-garcia" required>
+              </div>
+              <div class="form-group">
+                <label>Plan de servicio</label>
+                <select id="c-plan" class="form-select" required>
+                  <option value="estandar">Estándar — 39 €/mes (Telegram)</option>
+                  <option value="plus">Plus — 49 €/mes (WhatsApp)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha de alta</label>
+                <input type="date" id="c-start" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>URL del bot de Telegram</label>
+                <input type="url" id="c-bot-url" class="form-input" placeholder="https://t.me/NombreDelBot">
+              </div>
+              <div class="form-group">
+                <label>Clave API Anthropic (para Notas IA)</label>
+                <input type="password" id="c-anthropic-key" class="form-input" placeholder="sk-ant-api03-…" autocomplete="off">
+              </div>
+              <div class="form-group col-full">
+                <label>Funcionalidades habilitadas para este cliente</label>
+                <div class="toggle-group" style="padding-top:8px;">
+                  <label class="toggle-row">
+                    <span class="toggle-switch"><input type="checkbox" id="c-whatsapp"><span class="toggle-knob"></span></span>
+                    <span>WhatsApp Business habilitado</span>
+                  </label>
+                  <label class="toggle-row">
+                    <span class="toggle-switch"><input type="checkbox" id="c-email-resumen"><span class="toggle-knob"></span></span>
+                    <span>Resumen diario por email</span>
+                  </label>
+                  <label class="toggle-row">
+                    <span class="toggle-switch"><input type="checkbox" id="c-is-demo"><span class="toggle-knob"></span></span>
+                    <span>Cuenta demo (muestra datos simulados al entrar)</span>
+                  </label>
+                </div>
               </div>
             </div>
-            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-              <button type="submit" class="btn-primary">Crear Cliente</button>
+            <div class="form-actions">
+              <button type="reset" class="btn-secondary">Limpiar</button>
+              <button type="submit" class="btn-primary">Crear cliente</button>
             </div>
           </form>
         </div>
 
-        <div class="calendar-card">
-          <div class="section-title">Clientes Registrados</div>
-          <div id="client-list-container">
-            <table class="client-table">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Clínica</th>
-                  <th>Email</th>
-                  <th>Slug</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="client-table-body">
-                <!-- Se llenará vía JS -->
-              </tbody>
+        <div class="card">
+          <div class="section-title">📋 Clientes Registrados</div>
+          <div class="overflow-table">
+            <table class="data-table">
+              <thead><tr>
+                <th>Logo</th><th>Profesional</th><th>Clínica</th><th>Correo contacto</th>
+                <th>Plan</th><th>WhatsApp</th><th>Email diario</th>
+                <th>Bot</th><th>Alta</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="tb-clients"></tbody>
             </table>
           </div>
         </div>
       </div>
+
+      <!-- ══════════════ VIEW: ADMINS ══════════════ -->
+      <div id="view-admins" class="view-container">
+        <div class="card">
+          <div class="section-title">🔐 Crear Administrador</div>
+          <form id="form-admin">
+            <div class="form-grid3">
+              <div class="form-group">
+                <label>Nombre completo</label>
+                <input type="text" id="a-name" class="form-input" placeholder="Nombre del admin" required>
+              </div>
+              <div class="form-group">
+                <label>Email de acceso</label>
+                <input type="email" id="a-email" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="a-pass" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Crear administrador</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="section-title">👤 Administradores del sistema</div>
+          <div class="overflow-table">
+            <table class="data-table">
+              <thead><tr><th>Nombre</th><th>Email</th><th>Creado</th><th>Acciones</th></tr></thead>
+              <tbody id="tb-admins"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ VIEW: FACTURAS ══════════════ -->
+      <div id="view-facturas" class="view-container">
+
+        <div id="cron-banner" class="cron-banner" style="display:none;">
+          <div><div class="ct">🔔 Facturas pendientes de generar</div><div class="cs">El cron mensual no se ha ejecutado para <span id="cron-month"></span>.</div></div>
+          <button class="btn-primary" onclick="runBilling(true)">Generar ahora</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card sc-green"><div class="sl">Facturado este mes</div><div class="sv" id="f-mes">0 €</div><div class="ss">IVA incluido</div></div>
+          <div class="stat-card sc-orange"><div class="sl">Pendientes</div><div class="sv" id="f-pend">0</div><div class="ss">sin cobrar</div></div>
+          <div class="stat-card sc-blue"><div class="sl">Pagadas</div><div class="sv" id="f-pag">0</div><div class="ss">este mes</div></div>
+          <div class="stat-card sc-purple"><div class="sl">Acumulado total</div><div class="sv" id="f-all">0 €</div><div class="ss">todos los meses</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <span>🧾 Historial de Facturas</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="f-filter" class="form-select" style="width:auto;font-size:13px;padding:6px 10px;" onchange="renderInvoices()">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="pagada">Pagada</option>
+                <option value="anulada">Anulada</option>
+              </select>
+              <button class="btn-primary" onclick="runBilling(false)" style="font-size:13px;padding:7px 14px;">⚡ Generar mes actual</button>
+            </div>
+          </div>
+          <div class="overflow-table">
+            <table class="data-table">
+              <thead><tr><th>Nº Factura</th><th>Cliente</th><th>Correo</th><th>Plan</th><th>Base</th><th>IVA 21%</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+              <tbody id="tb-invoices"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
-
 <div id="toast-container"></div>
 
 <script>
-  function setActive(el) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
+/* ── AUTH ───────────────────────────────────────────────── */
+let _me = null;
+try { _me = JSON.parse(sessionStorage.getItem('nervia_auth') || 'null'); } catch(e){}
+if (!_me || _me.role !== 'admin') window.location.href = 'login.html';
+
+document.getElementById('display-date').textContent =
+  new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+/* ── STORAGE ─────────────────────────────────────────────── */
+const getUsers    = () => JSON.parse(localStorage.getItem('nervia_users')    || '[]');
+const getInvoices = () => JSON.parse(localStorage.getItem('nervia_invoices') || '[]');
+const saveUsers   = d  => localStorage.setItem('nervia_users',    JSON.stringify(d));
+const saveInvoices= d  => localStorage.setItem('nervia_invoices', JSON.stringify(d));
+const getClients  = () => getUsers().filter(u => u.role === 'client');
+const getAdmins   = () => getUsers().filter(u => u.role === 'admin');
+
+/* ── TOAST ───────────────────────────────────────────────── */
+function toast(msg, type='success'){
+  const el = Object.assign(document.createElement('div'),{className:`toast ${type}`,textContent:msg});
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+
+/* ── NAV ─────────────────────────────────────────────────── */
+const VIEW_TITLES = { clientes:'Gestión de Clientes', admins:'Administradores', facturas:'Facturación' };
+function switchView(v, el){
+  document.querySelectorAll('.view-container').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbar-title').textContent = VIEW_TITLES[v]||'';
+  if(v==='clientes'){renderClients();}
+  if(v==='admins'){renderAdmins();}
+  if(v==='facturas'){checkCron();renderInvoices();renderInvStats();}
+}
+
+/* ── HELPERS ─────────────────────────────────────────────── */
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
+const fmt = iso => { try{return new Date(iso).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return iso||'—';} };
+const mKey= d  => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+/* ── PLAN CONFIG ─────────────────────────────────────────── */
+const PLANS = { estandar:{label:'Estándar',base:39,cls:'b-estandar'}, plus:{label:'Plus',base:49,cls:'b-plus'} };
+const IVA = 0.21;
+const planTotals = p => { const b=PLANS[p]?.base||39; const v=+(b*IVA).toFixed(2); return {base:b,iva:v,total:+(b+v).toFixed(2)}; };
+
+/* ══════════════════════════════════════════════════════════
+   CLIENTS
+══════════════════════════════════════════════════════════ */
+function renderClientStats(){
+  const cls = getClients();
+  const est = cls.filter(c=>c.plan==='estandar').length;
+  const pls = cls.filter(c=>c.plan==='plus').length;
+  const mrr = cls.reduce((s,c)=>s+(PLANS[c.plan]?.base||0),0);
+  document.getElementById('st-total').textContent = cls.length;
+  document.getElementById('st-est').textContent   = est;
+  document.getElementById('st-plus').textContent  = pls;
+  document.getElementById('st-mrr').textContent   = mrr+' €';
+}
+
+function renderClients(){
+  const rows = getClients();
+  const tb = document.getElementById('tb-clients');
+  if(!rows.length){
+    tb.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:22px;color:var(--muted)">No hay clientes registrados</td></tr>`;
+    renderClientStats(); return;
+  }
+  tb.innerHTML = rows.map(c=>{
+    const p = PLANS[c.plan]||PLANS.estandar;
+    const botLink = c.botUrl ? `<a href="${esc(c.botUrl)}" target="_blank" class="btn-sm">🤖 Bot</a>` : '<span style="color:var(--muted);font-size:12px">—</span>';
+    const logoCell = c.logoB64
+      ? `<img src="${c.logoB64}" class="logo-thumb" alt="logo">`
+      : `<div class="logo-thumb-empty">🏥</div>`;
+    const passReset = c.pass==='0000'
+      ? `<span style="font-size:10px;color:var(--orange);font-weight:600;">⚠ sin cambiar</span>`
+      : `<button class="btn-sm" onclick="resetPass('${esc(c.email)}')">🔑 Reset</button>`;
+    return `<tr>
+      <td>${logoCell}</td>
+      <td><strong>${esc(c.name)}</strong><br><small style="color:var(--muted)">${esc(c.specialty||'')}</small></td>
+      <td>${esc(c.clinicName)}</td>
+      <td><a href="mailto:${esc(c.contactEmail)}" style="color:var(--blue);font-size:12px">${esc(c.contactEmail||'—')}</a></td>
+      <td><span class="badge ${p.cls}">${p.label}</span></td>
+      <td>${c.whatsappEnabled?'<span class="ico-yes">&#10003;</span>':'<span class="ico-no">&#10007;</span>'}</td>
+      <td>${c.emailResumen?'<span class="ico-yes">&#10003;</span>':'<span class="ico-no">&#10007;</span>'}</td>
+      <td>${botLink}</td>
+      <td style="color:var(--muted);font-size:12px">${c.startDate?fmt(c.startDate):'—'}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-sm" onclick="editClient('${esc(c.email)}')">Editar</button>
+        ${passReset}
+        <button class="btn-sm" style="background:var(--blue);color:#fff;border-color:var(--blue);" onclick="goToClient('${esc(c.email)}')">▶ Panel</button>
+        <button class="btn-danger" onclick="deleteClient('${esc(c.email)}')">Eliminar</button>
+      </td>
+    </tr>`;
+  }).join('');
+  renderClientStats();
+}
+
+document.getElementById('form-client').addEventListener('submit', e=>{
+  e.preventDefault();
+  const btn = document.querySelector('#form-client .btn-primary');
+
+  const name         = document.getElementById('c-name').value.trim();
+  const clinicName   = document.getElementById('c-clinic').value.trim();
+  const specialty    = document.getElementById('c-specialty').value.trim();
+  const location     = document.getElementById('c-location').value.trim();
+  const contactEmail = document.getElementById('c-contact-email').value.trim();
+  const email        = document.getElementById('c-email').value.trim();
+  const slug         = document.getElementById('c-slug').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const plan         = document.getElementById('c-plan').value;
+  const startDate    = document.getElementById('c-start').value || new Date().toISOString().slice(0,10);
+  const botUrl          = document.getElementById('c-bot-url').value.trim();
+  const anthropicKey    = document.getElementById('c-anthropic-key').value.trim();
+  const whatsappEnabled = document.getElementById('c-whatsapp').checked;
+  const emailResumen    = document.getElementById('c-email-resumen').checked;
+  const isDemo          = document.getElementById('c-is-demo').checked;
+  const logoB64         = document.getElementById('c-logo-b64').value || '';
+  const brandColor      = document.getElementById('c-brand-color').value || '';
+
+  const all = getUsers();
+  const editingEmail = btn.dataset.editing;
+
+  if(editingEmail){
+    // ── EDIT MODE ──
+    const idx = all.findIndex(u=>u.email===editingEmail);
+    if(idx===-1) return;
+    all[idx].name            = name;
+    all[idx].clinicName      = clinicName;
+    all[idx].specialty       = specialty;
+    all[idx].location        = location;
+    all[idx].contactEmail    = contactEmail;
+    all[idx].slug            = slug;
+    all[idx].plan            = plan;
+    all[idx].startDate       = startDate;
+    all[idx].botUrl          = botUrl;
+    all[idx].anthropicKey    = anthropicKey;
+    all[idx].whatsappEnabled = whatsappEnabled;
+    all[idx].emailResumen    = emailResumen;
+    all[idx].isDemo          = isDemo;
+    if(logoB64) all[idx].logoB64 = logoB64;
+    if(brandColor) all[idx].brandColor = brandColor;
+    saveUsers(all);
+    toast('Cliente actualizado');
+    delete btn.dataset.editing;
+    btn.textContent = 'Crear cliente';
+  } else {
+    // ── CREATE MODE ──
+    if(!name || !email || !slug){ toast('Rellena los campos obligatorios (nombre, email, slug)','error'); return; }
+    if(all.some(u=>u.email===email))  { toast('Ya existe ese email de acceso','error'); return; }
+    if(all.some(u=>u.slug===slug))    { toast('Ese slug ya está en uso','error');        return; }
+    all.push({ name, clinicName, specialty, location, contactEmail, email, pass:'0000', slug, plan, startDate, botUrl, anthropicKey, whatsappEnabled, emailResumen, isDemo, logoB64, brandColor, role:'client', createdAt:new Date().toISOString() });
+    saveUsers(all);
+    toast(`Cliente "${name}" creado — contraseña inicial: 0000`);
   }
 
-  function showToast(msg, type) {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = msg;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-
-  function logOut() {
-    sessionStorage.removeItem('nervia_auth');
-    window.location.href = 'login.html';
-  }
-
-  // Auth Guard
-  const auth = sessionStorage.getItem('nervia_auth');
-  if (!auth || JSON.parse(auth).role !== 'admin') {
-    window.location.href = 'login.html';
-  }
-
-  document.getElementById('display-date').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-  // Logic
-  const clientForm = document.getElementById('create-client-form');
-  const clientTableBody = document.getElementById('client-table-body');
-
-  function getClients() {
-    return JSON.parse(localStorage.getItem('nervia_users') || '[]');
-  }
-
-  function renderClients() {
-    const clients = getClients().filter(u => u.role !== 'admin');
-    clientTableBody.innerHTML = clients.map(c => `
-      <tr>
-        <td>${c.name}</td>
-        <td>${c.clinicName}</td>
-        <td>${c.email}</td>
-        <td><code>${c.slug}</code></td>
-        <td>
-          <button class="btn-danger" onclick="deleteClient('${c.email}')">Eliminar</button>
-        </td>
-      </tr>
-    `).join('');
-
-    if (clients.length === 0) {
-      clientTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">No hay clientes registrados</td></tr>';
-    }
-  }
-
-  clientForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('client-name').value;
-    const clinicName = document.getElementById('clinic-name').value;
-    const specialty = document.getElementById('client-specialty').value;
-    const location = document.getElementById('client-location').value;
-    const email = document.getElementById('client-email').value;
-    const pass = document.getElementById('client-pass').value;
-    const slug = document.getElementById('client-slug').value;
-
-    const allUsers = JSON.parse(localStorage.getItem('nervia_users') || '[]');
-
-    if (allUsers.some(u => u.email === email)) {
-      showToast('Ya existe un usuario con ese email', 'error');
-      return;
-    }
-
-    if (allUsers.some(u => u.slug === slug)) {
-      showToast('Ese slug ya está en uso', 'error');
-      return;
-    }
-
-    const newUser = {
-      name, clinicName, specialty, location, email, pass, slug,
-      role: 'client',
-      createdAt: new Date().toISOString()
-    };
-
-    allUsers.push(newUser);
-    localStorage.setItem('nervia_users', JSON.stringify(allUsers));
-
-    showToast('Cliente creado con éxito', 'success');
-    clientForm.reset();
-    renderClients();
-  });
-
-  window.deleteClient = function(email) {
-    if (!confirm('¿Estás seguro de eliminar este cliente?')) return;
-    const allUsers = JSON.parse(localStorage.getItem('nervia_users') || '[]');
-    const filtered = allUsers.filter(u => u.email !== email);
-    localStorage.setItem('nervia_users', JSON.stringify(filtered));
-    renderClients();
-    showToast('Cliente eliminado', 'success');
-  };
-
+  e.target.reset();
+  clearLogo();
   renderClients();
+});
+
+window.goToClient = email => {
+  const user = getUsers().find(u => u.email === email);
+  if (!user) return;
+  window.open('cliente.html?user=' + encodeURIComponent(email), '_blank');
+};
+
+window.deleteClient = email=>{
+  if(!confirm('¿Eliminar este cliente?')) return;
+  saveUsers(getUsers().filter(u=>u.email!==email));
+  saveInvoices(getInvoices().filter(i=>i.clientEmail!==email));
+  renderClients(); toast('Cliente eliminado','error');
+};
+
+window.editClient = email=>{
+  const u = getUsers().find(x=>x.email===email);
+  if(!u) return;
+  // Rellenar formulario con datos del cliente
+  document.getElementById('c-name').value           = u.name||'';
+  document.getElementById('c-clinic').value         = u.clinicName||'';
+  document.getElementById('c-specialty').value      = u.specialty||'';
+  document.getElementById('c-location').value       = u.location||'';
+  document.getElementById('c-contact-email').value  = u.contactEmail||'';
+  document.getElementById('c-email').value          = u.email||'';
+  document.getElementById('c-slug').value           = u.slug||'';
+  document.getElementById('c-plan').value           = u.plan||'estandar';
+  document.getElementById('c-start').value          = u.startDate||'';
+  document.getElementById('c-bot-url').value        = u.botUrl||'';
+  document.getElementById('c-anthropic-key').value  = u.anthropicKey||'';
+  document.getElementById('c-whatsapp').checked     = !!u.whatsappEnabled;
+  document.getElementById('c-email-resumen').checked = !!u.emailResumen;
+  document.getElementById('c-is-demo').checked       = !!u.isDemo;
+  // Logo
+  if(u.logoB64){
+    document.getElementById('c-logo-b64').value = u.logoB64;
+    const prev = document.getElementById('logo-preview');
+    prev.style.border = '2px solid var(--green)';
+    prev.innerHTML = `<img src="${u.logoB64}" style="width:100%;height:100%;object-fit:contain;padding:6px;">`;
+    document.getElementById('logo-clear-btn').style.display = 'inline-flex';
+    if(u.brandColor) setDetectedColor(u.brandColor);
+  }
+  // Cambiar submit a "Guardar cambios"
+  const btn = document.querySelector('#form-client .btn-primary');
+  btn.textContent = 'Guardar cambios';
+  btn.dataset.editing = email;
+  document.getElementById('form-client').scrollIntoView({behavior:'smooth'});
+};
+
+/* ── LOGO HELPERS ── */
+function previewLogo(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const b64 = ev.target.result;
+    document.getElementById('c-logo-b64').value = b64;
+    const prev = document.getElementById('logo-preview');
+    prev.style.border = '2px solid var(--green)';
+    prev.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:contain;padding:6px;">`;
+    document.getElementById('logo-clear-btn').style.display = 'inline-flex';
+    extractDominantColor(b64).then(setDetectedColor);
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearLogo(){
+  document.getElementById('c-logo').value = '';
+  document.getElementById('c-logo-b64').value = '';
+  document.getElementById('logo-preview').innerHTML = '🏥';
+  document.getElementById('logo-preview').style.border = '2px dashed var(--border)';
+  document.getElementById('logo-clear-btn').style.display = 'none';
+  updateBrandColor('#0D2240');
+  document.getElementById('c-brand-color-picker').value = '#0D2240';
+}
+
+function setDetectedColor(hex){
+  document.getElementById('c-brand-color').value = hex;
+  document.getElementById('color-swatch').style.background = hex;
+  document.getElementById('color-code').textContent = hex;
+  document.getElementById('c-brand-color-picker').value = hex;
+  document.getElementById('color-detected-row').style.display = 'flex';
+}
+
+function updateBrandColor(hex){
+  document.getElementById('c-brand-color').value = hex;
+  document.getElementById('color-swatch').style.background = hex;
+  document.getElementById('color-code').textContent = hex;
+  document.getElementById('color-detected-row').style.display = 'flex';
+  // Mark active preset
+  document.querySelectorAll('.color-preset').forEach(b => {
+    b.classList.toggle('active', b.dataset.color === hex);
+  });
+}
+
+// Wire color presets
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.color-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      updateBrandColor(btn.dataset.color);
+      document.getElementById('c-brand-color-picker').value = btn.dataset.color;
+    });
+  });
+});
+
+/* ── COLOR EXTRACTION ── */
+function extractDominantColor(b64){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const SIZE = 80;
+      const canvas = document.createElement('canvas');
+      canvas.width = SIZE; canvas.height = SIZE;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      const data = ctx.getImageData(0, 0, SIZE, SIZE).data;
+      const counts = {};
+      for(let i=0; i<data.length; i+=4){
+        const r=data[i], g=data[i+1], b=data[i+2], a=data[i+3];
+        if(a < 100) continue;                         // transparent
+        if(r>240 && g>240 && b>240) continue;         // near-white
+        if(r<15  && g<15  && b<15)  continue;         // near-black
+        // Quantize to buckets of 24
+        const qr=Math.round(r/24)*24, qg=Math.round(g/24)*24, qb=Math.round(b/24)*24;
+        const key=`${qr},${qg},${qb}`;
+        counts[key]=(counts[key]||0)+1;
+      }
+      let max=0, best=null;
+      for(const [k,v] of Object.entries(counts)){ if(v>max){max=v; best=k;} }
+      if(!best){ resolve('#0D2240'); return; }
+      const [r,g,b]=best.split(',').map(Number);
+      // Convert to hex
+      const hex='#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+      resolve(hex);
+    };
+    img.src = b64;
+  });
+}
+
+/* ── RESET PASSWORD ── */
+window.resetPass = email=>{
+  if(!confirm(`¿Resetear la contraseña de "${email}" a 0000?`)) return;
+  const all = getUsers();
+  const u = all.find(x=>x.email===email);
+  if(!u) return;
+  u.pass = '0000';
+  saveUsers(all);
+  renderClients();
+  toast('Contraseña reseteada a 0000','info');
+};
+
+
+/* ══════════════════════════════════════════════════════════
+   ADMINS
+══════════════════════════════════════════════════════════ */
+function renderAdmins(){
+  const rows = getAdmins();
+  const tb = document.getElementById('tb-admins');
+  if(!rows.length){
+    tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:22px;color:var(--muted)">No hay otros administradores</td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map(a=>`<tr>
+    <td><strong>${esc(a.name)}</strong></td>
+    <td>${esc(a.email)}</td>
+    <td style="color:var(--muted);font-size:12px">${a.createdAt?fmt(a.createdAt):'—'}</td>
+    <td>${a.email!==(_me?.email||'') ? `<button class="btn-danger" onclick="deleteAdmin('${esc(a.email)}')">Eliminar</button>` : '<span style="font-size:12px;color:var(--muted)">Tú</span>'}</td>
+  </tr>`).join('');
+}
+
+document.getElementById('form-admin').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name  = document.getElementById('a-name').value.trim();
+  const email = document.getElementById('a-email').value.trim();
+  const pass  = document.getElementById('a-pass').value;
+  const all = getUsers();
+  if(all.some(u=>u.email===email)){ toast('Ya existe ese email','error'); return; }
+  all.push({ name, email, pass, role:'admin', createdAt:new Date().toISOString() });
+  saveUsers(all);
+  toast(`Admin "${name}" creado`);
+  e.target.reset();
+  renderAdmins();
+});
+
+window.deleteAdmin = email=>{
+  if(email===(_me?.email||'')){ toast('No puedes eliminarte a ti mismo','error'); return; }
+  if(!confirm('¿Eliminar este administrador?')) return;
+  saveUsers(getUsers().filter(u=>u.email!==email));
+  renderAdmins(); toast('Administrador eliminado','error');
+};
+
+/* ══════════════════════════════════════════════════════════
+   INVOICES
+══════════════════════════════════════════════════════════ */
+function invId(slug,y,m){ return `FAC-${y}-${String(m).padStart(2,'0')}-${String(slug||'').toUpperCase().replace(/[^A-Z0-9]/g,'').substring(0,10)}`; }
+
+function genInvoices(date, force=false){
+  const cls=getClients(), all=getInvoices();
+  const y=date.getFullYear(), m=date.getMonth()+1, mk=mKey(date);
+  let n=0;
+  cls.forEach(c=>{
+    const id=invId(c.slug||c.email,y,m);
+    if(!force && all.some(i=>i.id===id)) return;
+    const {base,iva,total}=planTotals(c.plan);
+    all.push({id, clientName:c.name, clinicName:c.clinicName, clientEmail:c.email, contactEmail:c.contactEmail||c.email, plan:c.plan, base, iva, total, period:`${String(m).padStart(2,'0')}/${y}`, monthKey:mk, estado:'pendiente', createdAt:new Date().toISOString()});
+    n++;
+  });
+  saveInvoices(all);
+  localStorage.setItem('nervia_last_billing', mKey(date));
+  return n;
+}
+
+function runBilling(silent=false){
+  const n=genInvoices(new Date());
+  document.getElementById('cron-banner').style.display='none';
+  renderInvoices(); renderInvStats();
+  if(!silent) toast(n>0?`${n} factura(s) generada(s)`:'Sin nuevas facturas','info');
+}
+
+function checkCron(){
+  const mk=mKey(new Date()), last=localStorage.getItem('nervia_last_billing')||'';
+  const b=document.getElementById('cron-banner');
+  if(last!==mk && getClients().length>0){
+    document.getElementById('cron-month').textContent=new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+    b.style.display='flex';
+  } else { b.style.display='none'; }
+}
+
+function renderInvStats(){
+  const all=getInvoices(), mk=mKey(new Date());
+  const tm=all.filter(i=>i.monthKey===mk);
+  document.getElementById('f-mes').textContent  = tm.reduce((s,i)=>s+i.total,0).toFixed(2)+' €';
+  document.getElementById('f-pend').textContent = tm.filter(i=>i.estado==='pendiente').length;
+  document.getElementById('f-pag').textContent  = tm.filter(i=>i.estado==='pagada').length;
+  document.getElementById('f-all').textContent  = all.reduce((s,i)=>s+i.total,0).toFixed(2)+' €';
+}
+
+function renderInvoices(){
+  const fe=document.getElementById('f-filter').value;
+  let all=getInvoices().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  if(fe) all=all.filter(i=>i.estado===fe);
+  const tb=document.getElementById('tb-invoices');
+  if(!all.length){
+    tb.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:22px;color:var(--muted)">Sin facturas${fe?' con este estado':''} — pulsa "Generar mes actual"</td></tr>`;
+    renderInvStats(); return;
+  }
+  tb.innerHTML = all.map((inv,idx)=>{
+    const p=PLANS[inv.plan]||PLANS.estandar;
+    const bc=inv.estado==='pagada'?'b-pagada':inv.estado==='anulada'?'b-anulada':'b-pendiente';
+    return `<tr>
+      <td><code style="font-size:11px">${esc(inv.id)}</code></td>
+      <td><strong>${esc(inv.clientName)}</strong><br><small style="color:var(--muted)">${esc(inv.clinicName)}</small></td>
+      <td style="font-size:12px">${esc(inv.contactEmail||'—')}</td>
+      <td><span class="badge ${p.cls}">${p.label}</span></td>
+      <td>${inv.base.toFixed(2)} €</td>
+      <td style="color:var(--muted)">${inv.iva.toFixed(2)} €</td>
+      <td><strong>${inv.total.toFixed(2)} €</strong></td>
+      <td>
+        <select class="estado-sel ${inv.estado==='pagada'?'eg':inv.estado==='anulada'?'ea':'ep'}"
+                onchange="changeEstado('${esc(inv.id)}',this)">
+          <option value="pendiente" ${inv.estado==='pendiente'?'selected':''}>Pendiente</option>
+          <option value="pagada"    ${inv.estado==='pagada'   ?'selected':''}>Pagada</option>
+          <option value="anulada"   ${inv.estado==='anulada'  ?'selected':''}>Anulada</option>
+        </select>
+      </td>
+      <td style="color:var(--muted);font-size:12px">${fmt(inv.createdAt)}</td>
+      <td><button class="btn-sm" onclick="dlInvoice(${idx})">⬇ Descargar</button></td>
+    </tr>`;
+  }).join('');
+  renderInvStats();
+}
+
+function filteredInvoices(){
+  const fe=document.getElementById('f-filter').value;
+  let all=getInvoices().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  return fe ? all.filter(i=>i.estado===fe) : all;
+}
+
+window.changeEstado=(invId, sel)=>{
+  const newEstado = sel.value;
+  const clsMap = { pendiente:'ep', pagada:'eg', anulada:'ea' };
+  sel.className = 'estado-sel ' + (clsMap[newEstado]||'ep');
+  const all = getInvoices();
+  const f = all.find(i=>i.id===invId);
+  if(!f) return;
+  f.estado = newEstado;
+  if(newEstado==='pagada') f.paidAt = new Date().toISOString();
+  saveInvoices(all);
+  renderInvStats();
+  const labels = { pendiente:'Pendiente', pagada:'Pagada ✓', anulada:'Anulada' };
+  toast(`Estado cambiado → ${labels[newEstado]}`, newEstado==='pagada'?'success':newEstado==='anulada'?'error':'info');
+};
+
+window.dlInvoice=idx=>{
+  const inv=filteredInvoices()[idx]; if(!inv) return;
+  const p=PLANS[inv.plan]||PLANS.estandar;
+  const bc=inv.estado==='pagada'?'background:#dcfce7;color:#166534':inv.estado==='anulada'?'background:#fee2e2;color:#991b1b':'background:#fef3c7;color:#92400e';
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Factura ${esc(inv.id)}</title>
+  <style>body{font-family:Arial,sans-serif;max-width:720px;margin:40px auto;color:#111;font-size:14px}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;border-bottom:2px solid #0891B2;padding-bottom:20px}.logo{font-size:28px;font-weight:900;color:#0E7490;letter-spacing:-1px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}.party h4{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#999;margin-bottom:8px}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#f4f4f4;text-align:left;padding:10px 14px;font-size:12px}td{padding:12px 14px;border-bottom:1px solid #eee}.totals{margin-left:auto;width:260px}.totals td:last-child{text-align:right;font-weight:600}.tr-total td{font-size:16px!important;font-weight:900!important;color:#0E7490!important;border-top:2px solid #0891B2!important;padding-top:14px!important}.footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;color:#aaa;font-size:11px;text-align:center}@media print{body{margin:20px}}</style>
+  </head><body>
+  <div class="header"><div><div class="logo">NERV-IA</div><div style="font-size:11px;color:#666">Tu asistente IA · hola@nerv-ia.com</div></div>
+  <div style="text-align:right"><h2 style="font-size:22px;font-weight:700;margin:0">${esc(inv.id)}</h2><div style="color:#0891B2;font-weight:600">Período: ${esc(inv.period)}</div><div style="font-size:12px;color:#666;margin-top:4px">Emitida: ${fmt(inv.createdAt)}</div><div style="margin-top:6px"><span style="padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;${bc}">${cap(inv.estado)}</span></div></div></div>
+  <div class="parties"><div class="party"><h4>Emisor</h4><p><strong>NERV-IA SL</strong></p><p>NIF: B-XXXXXXXX</p><p>Calle Ejemplo 1, Madrid</p><p>hola@nerv-ia.com</p></div>
+  <div class="party"><h4>Cliente</h4><p><strong>${esc(inv.clinicName)}</strong></p><p>${esc(inv.clientName)}</p><p>${esc(inv.contactEmail)}</p></div></div>
+  <table><thead><tr><th>Concepto</th><th>Plan</th><th>Cant.</th><th>P. unit.</th><th>Subtotal</th></tr></thead>
+  <tbody><tr><td>Servicio NERV-IA — Agente IA<br><small style="color:#888">Período ${esc(inv.period)}</small></td><td>${p.label}</td><td>1</td><td>${inv.base.toFixed(2)} €</td><td>${inv.base.toFixed(2)} €</td></tr></tbody></table>
+  <table class="totals"><tbody><tr><td>Base imponible</td><td>${inv.base.toFixed(2)} €</td></tr><tr><td>IVA (21%)</td><td>${inv.iva.toFixed(2)} €</td></tr><tr class="tr-total"><td>TOTAL</td><td>${inv.total.toFixed(2)} €</td></tr></tbody></table>
+  <div class="footer">NERV-IA SL · NIF B-XXXXXXXX · Calle Ejemplo 1, 28001 Madrid · hola@nerv-ia.com</div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`;
+  const w=window.open('','_blank','width=800,height=900');
+  w.document.write(html); w.document.close();
+};
+
+/* ── LOGOUT ─────────────────────────────────────────────── */
+function logOut(){ sessionStorage.removeItem('nervia_auth'); window.location.href='login.html'; }
+
+/* ── INIT ────────────────────────────────────────────────── */
+renderClients();
 </script>
 </body>
 </html>

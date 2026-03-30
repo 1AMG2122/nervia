@@ -11,12 +11,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f7fdf9;
+      --bg: #F0F9FF;
       --surface: #ffffff;
-      --primary: #25d366;
-      --primary-dark: #1aab52;
-      --primary-dim: rgba(37, 211, 102, 0.10);
-      --primary-dim2: rgba(37, 211, 102, 0.18);
+      --primary: #0891B2;
+      --primary-dark: #0E7490;
+      --primary-dim: rgba(8, 145, 178, 0.10);
+      --primary-dim2: rgba(8, 145, 178, 0.18);
       --text: #111827;
       --muted: #6b7280;
       --border: #e5e7eb;
@@ -60,37 +60,9 @@
       flex-shrink: 0;
     }
 
-    .header-logo img {
-      height: 36px;
-      width: auto;
-      mix-blend-mode: multiply;
-    }
+    .nervia-logotype { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -2px; line-height: 1; user-select: none; color: #0F172A; }
+    .nervia-logotype span { color: #0891B2; }
 
-    .header-logo-fallback {
-      height: 36px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
-
-    .logo-wordmark {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
 
     .header-center {
       font-size: 13px;
@@ -111,7 +83,7 @@
       font-weight: 600;
       padding: 4px 10px;
       border-radius: 20px;
-      border: 1px solid rgba(37,211,102,0.25);
+      border: 1px solid rgba(8,145,178,0.25);
       white-space: nowrap;
       letter-spacing: 0.1px;
     }
@@ -206,7 +178,6 @@
     /* ─── STEP PANELS ─── */
     .steps-wrapper {
       position: relative;
-      overflow: hidden;
     }
 
     .step-panel {
@@ -287,7 +258,7 @@
     .service-card.selected {
       border-color: var(--primary);
       background: var(--primary-dim);
-      box-shadow: 0 0 0 3px rgba(37,211,102,0.15);
+      box-shadow: 0 0 0 3px rgba(8,145,178,0.15);
     }
 
     .service-emoji {
@@ -607,7 +578,7 @@
     .btn-primary:hover:not(:disabled) {
       background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+      box-shadow: 0 4px 16px rgba(8,145,178,0.35);
     }
 
     .btn-primary:disabled {
@@ -876,16 +847,10 @@
   <!-- ─── HEADER ─── -->
   <header>
     <div class="header-logo">
-      <img src="../imagenes/logo.png" alt="Nervia Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-      <div class="header-logo-fallback" style="display:none;">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-        </div>
-        <span class="logo-wordmark">Nervia</span>
-      </div>
+      <span class="nervia-logotype">NERV<span>-IA</span></span>
     </div>
-    <div class="header-center">Reservar cita — Clínica Dr. García</div>
-    <div class="header-badge">Powered by Nervia IA</div>
+    <div class="header-center" id="header-clinic-name">Reservar cita</div>
+    <div class="header-badge">Powered by NERV-IA</div>
   </header>
 
   <!-- ─── MAIN ─── -->
@@ -1121,7 +1086,7 @@
           </div>
 
           <div class="whatsapp-note">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.003 22l4.978-1.38A9.944 9.944 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 11.998 2z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#0891B2"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.003 22l4.978-1.38A9.944 9.944 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 11.998 2z"/></svg>
             Recibirás un recordatorio por WhatsApp 24h antes de tu cita
           </div>
         </div>
@@ -1131,16 +1096,54 @@
   </main>
 
   <!-- ─── FOOTER ─── -->
-  <footer>© 2025 Nervia · Todos los derechos reservados</footer>
+  <footer>© 2025 NERV-IA · Todos los derechos reservados</footer>
 
   <script>
-    // ─── CONFIG ───
-    const SERVICES_CONFIG = [
-      { id: "fisio", name: "Fisioterapia", duration: "45 min", price: "60€", emoji: "🦴" },
-      { id: "psico", name: "Psicología", duration: "50 min", price: "70€", emoji: "🧠" },
-      { id: "masaje", name: "Masaje Terapéutico", duration: "60 min", price: "55€", emoji: "💆" },
-      { id: "consulta", name: "Consulta General", duration: "30 min", price: "45€", emoji: "🩺" }
-    ];
+    // ─── CARGAR CLIENTE DESDE URL + LOCALSTORAGE ───
+    const _urlParams  = new URLSearchParams(window.location.search);
+    const _clientSlug = _urlParams.get('client') || 'demo';
+    const _allUsers   = JSON.parse(localStorage.getItem('nervia_users') || '[]');
+    const _clientUser = _allUsers.find(u => u.slug === _clientSlug && u.role === 'client') || null;
+
+    const CLIENT = _clientUser ? {
+      name:       _clientUser.name       || 'Clínica',
+      clinicName: _clientUser.clinicName || _clientUser.name || 'Clínica',
+      specialty:  _clientUser.specialty  || '',
+      email:      _clientUser.email,
+      slug:       _clientUser.slug,
+      logoB64:    _clientUser.logoB64    || '',
+      brandColor: _clientUser.brandColor || '#0891B2'
+    } : {
+      name:       'Clínica Demo',
+      clinicName: 'Clínica Demo',
+      specialty:  'Consulta',
+      email:      'demo@nerv-ia.com',
+      slug:       'demo',
+      logoB64:    '',
+      brandColor: '#0891B2'
+    };
+
+    // Aplicar color de marca
+    document.documentElement.style.setProperty('--primary',      CLIENT.brandColor);
+    document.documentElement.style.setProperty('--primary-dark', CLIENT.brandColor);
+    document.documentElement.style.setProperty('--primary-dim',  CLIENT.brandColor + '18');
+    document.documentElement.style.setProperty('--primary-dim2', CLIENT.brandColor + '30');
+
+    // Nombre en header
+    document.getElementById('header-clinic-name').textContent =
+      'Reservar cita — ' + CLIENT.clinicName;
+
+    // Logo: text-based logotype (no image needed)
+
+    // ─── CONFIG SERVICIOS ───
+    const SERVICES_CONFIG = (_clientUser && _clientUser.services && _clientUser.services.length)
+      ? _clientUser.services
+      : [
+          { id: "fisio",   name: "Fisioterapia",      duration: "45 min", price: "60€", emoji: "🦴" },
+          { id: "psico",   name: "Psicología",         duration: "50 min", price: "70€", emoji: "🧠" },
+          { id: "masaje",  name: "Masaje Terapéutico", duration: "60 min", price: "55€", emoji: "💆" },
+          { id: "consulta",name: "Consulta General",   duration: "30 min", price: "45€", emoji: "🩺" }
+        ];
 
     // ─── STATE ───
     const booking = {
@@ -1158,8 +1161,9 @@
     };
 
     let currentStep = 1;
-    let calYear = 2026;
-    let calMonth = 2; // 0-indexed: 2 = March
+    const _now = new Date();
+    let calYear  = _now.getFullYear();
+    let calMonth = _now.getMonth(); // 0-indexed
 
     const ALL_SLOTS = ['9:00','9:30','10:00','10:30','11:00','11:30','12:00','16:00','16:30','17:00','17:30','18:00','18:30'];
 
@@ -1181,52 +1185,37 @@
 
     // ─── STEP NAVIGATION ───
     function goToStep(target) {
-      const from = currentStep;
-      const direction = target > from ? 'forward' : 'backward';
+      const fromPanel = document.getElementById('panel-' + currentStep);
+      const toPanel   = document.getElementById('panel-' + target);
 
-      const fromPanel = document.getElementById('panel-' + from);
-      const toPanel = document.getElementById('panel-' + target);
-
-      // Animate out
-      fromPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-      fromPanel.style.opacity = '0';
-      fromPanel.style.transform = direction === 'forward' ? 'translateX(-40px)' : 'translateX(40px)';
+      fromPanel.style.transition = 'opacity 0.18s ease';
+      fromPanel.style.opacity    = '0';
 
       setTimeout(() => {
         fromPanel.classList.remove('active');
         fromPanel.style.transition = '';
-        fromPanel.style.opacity = '';
-        fromPanel.style.transform = '';
+        fromPanel.style.opacity    = '';
 
-        // Prepare incoming
         toPanel.style.opacity = '0';
-        toPanel.style.transform = direction === 'forward' ? 'translateX(40px)' : 'translateX(-40px)';
         toPanel.classList.add('active');
-        toPanel.style.display = 'block';
-
-        // Trigger reflow
         void toPanel.offsetWidth;
-
-        toPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        toPanel.style.opacity = '1';
-        toPanel.style.transform = 'translateX(0)';
+        toPanel.style.transition = 'opacity 0.22s ease';
+        toPanel.style.opacity    = '1';
 
         setTimeout(() => {
           toPanel.style.transition = '';
-          toPanel.style.opacity = '';
-          toPanel.style.transform = '';
-        }, 320);
+          toPanel.style.opacity    = '';
+        }, 240);
 
         currentStep = target;
         updateStepper();
 
-        // Populate strips
         if (target === 2) populateStrip2();
         if (target === 3) populateStrip3();
         if (target === 4) populateConfirmation();
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 240);
+      }, 200);
     }
 
     function updateStepper() {
@@ -1280,7 +1269,7 @@
 
     // ─── CALENDAR ───
     const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    const today = new Date(2026, 2, 25); // current date context
+    const today = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
 
     function renderCalendar() {
       const label = document.getElementById('cal-month-label');
@@ -1450,10 +1439,33 @@
 
       if (!valid) return;
 
-      booking.name = name.value.trim();
+      booking.name  = name.value.trim();
       booking.phone = phone.value.trim();
       booking.email = email.value.trim();
       booking.notes = document.getElementById('f-notes').value.trim();
+
+      // ── Guardar en localStorage del profesional (simulación / demo) ──
+      try {
+        const apptKey  = 'nervia_appts_' + CLIENT.email;
+        const dateKey  = booking.date;
+        const stored   = JSON.parse(localStorage.getItem(apptKey) || '{}');
+        if (!stored[dateKey]) stored[dateKey] = [];
+        stored[dateKey].push({
+          name:    booking.name,
+          phone:   booking.phone,
+          email:   booking.email,
+          service: booking.service,
+          time:    booking.time,
+          duration:booking.duration,
+          price:   booking.price,
+          notes:   booking.notes,
+          status:  'pending',
+          bookedViaForm: true,
+          bookedAt: new Date().toISOString()
+        });
+        stored[dateKey].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+        localStorage.setItem(apptKey, JSON.stringify(stored));
+      } catch(e) { /* sin localStorage disponible */ }
 
       goToStep(4);
     }
@@ -1512,9 +1524,9 @@
       const startStr = `${year}${pad(month)}${pad(day)}T${pad(h)}${pad(m)}00`;
       const endStr   = `${year}${pad(month)}${pad(day)}T${pad(endH)}${pad(endM)}00`;
 
-      const title = encodeURIComponent(`Cita ${booking.service} — Clínica Dr. García`);
+      const title = encodeURIComponent(`Cita ${booking.service} — ${CLIENT.clinicName}`);
       const details = encodeURIComponent(`Paciente: ${booking.name}\nServicio: ${booking.service} (${booking.duration})\nPrecio: ${booking.price}`);
-      const location = encodeURIComponent('Clínica Dr. García, Madrid');
+      const location = encodeURIComponent(CLIENT.clinicName + (CLIENT.specialty ? ' · ' + CLIENT.specialty : ''));
 
       return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
     }
@@ -1540,8 +1552,8 @@
       document.getElementById('err-email').classList.add('hidden');
 
       // Reset calendar
-      calYear = 2026;
-      calMonth = 2;
+      calYear  = _now.getFullYear();
+      calMonth = _now.getMonth();
       renderCalendar();
 
       // Reset slots

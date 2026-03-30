@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nervia — Agente IA para tu consulta</title>
+  <title>NERV-IA — Agente IA para tu consulta</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:     #04080f;
-      --bg2:    #080d1a;
-      --bg3:    #0c1220;
-      --y:      #25d366;
-      --y-dim:  rgba(37,211,102,0.10);
-      --y-glow: rgba(37,211,102,0.32);
-      --y-soft: rgba(37,211,102,0.06);
-      --text:   #e2e8f0;
+      --bg:     #F0F9FF;
+      --bg2:    #FFFFFF;
+      --bg3:    #E0F2FE;
+      --y:      #0891B2;
+      --y-dim:  rgba(8,145,178,0.10);
+      --y-glow: rgba(8,145,178,0.25);
+      --y-soft: rgba(8,145,178,0.06);
+      --text:   #0F172A;
       --muted:  #64748b;
-      --border: rgba(255,255,255,0.06);
-      --glass:  rgba(255,255,255,0.025);
+      --border: rgba(15,23,42,0.08);
+      --glass:  rgba(255,255,255,0.80);
     }
     html { scroll-behavior: smooth; }
     body {
@@ -37,13 +37,16 @@
       position: fixed; top: 0; left: 0; right: 0; z-index: 200;
       display: flex; align-items: center; justify-content: space-between;
       padding: 1rem 3rem;
-      background: rgba(4,8,15,0.88);
+      background: rgba(240,249,255,0.92);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       transition: border-color 0.3s;
     }
     .nav-logo { display: flex; align-items: center; text-decoration: none; }
-    .nav-logo img { height: 38px; width: auto; display: block; mix-blend-mode: screen; }
+    .nervia-logotype { font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: -2px; line-height: 1; user-select: none; color: #0F172A; }
+    .nervia-logotype span { color: #0891B2; }
+    .nav-logo .nervia-logotype { font-size: 26px; }
+    .footer-brand .nervia-logotype { font-size: 22px; }
     .nav-links { display: flex; gap: 2rem; list-style: none; }
     .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.86rem; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--y); }
@@ -52,25 +55,20 @@
       padding: 0.5rem 1.3rem; border-radius: 6px;
       font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.86rem;
       cursor: pointer; text-decoration: none; transition: all 0.25s;
-      box-shadow: 0 0 10px rgba(37,211,102,0.08);
+      box-shadow: 0 0 10px rgba(8,145,178,0.08);
     }
     .nav-cta:hover { background: var(--y); color: var(--bg); box-shadow: 0 0 22px var(--y-glow); }
     .nav-cliente {
-      background: rgba(37,211,102,0.08);
-      border-color: rgba(37,211,102,0.35);
-      color: rgba(37,211,102,0.75);
+      background: rgba(8,145,178,0.08);
+      border-color: rgba(8,145,178,0.35);
+      color: rgba(8,145,178,0.75);
       display: inline-flex; align-items: center; gap: 0.4rem;
     }
-    .nav-cliente:hover { background: rgba(37,211,102,0.18); border-color: var(--y); color: var(--y); box-shadow: none; }
+    .nav-cliente:hover { background: rgba(8,145,178,0.18); border-color: var(--y); color: var(--y); box-shadow: none; }
     .nav-cliente svg { opacity: 0.8; }
 
     /* ── CANVAS ── */
-    #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.45; pointer-events: none; }
-
-    /* ── ORB ── */
-    .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(90px); }
-    .orb-1 { width: 380px; height: 380px; background: rgba(37,211,102,0.04); top: 8%; left: -80px; }
-    .orb-2 { width: 460px; height: 460px; background: rgba(37,211,102,0.03); bottom: 5%; right: -120px; }
+    #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
     /* ── HERO ── */
     .hero {
@@ -83,7 +81,7 @@
     .hero-left { display: flex; flex-direction: column; gap: 1.5rem; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 0.6rem; width: fit-content;
-      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.25);
+      background: var(--y-dim); border: 1px solid rgba(8,145,178,0.25);
       padding: 0.4rem 1rem; border-radius: 4px;
       font-family: 'Space Mono', monospace; font-size: 0.7rem;
       color: var(--y); letter-spacing: 0.1em;
@@ -101,7 +99,7 @@
       animation: fadeUp 0.6s 0.1s ease both;
     }
     .hero h1 .y {
-      color: var(--y); text-shadow: 0 0 24px rgba(245,197,24,0.4);
+      color: var(--y); text-shadow: 0 0 24px rgba(8,145,178,0.4);
     }
     .hero-sub {
       font-size: 1rem; color: var(--muted); max-width: 470px;
@@ -109,11 +107,11 @@
     }
     .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.3s ease both; }
     .btn-primary {
-      background: var(--y); color: var(--bg); border: none; cursor: pointer;
+      background: var(--y); color: #ffffff; border: none; cursor: pointer;
       padding: 0.82rem 1.8rem; border-radius: 6px;
       font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem;
       text-decoration: none; transition: all 0.25s;
-      box-shadow: 0 0 20px rgba(245,197,24,0.25);
+      box-shadow: 0 0 20px rgba(8,145,178,0.25);
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 38px var(--y-glow); }
     .btn-secondary {
@@ -137,7 +135,7 @@
       padding: 12px;
       box-shadow:
         0 0 0 1px rgba(255,255,255,0.08),
-        0 0 60px rgba(245,197,24,0.06),
+        0 0 60px rgba(8,145,178,0.06),
         0 40px 80px rgba(0,0,0,0.7);
       position: relative;
     }
@@ -178,10 +176,10 @@
       display: flex; align-items: center; gap: 8px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .wa-back { color: #25d366; font-size: 18px; font-weight: 300; line-height: 1; }
+    .wa-back { color: #0891B2; font-size: 18px; font-weight: 300; line-height: 1; }
     .wa-avatar {
       width: 36px; height: 36px; border-radius: 50%;
-      background: linear-gradient(135deg, #25d366, #128c7e);
+      background: linear-gradient(135deg, #0891B2, #0E7490);
       display: flex; align-items: center; justify-content: center;
       font-size: 1rem; flex-shrink: 0;
     }
@@ -281,7 +279,7 @@
     .wa-input::placeholder { color: #8696a0; }
     .wa-send-btn {
       width: 34px; height: 34px; border-radius: 50%;
-      background: #25d366; border: none; cursor: pointer;
+      background: #0891B2; border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .wa-send-btn svg { width: 16px; height: 16px; fill: #fff; }
@@ -294,12 +292,12 @@
     .wa-preset-label { font-size: 9px; color: #8696a0; margin-bottom: 5px; letter-spacing: 0.05em; font-family: -apple-system, sans-serif; text-align: center; }
     .wa-preset-btns { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
     .wa-preset-btn {
-      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.25);
-      color: #25d366; font-size: 10px; padding: 4px 9px;
+      background: rgba(8,145,178,0.1); border: 1px solid rgba(8,145,178,0.25);
+      color: #0891B2; font-size: 10px; padding: 4px 9px;
       border-radius: 14px; cursor: pointer; transition: all 0.2s;
       font-family: -apple-system, sans-serif;
     }
-    .wa-preset-btn:hover { background: rgba(37,211,102,0.2); }
+    .wa-preset-btn:hover { background: rgba(8,145,178,0.2); }
     .wa-preset-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     /* Phone side buttons */
     .phone-btn-right {
@@ -326,7 +324,7 @@
     .stat { text-align: center; }
     .stat-num {
       font-family: 'Space Mono', monospace; font-weight: 700; font-size: 2rem;
-      color: var(--y); text-shadow: 0 0 20px rgba(245,197,24,0.3);
+      color: var(--y); text-shadow: 0 0 20px rgba(8,145,178,0.3);
     }
     .stat-label { font-size: 0.76rem; color: var(--muted); margin-top: 0.2rem; }
 
@@ -352,7 +350,7 @@
       background: linear-gradient(135deg, var(--y-soft), transparent);
       opacity: 0; transition: opacity 0.3s;
     }
-    .problem-card:hover { border-color: rgba(245,197,24,0.22); transform: translateY(-4px); }
+    .problem-card:hover { border-color: rgba(8,145,178,0.22); transform: translateY(-4px); }
     .problem-card:hover::after { opacity: 1; }
     .card-icon { font-size: 1.8rem; margin-bottom: 1rem; }
     .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 0.8rem; }
@@ -361,7 +359,7 @@
     .card-points li::before { content: '›'; position: absolute; left: 0; color: var(--y); font-size: 1rem; top: 0.18rem; }
     .problem-full {
       grid-column: 1/-1;
-      background: var(--y-soft); border: 1px solid rgba(245,197,24,0.1);
+      background: var(--y-soft); border: 1px solid rgba(8,145,178,0.1);
       border-radius: 12px; padding: 2rem; text-align: center;
     }
     .problem-full p { color: var(--muted); font-size: 0.93rem; line-height: 1.8; }
@@ -372,10 +370,10 @@
       background: var(--glass); border: 1px solid var(--border);
       border-radius: 12px; padding: 2rem; text-align: center; transition: all 0.3s;
     }
-    .sol-card:hover { border-color: rgba(245,197,24,0.28); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 28px rgba(245,197,24,0.05); }
+    .sol-card:hover { border-color: rgba(8,145,178,0.28); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 28px rgba(8,145,178,0.05); }
     .sol-icon {
       width: 56px; height: 56px; border-radius: 12px;
-      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.18);
+      background: var(--y-dim); border: 1px solid rgba(8,145,178,0.18);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; margin: 0 auto 1.1rem;
     }
@@ -429,9 +427,9 @@
       transition: transform 0.3s, box-shadow 0.3s;
     }
     .pricing-card:hover { transform: translateY(-6px); }
-    .pricing-card.base { background: var(--glass); border: 1px solid rgba(245,197,24,0.18); backdrop-filter: blur(12px); }
-    .pricing-card.pro { background: var(--y-soft); border: 1px solid rgba(245,197,24,0.32); box-shadow: 0 0 40px rgba(245,197,24,0.06); }
-    .pricing-card.pro:hover { box-shadow: 0 0 60px rgba(245,197,24,0.14), 0 24px 48px rgba(0,0,0,0.4); }
+    .pricing-card.base { background: var(--glass); border: 1px solid rgba(8,145,178,0.18); backdrop-filter: blur(12px); }
+    .pricing-card.pro { background: var(--y-soft); border: 1px solid rgba(8,145,178,0.32); box-shadow: 0 0 40px rgba(8,145,178,0.06); }
+    .pricing-card.pro:hover { box-shadow: 0 0 60px rgba(8,145,178,0.14), 0 24px 48px rgba(0,0,0,0.4); }
     .plan-badge {
       position: absolute; top: 1.2rem; right: 1.2rem;
       background: var(--y); color: var(--bg);
@@ -456,7 +454,7 @@
     .plan-features li { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.6rem; }
     .feat-check {
       width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0;
-      background: var(--y-dim); border: 1px solid rgba(245,197,24,0.25);
+      background: var(--y-dim); border: 1px solid rgba(8,145,178,0.25);
       display: flex; align-items: center; justify-content: center;
       font-size: 0.62rem; color: var(--y);
     }
@@ -468,13 +466,13 @@
     }
     .pricing-card.base .plan-cta { border: 1px solid var(--y); color: var(--y); background: var(--y-dim); }
     .pricing-card.base .plan-cta:hover { background: var(--y); color: var(--bg); box-shadow: 0 0 22px var(--y-glow); }
-    .pricing-card.pro .plan-cta { background: var(--y); color: var(--bg); border: none; }
+    .pricing-card.pro .plan-cta { background: var(--y); color: #ffffff; border: none; }
     .pricing-card.pro .plan-cta:hover { box-shadow: 0 0 30px var(--y-glow); transform: translateY(-2px); }
 
     /* ── FAQ ── */
     .faq-grid { margin-top: 3rem; display: flex; flex-direction: column; gap: 0.7rem; }
     .faq-item { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
-    .faq-item.open { border-color: rgba(245,197,24,0.25); }
+    .faq-item.open { border-color: rgba(8,145,178,0.25); }
     .faq-q { padding: 1.1rem 1.4rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
     .faq-q:hover { color: var(--y); }
     .faq-arrow { font-size: 0.85rem; color: var(--muted); transition: transform 0.3s; }
@@ -483,7 +481,7 @@
     .faq-item.open .faq-a { max-height: 200px; padding: 0 1.4rem 1.1rem; }
 
     /* ── CTA ── */
-    .cta-wrap { position: relative; z-index: 1; background: var(--y-soft); border-top: 1px solid rgba(245,197,24,0.1); border-bottom: 1px solid rgba(245,197,24,0.1); }
+    .cta-wrap { position: relative; z-index: 1; background: var(--y-soft); border-top: 1px solid rgba(8,145,178,0.1); border-bottom: 1px solid rgba(8,145,178,0.1); }
     .cta-section { max-width: 1280px; margin: 0 auto; padding: 6rem 3rem; text-align: center; }
     .cta-section h2 { margin: 0 auto; }
     .cta-sub { color: var(--muted); margin-top: 1rem; font-size: 1rem; }
@@ -496,7 +494,7 @@
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 1.5rem;
     }
-    .footer-brand img { height: 30px; width: auto; mix-blend-mode: screen; opacity: 0.85; }
+    .footer-brand img { height: 30px; width: auto; mix-blend-mode: normal; opacity: 0.85; }
     .footer-tagline { font-size: 0.73rem; color: var(--muted); margin-top: 0.3rem; }
     .footer-links { display: flex; gap: 2rem; }
     .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
@@ -521,14 +519,12 @@
 </head>
 <body>
 
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
 <canvas id="bg-canvas"></canvas>
 
 <!-- ═══ NAV ═══ -->
 <nav id="mainNav">
   <a class="nav-logo" href="#">
-    <img src="../imagenes/logo.png" alt="Nervia">
+    <span class="nervia-logotype">NERV<span>-IA</span></span>
   </a>
   <ul class="nav-links">
     <li><a href="#problema">Problema</a></li>
@@ -552,7 +548,7 @@
       IA PARA CLÍNICAS · FISIOS · PSICÓLOGOS
     </div>
     <h1>Tus pacientes siempre<br>atendidos, <span class="y">aunque tengas las manos ocupadas.</span></h1>
-    <p class="hero-sub">Nervia es el agente IA que actúa como tu recepcionista digital: responde en segundos, filtra por tipo de consulta y agenda citas directamente en tu calendario — mientras tú estás en sesión.</p>
+    <p class="hero-sub">NERV-IA es el agente IA que actúa como tu recepcionista digital: responde en segundos, filtra por tipo de consulta y agenda citas directamente en tu calendario — mientras tú estás en sesión.</p>
     <div class="hero-actions">
       <a href="booking.html" class="btn-primary">Pruébame de inmediato →</a>
       <a href="#proceso" class="btn-secondary">Ver cómo funciona</a>
@@ -776,7 +772,7 @@
         <th>Característica</th>
         <th>Gestión Manual</th>
         <th>Chatbots Genéricos</th>
-        <th>✦ Nervia IA</th>
+        <th>✦ NERV-IA</th>
       </tr>
     </thead>
     <tbody>
@@ -875,7 +871,7 @@
 <div class="cta-wrap">
   <section class="cta-section" id="contacto">
     <div class="section-tag" style="justify-content:center;">Contáctanos</div>
-    <h2 style="max-width:600px;margin:0 auto;">Cada día que pasa sin Nervia, pacientes reales se van a otra clínica.</h2>
+    <h2 style="max-width:600px;margin:0 auto;">Cada día que pasa sin NERV-IA, pacientes reales se van a otra clínica.</h2>
     <p class="cta-sub">Tu agente IA personalizado para fisioterapia, psicología o tu especialidad — operativo en menos de 48h.</p>
     <div class="cta-actions">
       <a href="booking.html" class="btn-primary">Pruébame de inmediato →</a>
@@ -887,69 +883,138 @@
 <!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="footer-brand">
-    <img src="../imagenes/logo.png" alt="Nervia">
+    <span class="nervia-logotype">NERV<span>-IA</span></span>
     <div class="footer-tagline">Tu recepcionista IA para clínicas de salud.</div>
   </div>
   <div class="footer-links">
     <a href="#proceso">Cómo funciona</a>
     <a href="#planes">Planes</a>
-    <a href="mailto:hola@nervia.es">Contacto</a>
+    <a href="mailto:hola@nerv-ia.com">Contacto</a>
     <a href="#">Privacidad</a>
   </div>
-  <div class="footer-copy">© 2025 Nervia · Todos los derechos reservados</div>
+  <div class="footer-copy">© 2025 NERV-IA · Todos los derechos reservados</div>
 </footer>
 
 <!-- ═══ JS ═══ -->
 <script>
-/* ── NEURAL CANVAS ── */
+/* ── SHAPES CANVAS ── */
 const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let nodes = [], W, H;
+const ctx    = canvas.getContext('2d');
+let W, H, shapes = [];
+let lastPageScroll = 0, scrollVel = 0;
 
-function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
 resize();
-window.addEventListener('resize', () => { resize(); createNodes(); });
+window.addEventListener('resize', () => { resize(); initShapes(); });
 
-function createNodes() {
-  nodes = [];
-  const count = Math.floor((W * H) / 22000);
-  for (let i = 0; i < count; i++) {
-    nodes.push({ x: Math.random()*W, y: Math.random()*H, vx:(Math.random()-.5)*.28, vy:(Math.random()-.5)*.28, r:Math.random()*1.4+.5 });
+/* Shape types: ring, dot, square, tri, cross */
+function initShapes() {
+  shapes = [];
+  const N = Math.min(22, Math.floor(W / 60));
+  const types = ['ring','ring','ring','dot','dot','square','square','tri','cross'];
+  for (let i = 0; i < N; i++) {
+    shapes.push({
+      x:   Math.random() * W,
+      y:   Math.random() * H,
+      vx:  (Math.random() - .5) * .22,
+      vy:  (Math.random() - .5) * .22,
+      sz:  Math.random() * 28 + 7,
+      type: types[Math.floor(Math.random() * types.length)],
+      alpha: Math.random() * .10 + .04,
+      rot:  Math.random() * Math.PI * 2,
+      rotV: (Math.random() - .5) * .007,
+      sf:   Math.random() * .5 + .15   // scroll parallax factor
+    });
   }
 }
-createNodes();
+initShapes();
+
+/* Track scroll velocity */
+window.addEventListener('scroll', () => {
+  const cur = window.scrollY;
+  scrollVel = (cur - lastPageScroll) * .06;
+  lastPageScroll = cur;
+}, { passive: true });
+
+function drawShape(s) {
+  ctx.save();
+  ctx.globalAlpha = s.alpha;
+  ctx.strokeStyle = 'rgb(8,145,178)';
+  ctx.fillStyle   = 'rgb(8,145,178)';
+  ctx.lineWidth   = 1.6;
+  ctx.translate(s.x, s.y);
+  ctx.rotate(s.rot);
+  const z = s.sz;
+  switch (s.type) {
+    case 'ring':
+      ctx.beginPath(); ctx.arc(0, 0, z, 0, Math.PI*2); ctx.stroke(); break;
+    case 'dot':
+      ctx.beginPath(); ctx.arc(0, 0, z * .28, 0, Math.PI*2); ctx.fill(); break;
+    case 'square':
+      ctx.strokeRect(-z*.55, -z*.55, z*1.1, z*1.1); break;
+    case 'tri':
+      ctx.beginPath();
+      ctx.moveTo(0, -z); ctx.lineTo(z*.87, z*.5); ctx.lineTo(-z*.87, z*.5);
+      ctx.closePath(); ctx.stroke(); break;
+    case 'cross':
+      const arm = z * .6;
+      ctx.beginPath();
+      ctx.moveTo(-arm, 0); ctx.lineTo(arm, 0);
+      ctx.moveTo(0, -arm); ctx.lineTo(0, arm);
+      ctx.stroke(); break;
+  }
+  ctx.restore();
+}
 
 function draw() {
-  ctx.clearRect(0,0,W,H);
-  nodes.forEach(n => {
-    n.x += n.vx; n.y += n.vy;
-    if (n.x<0||n.x>W) n.vx*=-1;
-    if (n.y<0||n.y>H) n.vy*=-1;
+  ctx.clearRect(0, 0, W, H);
+
+  /* Scroll velocity dampens each frame */
+  scrollVel *= .88;
+
+  shapes.forEach(s => {
+    /* Float drift */
+    s.x  += s.vx;
+    s.y  += s.vy;
+    s.rot += s.rotV;
+
+    /* Scroll impulse — each shape reacts at different depth */
+    s.vy += scrollVel * s.sf;
+
+    /* Soft speed cap */
+    const maxV = 2.2;
+    s.vx = Math.max(-maxV, Math.min(maxV, s.vx));
+    s.vy = Math.max(-maxV, Math.min(maxV, s.vy));
+
+    /* Gradual return to calm */
+    s.vx *= .992;
+    s.vy *= .992;
+
+    /* Wrap edges */
+    const pad = s.sz * 2;
+    if (s.x < -pad) s.x = W + pad;
+    if (s.x > W + pad) s.x = -pad;
+    if (s.y < -pad) s.y = H + pad;
+    if (s.y > H + pad) s.y = -pad;
+
+    drawShape(s);
   });
-  for (let i=0;i<nodes.length;i++) {
-    for (let j=i+1;j<nodes.length;j++) {
-      const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
-      const d=Math.sqrt(dx*dx+dy*dy);
-      if (d<130) {
-        ctx.strokeStyle=`rgba(37,211,102,${(1-d/130)*0.22})`;
-        ctx.lineWidth=0.6;
-        ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
-      }
-    }
-    ctx.fillStyle='rgba(37,211,102,0.45)';
-    ctx.beginPath(); ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2); ctx.fill();
-  }
+
   requestAnimationFrame(draw);
 }
 draw();
 
+/* Mouse repel */
 document.addEventListener('mousemove', e => {
-  nodes.forEach(n => {
-    const dx=e.clientX-n.x, dy=e.clientY-n.y;
-    const d=Math.sqrt(dx*dx+dy*dy);
-    if (d<110) {
-      n.vx-=(dx/d)*0.07; n.vy-=(dy/d)*0.07;
-      const mv=1.4; n.vx=Math.max(-mv,Math.min(mv,n.vx)); n.vy=Math.max(-mv,Math.min(mv,n.vy));
+  shapes.forEach(s => {
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    const d  = Math.sqrt(dx*dx + dy*dy);
+    if (d < 100 && d > 0) {
+      s.vx -= (dx / d) * .045;
+      s.vy -= (dy / d) * .045;
     }
   });
 });
@@ -1035,7 +1100,7 @@ function toggleFaq(el) {
 /* ── NAV GLOW ON SCROLL ── */
 window.addEventListener('scroll', () => {
   document.getElementById('mainNav').style.borderBottomColor =
-    window.scrollY > 40 ? 'rgba(245,197,24,0.12)' : 'rgba(255,255,255,0.06)';
+    window.scrollY > 40 ? 'rgba(8,145,178,0.12)' : 'rgba(255,255,255,0.06)';
 });
 </script>
 </body>

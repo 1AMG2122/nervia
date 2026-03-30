@@ -319,7 +319,7 @@ GROUP BY cl.id, mes;
 
 INSERT INTO clientes (slug, nombre, especialidad, email, telefono, direccion, ciudad, plan_id, estado, calendar_id)
 VALUES ('fisio-garcia', 'Dr. García Fernández', 'Fisioterapeuta',
-        'demo@nervia.es', '+34 960 000 001', 'Calle Mayor 10', 'Valencia', 2, 'activo',
+        'demo@nerv-ia.com', '+34 960 000 001', 'Calle Mayor 10', 'Valencia', 2, 'activo',
         'demo_garcia@group.calendar.google.com');
 
 SET @cid = LAST_INSERT_ID();
@@ -342,7 +342,7 @@ INSERT INTO disponibilidad (cliente_id, dia_semana, hora_inicio, hora_fin) VALUE
   (@cid, 5, '09:00', '09:30'), (@cid, 5, '09:30', '10:00'), (@cid, 5, '10:00', '10:30');
 
 INSERT INTO usuarios (cliente_id, email, password_hash, nombre, rol)
-VALUES (@cid, 'demo@nervia.es',
+VALUES (@cid, 'demo@nerv-ia.com',
         '$2b$12$demo_hash_bcrypt_replace_in_prod',  -- reemplazar con hash real
         'Dr. García', 'admin');
 
