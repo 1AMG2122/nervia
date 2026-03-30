@@ -4,11 +4,11 @@
 --  Ejecutar como: mysql -u root -p < nervia_schema.sql
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS nervia
+CREATE DATABASE IF NOT EXISTS qaqe106
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE nervia;
+USE qaqe106;
 
 -- ============================================================
 -- PLANES DE SUSCRIPCIÓN

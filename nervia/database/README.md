@@ -8,17 +8,17 @@
 
 ```bash
 # 1. Importar el esquema completo
-mysql -u root -p < nervia_schema.sql
+mysql -h lldn615.servidoresdns.net -u root -p < nervia_schema.sql
 
 # 2. Verificar tablas creadas
-mysql -u root -p nervia -e "SHOW TABLES;"
+mysql -h lldn615.servidoresdns.net -u root -p qaqe106 -e "SHOW TABLES;"
 ```
 
 ## Crear usuario dedicado (recomendado)
 
 ```sql
-CREATE USER 'nervia_app'@'localhost' IDENTIFIED BY 'CambiaEstaPassword123!';
-GRANT SELECT, INSERT, UPDATE, DELETE ON nervia.* TO 'nervia_app'@'localhost';
+CREATE USER 'nervia_app'@'%' IDENTIFIED BY 'CambiaEstaPassword123!';
+GRANT SELECT, INSERT, UPDATE, DELETE ON qaqe106.* TO 'nervia_app'@'%';
 FLUSH PRIVILEGES;
 ```
 
@@ -47,9 +47,9 @@ FLUSH PRIVILEGES;
 
 En n8n → Settings → Credentials → MySQL/MariaDB:
 ```
-Host:     localhost (o IP del servidor)
+Host:     lldn615.servidoresdns.net
 Port:     3306
-Database: nervia
+Database: qaqe106
 User:     nervia_app
 Password: (la que configuraste)
 ```
